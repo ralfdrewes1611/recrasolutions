@@ -1,34 +1,322 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* RECRA Solutions - Custom Styles */
+
+/* App Shell */
+.app-shell {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    background-color: #09090b;
+    color: white;
+    font-family: 'Manrope', sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
+/* Left Sidebar */
+.left-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    border-right: 1px solid #27272a;
+    background-color: #09090b;
     display: flex;
     flex-direction: column;
+    z-index: 20;
+}
+
+/* Canvas Area */
+.canvas-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: #09090b;
+}
+
+/* Right Sidebar */
+.right-sidebar {
+    width: 384px;
+    flex-shrink: 0;
+    border-left: 1px solid #27272a;
+    background: rgba(9, 9, 11, 0.8);
+    backdrop-filter: blur(24px);
+    display: flex;
+    flex-direction: column;
+    z-index: 20;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Panels */
+.panel {
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #27272a;
+    background-color: #18181b;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(to right, #0ea5e9, #10b981);
+    color: white;
+    font-weight: 500;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+}
+
+.btn-secondary {
+    background-color: #18181b;
+    color: white;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #27272a;
+}
+
+.btn-export {
+    background-color: #ffffff;
+    color: #09090b;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-export:hover {
+    background-color: #e5e5e5;
+}
+
+/* Product Cards */
+.product-card {
+    background-color: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.product-card:hover {
+    border-color: #0ea5e9;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.1);
+    transform: scale(1.02);
+}
+
+.product-card:active {
+    cursor: grabbing;
+}
+
+/* AI Recommendation Cards */
+.ai-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: linear-gradient(to bottom, #18181b, #09090b);
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+.ai-card.warning {
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.ai-card.info {
+    border-color: rgba(14, 165, 233, 0.4);
+}
+
+/* Wizard Steps */
+.wizard-step {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.wizard-step.active {
+    color: #0ea5e9;
+}
+
+.wizard-step.completed {
+    color: #10b981;
+}
+
+.wizard-step.inactive {
+    color: #71717a;
+}
+
+.wizard-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+    font-size: 12px;
+    margin-right: 8px;
 }
 
-.App-link {
-    color: #61dafb;
+.wizard-indicator.active {
+    background-color: rgba(14, 165, 233, 0.2);
+    border: 1px solid #0ea5e9;
 }
 
-@keyframes App-logo-spin {
+.wizard-indicator.completed {
+    background-color: rgba(16, 185, 129, 0.2);
+    border: 1px solid #10b981;
+}
+
+.wizard-indicator.inactive {
+    background-color: #18181b;
+    border: 1px solid #27272a;
+}
+
+/* Cost Calculator */
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.cost-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    padding-top: 16px;
+    border-top: 1px solid #27272a;
+    color: #0ea5e9;
+}
+
+.price-value {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Canvas Items */
+.canvas-item {
+    position: absolute;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.canvas-item:hover {
+    z-index: 100;
+}
+
+.canvas-item.selected {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+}
+
+.canvas-item .coverage-circle {
+    pointer-events: none;
+    opacity: 0.15;
+    transition: opacity 0.2s ease;
+}
+
+.canvas-item:hover .coverage-circle {
+    opacity: 0.3;
+}
+
+/* Drag States */
+.dragging {
+    transform: scale(1.05);
+    opacity: 0.9;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.drop-target {
+    border: 2px dashed #0ea5e9 !important;
+    background: rgba(14, 165, 233, 0.1) !important;
+}
+
+/* Focus States */
+.focus-ring {
+    outline: none;
+}
+
+.focus-ring:focus {
+    ring: 2px;
+    ring-color: #0ea5e9;
+    ring-offset: 2px;
+    ring-offset-color: #09090b;
+}
+
+/* Typography */
+.heading {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Animations */
+@keyframes slide-in-right {
     from {
-        transform: rotate(0deg);
+        transform: translateX(20px);
+        opacity: 0;
     }
     to {
-        transform: rotate(360deg);
+        transform: translateX(0);
+        opacity: 1;
     }
+}
+
+.animate-slide-in {
+    animation: slide-in-right 0.3s ease-out;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+}
+
+.animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Utility Classes */
+.text-recra-blue {
+    color: #0ea5e9;
+}
+
+.text-recra-green {
+    color: #10b981;
+}
+
+.bg-recra-blue {
+    background-color: #0ea5e9;
+}
+
+.bg-recra-green {
+    background-color: #10b981;
+}
+
+.border-recra-blue {
+    border-color: #0ea5e9;
+}
+
+.border-recra-green {
+    border-color: #10b981;
 }
