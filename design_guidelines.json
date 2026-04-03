@@ -1,0 +1,126 @@
+{
+  "project_name": "RECRA Configurator Platform",
+  "theme": "dark",
+  "archetype": "5 (Jewel & Luxury) / 4 (Swiss & High-Contrast) Hybrid - Technical Premium",
+  "typography": {
+    "headings": {
+      "family": "Outfit",
+      "import": "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap",
+      "rules": "tracking-tight for >32px, never center by default, use font-medium or font-semibold for clarity. Used for Section Titles and Wizard Steps."
+    },
+    "body": {
+      "family": "Manrope",
+      "import": "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&display=swap",
+      "rules": "leading-relaxed, left-aligned, use font-light for secondary text. Used for descriptions and UI labels."
+    },
+    "technical_data": {
+      "family": "JetBrains Mono",
+      "import": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap",
+      "rules": "Used strictly for prices (CAPEX/OPEX), dimensions, coordinates, product IDs, and data tables."
+    }
+  },
+  "colors": {
+    "background": {
+      "base": "#09090b",
+      "surface": "#18181b",
+      "elevated": "#27272a"
+    },
+    "text": {
+      "primary": "#ffffff",
+      "secondary": "#a1a1aa",
+      "muted": "#71717a"
+    },
+    "brand": {
+      "blue": "#0ea5e9",
+      "green": "#10b981",
+      "blue_glow": "rgba(14, 165, 233, 0.2)",
+      "green_glow": "rgba(16, 185, 129, 0.2)"
+    },
+    "borders": {
+      "default": "#27272a",
+      "active": "#0ea5e9",
+      "light": "rgba(255,255,255,0.05)"
+    },
+    "status": {
+      "success": "#10b981",
+      "warning": "#f59e0b",
+      "error": "#ef4444"
+    }
+  },
+  "layout_and_spacing": {
+    "strategy": "The Control Room Grid (For Dashboards / Analytics) + Canvas Area",
+    "app_shell": "h-screen w-full flex overflow-hidden bg-[#09090b] text-white font-['Manrope']",
+    "left_sidebar": "w-80 flex-shrink-0 border-r border-[#27272a] bg-[#09090b] flex flex-col z-20",
+    "canvas_area": "flex-1 relative overflow-hidden bg-[#09090b] canvas-dot-pattern",
+    "right_sidebar": "w-96 flex-shrink-0 border-l border-[#27272a] bg-[#09090b]/80 backdrop-blur-2xl flex flex-col z-20 shadow-2xl",
+    "panels": "p-6 rounded-xl border border-[#27272a] bg-[#18181b] shadow-xl",
+    "spacing_scale": "p-2, p-4 for internal widget spacing; p-6, p-8 for containers."
+  },
+  "components_strategy": {
+    "buttons": {
+      "primary": "bg-gradient-to-r from-[#0ea5e9] to-[#10b981] text-white font-medium rounded-lg hover:shadow-[0_0_20px_rgba(14,165,233,0.4)] transition-all px-4 py-2",
+      "secondary": "bg-[#18181b] text-white hover:bg-[#27272a] border border-[#27272a] rounded-lg px-4 py-2 transition-colors",
+      "icon": "p-2 rounded-md hover:bg-[#27272a] text-[#a1a1aa] hover:text-white transition-colors",
+      "export_pdf": "bg-[#ffffff] text-[#09090b] font-semibold rounded-lg hover:bg-gray-200 transition-colors px-4 py-2 flex items-center gap-2"
+    },
+    "cards": {
+      "product": "bg-[#18181b] border border-[#27272a] rounded-lg p-3 hover:border-[#0ea5e9] transition-all cursor-grab active:cursor-grabbing group hover:shadow-[0_4px_20px_rgba(14,165,233,0.1)] flex items-center gap-3",
+      "ai_recommendation": "relative overflow-hidden rounded-xl border border-[#10b981]/40 bg-gradient-to-b from-[#18181b] to-[#09090b] p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+    },
+    "wizard": {
+      "container": "flex items-center space-x-2 mb-6 overflow-x-auto pb-2",
+      "step_active": "flex items-center text-sm font-semibold text-[#0ea5e9] whitespace-nowrap",
+      "step_inactive": "flex items-center text-sm font-medium text-[#71717a] whitespace-nowrap",
+      "indicator_active": "w-6 h-6 rounded-full bg-[#0ea5e9]/20 border border-[#0ea5e9] flex items-center justify-center text-xs mr-2",
+      "indicator_inactive": "w-6 h-6 rounded-full bg-[#18181b] border border-[#27272a] flex items-center justify-center text-xs mr-2"
+    },
+    "cost_calculator": {
+      "wrapper": "p-6 space-y-4",
+      "row": "flex justify-between items-center text-sm",
+      "total_row": "flex justify-between items-center text-lg font-bold pt-4 border-t border-[#27272a] text-[#0ea5e9]",
+      "number_font": "font-['JetBrains_Mono']"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "Used on the right sidebar (Real-time quote) and canvas floating controls. Use `backdrop-blur-2xl bg-[#09090b]/80 border-white/5`.",
+    "grid_background": "Crucial for the 'Engineer' feel. Use CSS: `background-image: radial-gradient(#27272a 1px, transparent 1px); background-size: 24px 24px;` on the canvas area.",
+    "tracing_beam": "Apply an animated glowing line effect (`mask-image`) on AI recommendation cards to make them feel cutting-edge.",
+    "shadows": "Replace soft drop shadows with sharp 'inner glow' highlights or ambient colored glows. e.g., `shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]`."
+  },
+  "motion_and_interactions": {
+    "hover": "Subtle scale-up (`scale-[1.02]`) on interactive cards. Border color transitions from `#27272a` to `#0ea5e9`.",
+    "drag_drop": "Items being dragged should have `scale-105`, opacity-90, and a drop shadow. Drop targets on the canvas should highlight with a dashed `#0ea5e9` border.",
+    "page_transitions": "Use Framer Motion for wizard step content transitions (slide in from right/left with fade)."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "usage": "20x20 for standard icons, 16x16 for metadata. Stroke width 1.5 for a technical, crisp look."
+  },
+  "media": [
+    {
+      "category": "floor_plan_placeholder",
+      "url": "https://images.unsplash.com/photo-1758552396011-1610e8a4c1c8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwzfHxjYW1wc2l0ZSUyMGFlcmlhbCUyMHZpZXd8ZW58MHx8fHwxNzc1MjI0ODI2fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Overhead view of a riverbank campsite. Use as the background for the drag & drop canvas if no plan is uploaded."
+    },
+    {
+      "category": "product_placeholder_camera",
+      "url": "https://images.unsplash.com/photo-1549109926-58f039549485?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzd8MHwxfHNlYXJjaHwxfHxzZWN1cml0eSUyMGNhbWVyYXxlbnwwfHx8fDE3NzUyMjQ4Mjl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "White surveillance camera. Use as a thumbnail in the product catalog sidebar."
+    }
+  ],
+  "accessibility": {
+    "contrast": "Ensure all text, especially muted text (#71717a), passes WCAG AA on the #09090b background.",
+    "focus": "focus:ring-2 focus:ring-[#0ea5e9] focus:outline-none focus:ring-offset-2 focus:ring-offset-[#09090b] for all interactive elements.",
+    "testing_attributes": "All interactive elements MUST have `data-testid` (e.g., `data-testid=\"wizard-next-button\"`, `data-testid=\"product-card-camera\"`, `data-testid=\"export-pdf-button\"`)."
+  },
+  "instructions_to_main_agent": [
+    "1. Inject the fonts (Outfit, Manrope, JetBrains Mono) via Google Fonts in index.html.",
+    "2. Initialize a full-screen application layout (`h-screen w-full overflow-hidden flex`). This is a workspace tool, NOT a scrolling website.",
+    "3. Structure: Left Sidebar (Wizard + Products), Center (Canvas Planner), Right Sidebar (Real-time Quote & AI).",
+    "4. The Canvas (Site Planner) MUST have the dotted grid background applied. Center the floor plan placeholder image in the canvas.",
+    "5. For the Drag & Drop functionality, use HTML5 Drag and Drop or a lightweight library, mapping items to coordinates on the grid.",
+    "6. AI Recommendations should stand out visually using the `#10b981` (emerald) accent color.",
+    "7. Do NOT use default Tailwind blue. Strictly use the defined HEX codes for RECRA Blue (#0ea5e9) and RECRA Green (#10b981).",
+    "8. Ensure every form input, button, and drag item has a valid `data-testid`."
+  ]
+}
