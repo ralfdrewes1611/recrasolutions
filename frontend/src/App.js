@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
+import { ProductImportPanel } from './ProductImportPanel';
+import { AIQuoteText } from './AIQuoteText';
 import { 
   ChevronRight, ChevronLeft, Upload, Grid3X3, Package, 
   Sparkles, FileText, Download, Plus, Trash2, Bath, Camera, 
@@ -9,7 +11,7 @@ import {
   Settings, HelpCircle, Phone, Mail, MapPin,
   Droplets, PenTool, MousePointer, Layers, Eye, EyeOff,
   BatteryCharging, Sun, Plug, ToggleLeft, ToggleRight,
-  Car, TreePine, Tent, CircleDot, Grip, Move, Square
+  Car, TreePine, Tent, CircleDot, Grip, Move, Square, Loader2
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { ScrollArea } from './components/ui/scroll-area';
@@ -1005,32 +1007,79 @@ function App() {
 
 
                   {project.floor_plan_base64 && (
-                    <div className="p-3 rounded-xl bg-white border border-[#e5e2d9]" data-testid="scale-settings">
-                      <Label className="text-sm font-medium text-[#333333] mb-2 block">Schaal instellen</Label>
-                      <p className="text-xs text-[#777777] mb-2">Hoeveel meter is 1 blokje (24px) op de tekening?</p>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 flex-1">
-                          <div className="w-6 h-6 border border-[#e5e2d9] bg-[#FDF9ED] rounded" />
-                          <span className="text-sm text-[#333333]">=</span>
-                          <Input
-                            type="number"
-                            step="0.5"
-                            min="0.5"
-                            max="20"
-                            value={Math.round(project.scale_meters_per_pixel * 24 * 10) / 10}
-                            onChange={(e) => {
-                              const metersPerBlock = parseFloat(e.target.value) || 1;
-                              setProject(prev => ({ ...prev, scale_meters_per_pixel: metersPerBlock / 24 }));
-                            }}
-                            className="w-20 bg-white border-[#e5e2d9] h-8 text-sm"
-                            data-testid="scale-input"
-                          />
-                          <span className="text-sm text-[#777777]">meter</span>
-                        </div>
-                        <div className="text-xs text-[#777777] bg-[#FDF9ED] px-2 py-1 rounded">
-                          Canvas: {Math.round(project.canvas_width * project.scale_meters_per_pixel)}x{Math.round(project.canvas_height * project.scale_meters_per_pixel)}m
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-xl bg-white border border-[#e5e2d9]" data-testid="scale-settings">
+                        <Label className="text-sm font-medium text-[#333333] mb-2 block">Schaal instellen</Label>
+                        <p className="text-xs text-[#777777] mb-2">Hoeveel meter is 1 blokje (24px) op de tekening?</p>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5 flex-1">
+                            <div className="w-6 h-6 border border-[#e5e2d9] bg-[#FDF9ED] rounded" />
+                            <span className="text-sm text-[#333333]">=</span>
+                            <Input
+                              type="number"
+                              step="0.5"
+                              min="0.5"
+                              max="20"
+                              value={Math.round(project.scale_meters_per_pixel * 24 * 10) / 10}
+                              onChange={(e) => {
+                                const metersPerBlock = parseFloat(e.target.value) || 1;
+                                setProject(prev => ({ ...prev, scale_meters_per_pixel: metersPerBlock / 24 }));
+                              }}
+                              className="w-20 bg-white border-[#e5e2d9] h-8 text-sm"
+                              data-testid="scale-input"
+                            />
+                            <span className="text-sm text-[#777777]">meter</span>
+                          </div>
+                          <div className="text-xs text-[#777777] bg-[#FDF9ED] px-2 py-1 rounded">
+                            Canvas: {Math.round(project.canvas_width * project.scale_meters_per_pixel)}x{Math.round(project.canvas_height * project.scale_meters_per_pixel)}m
+                          </div>
                         </div>
                       </div>
+
+                      <Button
+                        onClick={async () => {
+                          setIsAnalyzing(true);
+                          try {
+                            const res = await axios.post(`${API}/ai/analyze-floorplan-smart`, {
+                              image_base64: project.floor_plan_base64,
+                              project_type: project.project_type,
+                              canvas_width: project.canvas_width,
+                              canvas_height: project.canvas_height,
+                            });
+                            if (res.data.zones?.length > 0) {
+                              const newZones = res.data.zones.map((z, i) => ({
+                                ...z,
+                                id: `ai-zone-${Date.now()}-${i}`,
+                              }));
+                              setProject(prev => ({
+                                ...prev,
+                                zones: [...prev.zones, ...newZones],
+                                num_spots: res.data.estimated_spots || prev.num_spots,
+                              }));
+                              toast.success(`AI heeft ${newZones.length} zones herkend en ${res.data.estimated_spots} standplaatsen geschat`);
+                            }
+                            if (res.data.suggested_scale) {
+                              setProject(prev => ({ ...prev, scale_meters_per_pixel: res.data.suggested_scale }));
+                            }
+                            if (res.data.suggestions?.length > 0) {
+                              res.data.suggestions.forEach(s => toast.info(s));
+                            }
+                          } catch (err) {
+                            toast.error('Kon plattegrond niet analyseren');
+                          } finally {
+                            setIsAnalyzing(false);
+                          }
+                        }}
+                        disabled={isAnalyzing}
+                        className="w-full bg-[#244628] hover:bg-[#1a341d] text-white"
+                        data-testid="analyze-floorplan-btn"
+                      >
+                        {isAnalyzing ? (
+                          <><Loader2 size={16} className="mr-2 animate-spin" /> AI analyseert plattegrond...</>
+                        ) : (
+                          <><Sparkles size={16} className="mr-2" /> AI Plattegrond Analyseren</>
+                        )}
+                      </Button>
                     </div>
                   )}
                   <div className="p-4 rounded-xl bg-[#70C26C]/10 border border-[#70C26C]/20">
@@ -1180,6 +1229,11 @@ function App() {
                       Klik op een product en dan op het canvas om te plaatsen. Of sleep het product direct.
                     </p>
                   )}
+
+                  {/* AI Product Import */}
+                  <div className="pt-3 border-t border-[#e5e2d9]">
+                    <ProductImportPanel onProductsAdded={fetchProducts} />
+                  </div>
                 </div>
               )}
 
@@ -1347,6 +1401,8 @@ function App() {
                       </div>
                     </div>
                   </div>
+
+                  <AIQuoteText project={project} products={products} quickQuote={quickQuote} />
 
                   <Button onClick={exportPDF} disabled={loading || project.placed_products.length === 0} className="w-full bg-[#70C26C] hover:bg-[#5fb35b] text-white font-semibold h-12" data-testid="export-pdf-button">
                     <Download size={18} className="mr-2" />

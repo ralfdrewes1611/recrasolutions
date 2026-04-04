@@ -17,6 +17,8 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
+from ai_services import ai_router
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -888,7 +890,9 @@ async def seed_products():
     return {"message": f"{len(SEED_PRODUCTS)} producten toegevoegd", "seeded": True}
 
 # Include the router in the main app
+# Include routers
 app.include_router(api_router)
+app.include_router(ai_router)
 
 app.add_middleware(
     CORSMiddleware,
