@@ -242,7 +242,7 @@ async def scrape_products(request: ScrapeRequest):
         url = 'https://' + url
     
     # Fetch the page
-    async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+    async with httpx.AsyncClient(timeout=15, follow_redirects=True, verify=False) as client:
         try:
             resp = await client.get(url, headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
