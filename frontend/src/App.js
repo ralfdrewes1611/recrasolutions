@@ -62,14 +62,14 @@ const categoryIcons = {
 };
 
 const categoryColors = {
-  sanitair: '#4a9b7f',
-  slagboom: '#f59e0b',
-  camera: '#ef4444',
-  wifi: '#3b82f6',
-  verlichting: '#eab308',
-  betaalsysteem: '#8b5cf6',
-  toegangscontrole: '#ec4899',
-  douchelezer: '#06b6d4',
+  sanitair: '#4ade80',
+  slagboom: '#fbbf24',
+  camera: '#f87171',
+  wifi: '#60a5fa',
+  verlichting: '#facc15',
+  betaalsysteem: '#a78bfa',
+  toegangscontrole: '#f472b6',
+  douchelezer: '#22d3ee',
 };
 
 const categoryLabels = {
@@ -447,17 +447,19 @@ function App() {
 
   return (
     <TooltipProvider>
-      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#f8faf9]">
+      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#0a0a0a]">
         {/* Header */}
-        <header className="h-16 header-gradient flex items-center justify-between px-6 flex-shrink-0">
+        <header className="h-16 bg-[#121212] border-b border-[#333] flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                <Package className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-[#4ade80]/20 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-[#4ade80]" />
               </div>
               <div>
-                <h1 className="text-white font-bold text-lg tracking-tight">RECRA Solutions</h1>
-                <p className="text-white/70 text-xs">Configurator Platform</p>
+                <h1 className="text-white font-bold text-lg tracking-tight">
+                  RECRA<span className="text-[#4ade80]">solutions</span>
+                </h1>
+                <p className="text-[#71717a] text-xs">Configurator Platform</p>
               </div>
             </div>
           </div>
@@ -474,17 +476,17 @@ function App() {
                   Projecten
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-white">
+              <DialogContent className="max-w-2xl bg-[#1a1a1a] border-[#333] text-white">
                 <DialogHeader>
-                  <DialogTitle className="text-[#1e3a5f]">Mijn Projecten</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-white">Mijn Projecten</DialogTitle>
+                  <DialogDescription className="text-[#a1a1aa]">
                     Selecteer een project om verder te werken of start een nieuw project.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
                   <Button 
                     onClick={newProject} 
-                    className="w-full mb-4 btn-recra-primary"
+                    className="w-full mb-4 bg-[#4ade80] text-black hover:bg-[#22c55e] font-semibold"
                     data-testid="new-project-btn"
                   >
                     <Plus size={18} className="mr-2" />
@@ -504,15 +506,15 @@ function App() {
                             className="flex-1 cursor-pointer"
                             onClick={() => loadProject(p.id)}
                           >
-                            <h4 className="font-medium text-[#1e3a5f]">{p.name}</h4>
-                            <p className="text-sm text-gray-500">
+                            <h4 className="font-medium text-white">{p.name}</h4>
+                            <p className="text-sm text-[#71717a]">
                               {p.project_type} • {p.placed_products?.length || 0} producten
                             </p>
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-gray-400 hover:text-red-500"
+                            className="text-[#71717a] hover:text-red-400"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteProject(p.id);
@@ -523,7 +525,7 @@ function App() {
                         </div>
                       ))}
                       {projects.length === 0 && (
-                        <div className="text-center py-8 text-gray-400">
+                        <div className="text-center py-8 text-[#71717a]">
                           <FolderOpen size={48} className="mx-auto mb-2 opacity-50" />
                           <p>Nog geen projecten</p>
                         </div>
@@ -551,17 +553,17 @@ function App() {
                   <HelpCircle size={20} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white">
-                <DropdownMenuItem>
+              <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-[#333]">
+                <DropdownMenuItem className="text-white hover:bg-[#242424]">
                   <Phone size={16} className="mr-2" />
                   +31 634200253
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-[#242424]">
                   <Mail size={16} className="mr-2" />
                   info@recrasolutions.com
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#333]" />
+                <DropdownMenuItem className="text-white hover:bg-[#242424]">
                   <HelpCircle size={16} className="mr-2" />
                   Handleiding
                 </DropdownMenuItem>
@@ -573,9 +575,9 @@ function App() {
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Sidebar */}
-          <div className="w-80 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col">
+          <div className="w-80 flex-shrink-0 border-r border-[#333] bg-[#121212] flex flex-col">
             {/* Wizard Steps */}
-            <div className="p-4 border-b border-gray-100">
+            <div className="p-4 border-b border-[#333]">
               <div className="space-y-1">
                 {WIZARD_STEPS.map((step) => {
                   const Icon = step.icon;
@@ -588,29 +590,29 @@ function App() {
                       onClick={() => setCurrentStep(step.id)}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
                         isActive 
-                          ? 'bg-[#4a9b7f]/10 border border-[#4a9b7f]/30' 
+                          ? 'bg-[#4ade80]/10 border border-[#4ade80]/30' 
                           : isCompleted
-                            ? 'bg-green-50'
-                            : 'hover:bg-gray-50'
+                            ? 'bg-[#22c55e]/10'
+                            : 'hover:bg-[#1a1a1a]'
                       }`}
                       data-testid={`wizard-step-${step.id}`}
                     >
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         isActive 
-                          ? 'bg-[#4a9b7f] text-white' 
+                          ? 'bg-[#4ade80] text-black' 
                           : isCompleted
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-100 text-gray-400'
+                            ? 'bg-[#22c55e] text-black'
+                            : 'bg-[#242424] text-[#71717a]'
                       }`}>
                         {isCompleted ? <Check size={16} /> : <Icon size={16} />}
                       </div>
                       <div className="text-left">
                         <div className={`text-sm font-medium ${
-                          isActive ? 'text-[#4a9b7f]' : isCompleted ? 'text-green-600' : 'text-gray-600'
+                          isActive ? 'text-[#4ade80]' : isCompleted ? 'text-[#22c55e]' : 'text-[#a1a1aa]'
                         }`}>
                           {step.title}
                         </div>
-                        <div className="text-xs text-gray-400">{step.description}</div>
+                        <div className="text-xs text-[#71717a]">{step.description}</div>
                       </div>
                     </button>
                   );
@@ -625,21 +627,21 @@ function App() {
                 {currentStep === 1 && (
                   <div className="space-y-5 animate-fade-in-up" data-testid="step-1-content">
                     <div>
-                      <Label htmlFor="project-name" className="text-sm font-medium text-gray-700">
+                      <Label htmlFor="project-name" className="text-sm font-medium text-[#a1a1aa]">
                         Projectnaam
                       </Label>
                       <Input
                         id="project-name"
                         value={project.name}
                         onChange={(e) => setProject(prev => ({ ...prev, name: e.target.value }))}
-                        className="mt-1.5"
+                        className="mt-1.5 bg-[#1a1a1a] border-[#333] text-white"
                         placeholder="Bijv. Camping De Zonnehoek"
                         data-testid="project-name-input"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Type locatie</Label>
+                      <Label className="text-sm font-medium text-[#a1a1aa]">Type locatie</Label>
                       <div className="mt-2 grid grid-cols-2 gap-2">
                         {projectTypes.map((type) => (
                           <button
@@ -647,20 +649,20 @@ function App() {
                             onClick={() => setProject(prev => ({ ...prev, project_type: type.value }))}
                             className={`p-3 rounded-xl border-2 text-left transition-all ${
                               project.project_type === type.value
-                                ? 'border-[#4a9b7f] bg-[#4a9b7f]/5'
-                                : 'border-gray-200 hover:border-[#4a9b7f]/50'
+                                ? 'border-[#4ade80] bg-[#4ade80]/10'
+                                : 'border-[#333] bg-[#1a1a1a] hover:border-[#4ade80]/50'
                             }`}
                             data-testid={`project-type-${type.value}`}
                           >
                             <span className="text-2xl">{type.icon}</span>
-                            <div className="font-medium text-sm mt-1 text-gray-800">{type.label}</div>
+                            <div className="font-medium text-sm mt-1 text-white">{type.label}</div>
                           </button>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="num-spots" className="text-sm font-medium text-gray-700">
+                      <Label htmlFor="num-spots" className="text-sm font-medium text-[#a1a1aa]">
                         Aantal standplaatsen
                       </Label>
                       <Input
@@ -668,20 +670,20 @@ function App() {
                         type="number"
                         value={project.num_spots}
                         onChange={(e) => setProject(prev => ({ ...prev, num_spots: parseInt(e.target.value) || 0 }))}
-                        className="mt-1.5"
+                        className="mt-1.5 bg-[#1a1a1a] border-[#333] text-white"
                         min="1"
                         data-testid="num-spots-input"
                       />
                     </div>
 
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-[#4a9b7f]/10 to-[#4a9b7f]/5 border border-[#4a9b7f]/20">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-[#4ade80]/10 to-[#4ade80]/5 border border-[#4ade80]/20">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#4a9b7f]/20 flex items-center justify-center flex-shrink-0">
-                          <Sparkles size={16} className="text-[#4a9b7f]" />
+                        <div className="w-8 h-8 rounded-lg bg-[#4ade80]/20 flex items-center justify-center flex-shrink-0">
+                          <Sparkles size={16} className="text-[#4ade80]" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-[#2d5a3d]">Slimme configuratie</h4>
-                          <p className="text-xs text-gray-600 mt-1">
+                          <h4 className="font-medium text-sm text-[#4ade80]">Slimme configuratie</h4>
+                          <p className="text-xs text-[#a1a1aa] mt-1">
                             Onze AI helpt u met optimale productplaatsing en geeft advies op basis van uw terreininrichting.
                           </p>
                         </div>
@@ -694,7 +696,7 @@ function App() {
                 {currentStep === 2 && (
                   <div className="space-y-5 animate-fade-in-up" data-testid="step-2-content">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Plattegrond uploaden</Label>
+                      <Label className="text-sm font-medium text-[#a1a1aa]">Plattegrond uploaden</Label>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -707,35 +709,35 @@ function App() {
                         onClick={() => fileInputRef.current?.click()}
                         className={`mt-2 w-full p-8 rounded-xl border-2 border-dashed transition-all ${
                           project.floor_plan_base64
-                            ? 'border-[#4a9b7f] bg-[#4a9b7f]/5'
-                            : 'border-gray-300 hover:border-[#4a9b7f] bg-gray-50'
+                            ? 'border-[#4ade80] bg-[#4ade80]/5'
+                            : 'border-[#333] hover:border-[#4ade80] bg-[#1a1a1a]'
                         }`}
                         data-testid="upload-floor-plan-btn"
                       >
                         {isAnalyzing ? (
                           <div className="flex flex-col items-center gap-2">
-                            <Sparkles className="w-10 h-10 text-[#4a9b7f] animate-pulse-soft" />
-                            <span className="text-sm font-medium text-[#4a9b7f]">AI analyseert plattegrond...</span>
+                            <Sparkles className="w-10 h-10 text-[#4ade80] animate-pulse-soft" />
+                            <span className="text-sm font-medium text-[#4ade80]">AI analyseert plattegrond...</span>
                           </div>
                         ) : project.floor_plan_base64 ? (
                           <div className="flex flex-col items-center gap-2">
-                            <Check className="w-10 h-10 text-[#4a9b7f]" />
-                            <span className="text-sm font-medium text-[#4a9b7f]">Plattegrond geladen</span>
-                            <span className="text-xs text-gray-500">Klik om te wijzigen</span>
+                            <Check className="w-10 h-10 text-[#4ade80]" />
+                            <span className="text-sm font-medium text-[#4ade80]">Plattegrond geladen</span>
+                            <span className="text-xs text-[#71717a]">Klik om te wijzigen</span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-2">
-                            <Upload className="w-10 h-10 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-600">Upload uw plattegrond</span>
-                            <span className="text-xs text-gray-400">PDF of afbeelding (max. 10MB)</span>
+                            <Upload className="w-10 h-10 text-[#71717a]" />
+                            <span className="text-sm font-medium text-[#a1a1aa]">Upload uw plattegrond</span>
+                            <span className="text-xs text-[#71717a]">PDF of afbeelding (max. 10MB)</span>
                           </div>
                         )}
                       </button>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-gray-700 mb-2 block">Zones</Label>
-                      <p className="text-xs text-gray-500 mb-3">
+                      <Label className="text-sm font-medium text-[#a1a1aa] mb-2 block">Zones</Label>
+                      <p className="text-xs text-[#71717a] mb-3">
                         Definieer zones op uw terrein voor betere AI-aanbevelingen.
                       </p>
                       
@@ -744,22 +746,22 @@ function App() {
                           {project.zones.map((zone, index) => (
                             <div 
                               key={zone.id}
-                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                              className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg border border-[#333]"
                             >
                               <div className="flex items-center gap-2">
                                 <div 
                                   className="w-3 h-3 rounded-full"
                                   style={{ backgroundColor: zone.color }}
                                 />
-                                <span className="text-sm font-medium">{zone.name}</span>
-                                <Badge variant="secondary" className="text-xs">
+                                <span className="text-sm font-medium text-white">{zone.name}</span>
+                                <Badge variant="secondary" className="text-xs bg-[#242424] text-[#a1a1aa]">
                                   {zone.type}
                                 </Badge>
                               </div>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-gray-400 hover:text-red-500"
+                                className="h-7 w-7 text-[#71717a] hover:text-red-400"
                                 onClick={() => removeZone(zone.id)}
                               >
                                 <X size={14} />
@@ -768,10 +770,10 @@ function App() {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-6 bg-gray-50 rounded-xl">
-                          <Layers className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                          <p className="text-sm text-gray-400">Nog geen zones gedefinieerd</p>
-                          <p className="text-xs text-gray-400 mt-1">
+                        <div className="text-center py-6 bg-[#1a1a1a] rounded-xl border border-[#333]">
+                          <Layers className="w-8 h-8 text-[#71717a] mx-auto mb-2" />
+                          <p className="text-sm text-[#71717a]">Nog geen zones gedefinieerd</p>
+                          <p className="text-xs text-[#71717a] mt-1">
                             Gebruik het zone-gereedschap op het canvas
                           </p>
                         </div>
@@ -785,10 +787,10 @@ function App() {
                   <div className="space-y-4 animate-fade-in-up" data-testid="step-3-content">
                     <div>
                       <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-full" data-testid="category-select">
+                        <SelectTrigger className="w-full bg-[#1a1a1a] border-[#333] text-white" data-testid="category-select">
                           <SelectValue placeholder="Alle categorieën" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white">
+                        <SelectContent className="bg-[#1a1a1a] border-[#333]">
                           <SelectItem value="all">Alle categorieën</SelectItem>
                           {categories.map((cat) => (
                             <SelectItem key={cat} value={cat}>
@@ -802,7 +804,7 @@ function App() {
                     <div className="space-y-2">
                       {filteredProducts.map((product) => {
                         const Icon = categoryIcons[product.category] || Package;
-                        const color = categoryColors[product.category] || '#4a9b7f';
+                        const color = categoryColors[product.category] || '#4ade80';
                         
                         return (
                           <div
@@ -810,28 +812,28 @@ function App() {
                             draggable
                             onDragStart={() => setDraggedProduct(product)}
                             onDragEnd={() => setDraggedProduct(null)}
-                            className="product-card bg-white border border-gray-200 rounded-xl p-3 cursor-grab active:cursor-grabbing"
+                            className="product-card bg-[#1a1a1a] border border-[#333] rounded-xl p-3 cursor-grab active:cursor-grabbing"
                             data-testid={`product-card-${product.id}`}
                           >
                             <div className="flex items-start gap-3">
                               <div 
                                 className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: `${color}15` }}
+                                style={{ backgroundColor: `${color}20` }}
                               >
                                 <Icon size={24} style={{ color }} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-sm text-gray-800 truncate">
+                                <div className="font-semibold text-sm text-white truncate">
                                   {product.name}
                                 </div>
-                                <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                <div className="text-xs text-[#71717a] mt-0.5 line-clamp-2">
                                   {product.description}
                                 </div>
                                 <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-sm font-bold text-[#4a9b7f]">
+                                  <span className="text-sm font-bold text-[#4ade80]">
                                     € {product.price_purchase.toLocaleString()}
                                   </span>
-                                  <span className="text-xs text-gray-400">
+                                  <span className="text-xs text-[#71717a]">
                                     of € {product.price_lease_monthly}/mnd
                                   </span>
                                 </div>
@@ -842,7 +844,7 @@ function App() {
                       })}
                     </div>
 
-                    <p className="text-xs text-gray-400 text-center pt-2">
+                    <p className="text-xs text-[#71717a] text-center pt-2">
                       Sleep producten naar het canvas om te plaatsen
                     </p>
                   </div>
@@ -851,46 +853,46 @@ function App() {
                 {/* Step 4: Quote */}
                 {currentStep === 4 && (
                   <div className="space-y-5 animate-fade-in-up" data-testid="step-4-content">
-                    <div className="card-recra p-5">
-                      <h3 className="font-bold text-lg text-[#1e3a5f] mb-4">Investering</h3>
+                    <div className="p-5 rounded-xl bg-[#1a1a1a] border border-[#333]">
+                      <h3 className="font-bold text-lg text-white mb-4">Investering</h3>
                       
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Aankoopkosten (CAPEX)</span>
-                          <span className="font-bold text-[#4a9b7f]">
+                          <span className="text-[#a1a1aa]">Aankoopkosten (CAPEX)</span>
+                          <span className="font-bold text-[#4ade80]">
                             € {quickQuote.capex.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Installatiekosten</span>
-                          <span className="font-medium">€ {quickQuote.install.toLocaleString()}</span>
+                          <span className="text-[#a1a1aa]">Installatiekosten</span>
+                          <span className="font-medium text-white">€ {quickQuote.install.toLocaleString()}</span>
                         </div>
-                        <div className="h-px bg-gray-200" />
+                        <div className="h-px bg-[#333]" />
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-[#1e3a5f]">Totaal investering</span>
-                          <span className="text-xl font-bold text-[#4a9b7f]">
+                          <span className="font-semibold text-white">Totaal investering</span>
+                          <span className="text-xl font-bold text-[#4ade80]">
                             € {(quickQuote.capex + quickQuote.install).toLocaleString()}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="card-recra p-5">
-                      <h3 className="font-bold text-lg text-[#1e3a5f] mb-4">Lease optie (OPEX)</h3>
+                    <div className="p-5 rounded-xl bg-[#1a1a1a] border border-[#333]">
+                      <h3 className="font-bold text-lg text-white mb-4">Lease optie (OPEX)</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Per maand</span>
-                          <span className="font-bold text-[#4a9b7f]">
+                          <span className="text-[#a1a1aa]">Per maand</span>
+                          <span className="font-bold text-[#4ade80]">
                             € {quickQuote.opex.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Per jaar</span>
-                          <span className="font-medium">€ {(quickQuote.opex * 12).toLocaleString()}</span>
+                          <span className="text-[#a1a1aa]">Per jaar</span>
+                          <span className="font-medium text-white">€ {(quickQuote.opex * 12).toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Onderhoud per jaar</span>
-                          <span className="font-medium">€ {quickQuote.maintenance.toLocaleString()}</span>
+                          <span className="text-[#a1a1aa]">Onderhoud per jaar</span>
+                          <span className="font-medium text-white">€ {quickQuote.maintenance.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -898,7 +900,7 @@ function App() {
                     <Button
                       onClick={exportPDF}
                       disabled={loading || project.placed_products.length === 0}
-                      className="w-full btn-recra-primary h-12"
+                      className="w-full bg-[#4ade80] text-black hover:bg-[#22c55e] font-semibold h-12"
                       data-testid="export-pdf-button"
                     >
                       <Download size={18} className="mr-2" />
@@ -906,12 +908,12 @@ function App() {
                     </Button>
 
                     <div className="text-center">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-[#71717a]">
                         Of neem direct contact op voor persoonlijk advies
                       </p>
                       <a 
                         href="tel:+31634200253" 
-                        className="text-sm font-medium text-[#4a9b7f] hover:underline"
+                        className="text-sm font-medium text-[#4ade80] hover:underline"
                       >
                         +31 634200253
                       </a>
@@ -922,12 +924,12 @@ function App() {
             </ScrollArea>
 
             {/* Navigation */}
-            <div className="p-4 border-t border-gray-100 flex gap-2">
+            <div className="p-4 border-t border-[#333] flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
                 disabled={currentStep === 1}
-                className="flex-1"
+                className="flex-1 border-[#333] bg-[#1a1a1a] text-white hover:bg-[#242424]"
                 data-testid="wizard-prev-button"
               >
                 <ChevronLeft size={16} className="mr-1" />
@@ -943,7 +945,7 @@ function App() {
                   }
                 }}
                 disabled={currentStep === 4}
-                className="flex-1 btn-recra-primary"
+                className="flex-1 bg-[#4ade80] text-black hover:bg-[#22c55e] font-semibold"
                 data-testid="wizard-next-button"
               >
                 Volgende
@@ -955,7 +957,7 @@ function App() {
           {/* Main Canvas Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Canvas Toolbar */}
-            <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+            <div className="h-12 bg-[#121212] border-b border-[#333] flex items-center justify-between px-4">
               <div className="flex items-center gap-2">
                 {CANVAS_TOOLS.map((tool) => {
                   const Icon = tool.icon;
@@ -966,7 +968,7 @@ function App() {
                           variant={canvasTool === tool.id ? 'default' : 'ghost'}
                           size="sm"
                           onClick={() => setCanvasTool(tool.id)}
-                          className={canvasTool === tool.id ? 'bg-[#4a9b7f] text-white' : ''}
+                          className={canvasTool === tool.id ? 'bg-[#4ade80] text-black' : 'text-[#a1a1aa] hover:bg-[#1a1a1a]'}
                           data-testid={`tool-${tool.id}`}
                         >
                           <Icon size={16} />
@@ -979,11 +981,11 @@ function App() {
                 
                 {isDrawingZone && (
                   <>
-                    <div className="h-6 w-px bg-gray-200 mx-2" />
+                    <div className="h-6 w-px bg-[#333] mx-2" />
                     <Button
                       size="sm"
                       onClick={finishZone}
-                      className="bg-green-500 hover:bg-green-600 text-white"
+                      className="bg-[#22c55e] hover:bg-[#16a34a] text-black"
                     >
                       <Check size={14} className="mr-1" />
                       Zone voltooien
@@ -992,6 +994,7 @@ function App() {
                       size="sm"
                       variant="ghost"
                       onClick={cancelZone}
+                      className="text-[#a1a1aa] hover:bg-[#1a1a1a]"
                     >
                       <X size={14} className="mr-1" />
                       Annuleren
@@ -1001,17 +1004,17 @@ function App() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-[#71717a]">
                   {project.name} • {project.placed_products.length} producten
                 </span>
-                <div className="h-6 w-px bg-gray-200 mx-2" />
+                <div className="h-6 w-px bg-[#333] mx-2" />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowCoverage(!showCoverage)}
-                      className={showCoverage ? 'text-[#4a9b7f]' : 'text-gray-400'}
+                      className={showCoverage ? 'text-[#4ade80]' : 'text-[#71717a]'}
                     >
                       {showCoverage ? <Eye size={16} /> : <EyeOff size={16} />}
                     </Button>
@@ -1022,7 +1025,7 @@ function App() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="text-[#71717a] hover:bg-[#1a1a1a]">
                       <Grid3X3 size={16} />
                     </Button>
                   </TooltipTrigger>
@@ -1032,10 +1035,10 @@ function App() {
             </div>
 
             {/* Canvas */}
-            <div className="flex-1 overflow-auto bg-gray-100 p-4">
+            <div className="flex-1 overflow-auto bg-[#0a0a0a] p-4">
               <div
                 ref={canvasRef}
-                className={`relative bg-white rounded-xl shadow-lg canvas-grid-pattern mx-auto ${
+                className={`relative bg-[#121212] rounded-xl shadow-lg canvas-grid-pattern mx-auto border border-[#333] ${
                   canvasTool === 'zone' ? 'cursor-crosshair' : ''
                 }`}
                 style={{ 
@@ -1142,7 +1145,7 @@ function App() {
                       
                       {/* Label */}
                       <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                        <span className="text-[11px] bg-white px-2 py-1 rounded shadow-sm text-gray-700 font-medium">
+                        <span className="text-[11px] bg-[#1a1a1a] px-2 py-1 rounded shadow-sm text-[#a1a1aa] font-medium border border-[#333]">
                           {product.name.split(' ')[0]}
                         </span>
                       </div>
@@ -1153,7 +1156,7 @@ function App() {
                 {/* Selected item controls */}
                 {selectedItem && (
                   <div
-                    className="absolute bg-white rounded-lg shadow-xl p-1 flex gap-1 border border-gray-200"
+                    className="absolute bg-[#1a1a1a] rounded-lg shadow-xl p-1 flex gap-1 border border-[#333]"
                     style={{
                       left: selectedItem.x + 60,
                       top: selectedItem.y - 8,
@@ -1164,7 +1167,7 @@ function App() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="w-8 h-8"
+                          className="w-8 h-8 text-[#a1a1aa] hover:text-white hover:bg-[#242424]"
                           onClick={() => {
                             setProject(prev => ({
                               ...prev,
@@ -1186,7 +1189,7 @@ function App() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="w-8 h-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="w-8 h-8 text-red-400 hover:text-red-300 hover:bg-red-400/10"
                           onClick={() => removeItem(selectedItem.id)}
                         >
                           <Trash2 size={14} />
@@ -1201,13 +1204,13 @@ function App() {
                 {project.placed_products.length === 0 && !project.floor_plan_base64 && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center max-w-sm p-8">
-                      <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                        <Package size={40} className="text-gray-300" />
+                      <div className="w-20 h-20 rounded-2xl bg-[#1a1a1a] border border-[#333] flex items-center justify-center mx-auto mb-4">
+                        <Package size={40} className="text-[#71717a]" />
                       </div>
-                      <h3 className="font-semibold text-lg text-gray-700 mb-2">
+                      <h3 className="font-semibold text-lg text-white mb-2">
                         Start met configureren
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-[#71717a]">
                         Upload een plattegrond of sleep producten vanuit het linkerpaneel naar dit canvas om uw terrein in te richten.
                       </p>
                     </div>
@@ -1218,12 +1221,12 @@ function App() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-80 flex-shrink-0 border-l border-gray-200 bg-white flex flex-col">
+          <div className="w-80 flex-shrink-0 border-l border-[#333] bg-[#121212] flex flex-col">
             <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
-              <TabsList className="w-full p-1 bg-gray-50 rounded-none border-b border-gray-200 h-auto">
+              <TabsList className="w-full p-1 bg-[#0a0a0a] rounded-none border-b border-[#333] h-auto">
                 <TabsTrigger 
                   value="quote" 
-                  className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="flex-1 py-2.5 data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-[#4ade80]"
                   data-testid="tab-quote"
                 >
                   <FileText size={14} className="mr-1.5" />
@@ -1231,7 +1234,7 @@ function App() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ai" 
-                  className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="flex-1 py-2.5 data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-[#4ade80]"
                   data-testid="tab-ai"
                 >
                   <Sparkles size={14} className="mr-1.5" />
@@ -1243,23 +1246,23 @@ function App() {
                 <ScrollArea className="h-full">
                   <div className="p-5 space-y-5">
                     <div>
-                      <h2 className="font-bold text-lg text-[#1e3a5f]">Real-time Offerte</h2>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <h2 className="font-bold text-lg text-white">Real-time Offerte</h2>
+                      <p className="text-sm text-[#71717a] mt-1">
                         Automatisch berekend op basis van uw configuratie
                       </p>
                     </div>
                     
                     {/* Summary cards */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#4a9b7f]/10 to-[#4a9b7f]/5 border border-[#4a9b7f]/20">
-                        <div className="text-xs text-gray-500 mb-1">CAPEX</div>
-                        <div className="text-xl font-bold text-[#4a9b7f]" data-testid="quote-capex">
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#4ade80]/10 to-[#4ade80]/5 border border-[#4ade80]/20">
+                        <div className="text-xs text-[#71717a] mb-1">CAPEX</div>
+                        <div className="text-xl font-bold text-[#4ade80]" data-testid="quote-capex">
                           € {quickQuote.capex.toLocaleString()}
                         </div>
                       </div>
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#1e3a5f]/10 to-[#1e3a5f]/5 border border-[#1e3a5f]/20">
-                        <div className="text-xs text-gray-500 mb-1">OPEX/mnd</div>
-                        <div className="text-xl font-bold text-[#1e3a5f]" data-testid="quote-opex">
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#60a5fa]/10 to-[#60a5fa]/5 border border-[#60a5fa]/20">
+                        <div className="text-xs text-[#71717a] mb-1">OPEX/mnd</div>
+                        <div className="text-xl font-bold text-[#60a5fa]" data-testid="quote-opex">
                           € {quickQuote.opex.toLocaleString()}
                         </div>
                       </div>
@@ -1267,7 +1270,7 @@ function App() {
 
                     {/* Product list */}
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Geplaatste producten</h3>
+                      <h3 className="text-sm font-semibold text-[#a1a1aa] mb-3">Geplaatste producten</h3>
                       <div className="space-y-2">
                         {Object.entries(
                           project.placed_products.reduce((acc, pp) => {
@@ -1287,18 +1290,18 @@ function App() {
                           return (
                             <div
                               key={productId}
-                              className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100"
+                              className="flex items-center justify-between p-3 rounded-xl bg-[#1a1a1a] border border-[#333]"
                             >
                               <div className="flex items-center gap-3">
                                 <div
                                   className="w-10 h-10 rounded-lg flex items-center justify-center"
-                                  style={{ backgroundColor: `${color}15` }}
+                                  style={{ backgroundColor: `${color}20` }}
                                 >
                                   <Icon size={18} style={{ color }} />
                                 </div>
                                 <div>
-                                  <div className="text-sm font-medium text-gray-800">{product.name}</div>
-                                  <div className="text-xs text-gray-500">
+                                  <div className="text-sm font-medium text-white">{product.name}</div>
+                                  <div className="text-xs text-[#71717a]">
                                     {count}x • € {(product.price_purchase * count).toLocaleString()}
                                   </div>
                                 </div>
@@ -1308,7 +1311,7 @@ function App() {
                         })}
 
                         {project.placed_products.length === 0 && (
-                          <div className="text-center py-8 text-gray-400">
+                          <div className="text-center py-8 text-[#71717a]">
                             <Package size={32} className="mx-auto mb-2 opacity-50" />
                             <p className="text-sm">Nog geen producten geplaatst</p>
                           </div>
@@ -1317,14 +1320,14 @@ function App() {
                     </div>
 
                     {/* Total */}
-                    <div className="p-4 rounded-xl bg-[#1e3a5f] text-white">
+                    <div className="p-4 rounded-xl bg-[#4ade80] text-black">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-white/80">Totaal investering</span>
+                        <span className="text-black/70">Totaal investering</span>
                         <span className="text-2xl font-bold" data-testid="quote-total">
                           € {(quickQuote.capex + quickQuote.install).toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-sm text-white/60">
+                      <div className="flex justify-between items-center text-sm text-black/60">
                         <span>Inclusief installatie</span>
                         <span>€ {quickQuote.install.toLocaleString()}</span>
                       </div>
@@ -1337,12 +1340,12 @@ function App() {
                 <ScrollArea className="h-full">
                   <div className="p-5 space-y-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4a9b7f] to-[#2d5a3d] flex items-center justify-center">
-                        <Sparkles className="text-white" size={16} />
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] flex items-center justify-center">
+                        <Sparkles className="text-black" size={16} />
                       </div>
                       <div>
-                        <h2 className="font-bold text-lg text-[#1e3a5f]">AI Aanbevelingen</h2>
-                        <p className="text-xs text-gray-500">Gebaseerd op uw configuratie</p>
+                        <h2 className="font-bold text-lg text-white">AI Aanbevelingen</h2>
+                        <p className="text-xs text-[#71717a]">Gebaseerd op uw configuratie</p>
                       </div>
                     </div>
 
@@ -1353,20 +1356,20 @@ function App() {
                             key={index}
                             className={`rounded-xl border p-4 ${
                               rec.type === 'warning'
-                                ? 'border-amber-200 bg-amber-50'
+                                ? 'border-amber-500/30 bg-amber-500/10'
                                 : rec.type === 'suggestion'
-                                  ? 'border-blue-200 bg-blue-50'
-                                  : 'border-green-200 bg-green-50'
+                                  ? 'border-blue-500/30 bg-blue-500/10'
+                                  : 'border-green-500/30 bg-green-500/10'
                             }`}
                             data-testid={`ai-recommendation-${index}`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 rec.type === 'warning'
-                                  ? 'bg-amber-100 text-amber-600'
+                                  ? 'bg-amber-500/20 text-amber-400'
                                   : rec.type === 'suggestion'
-                                    ? 'bg-blue-100 text-blue-600'
-                                    : 'bg-green-100 text-green-600'
+                                    ? 'bg-blue-500/20 text-blue-400'
+                                    : 'bg-green-500/20 text-green-400'
                               }`}>
                                 {rec.type === 'warning' ? (
                                   <AlertTriangle size={16} />
@@ -1377,13 +1380,13 @@ function App() {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-sm text-gray-800">{rec.title}</h4>
-                                <p className="text-xs text-gray-600 mt-1">{rec.description}</p>
+                                <h4 className="font-semibold text-sm text-white">{rec.title}</h4>
+                                <p className="text-xs text-[#a1a1aa] mt-1">{rec.description}</p>
                                 {rec.action && (
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="mt-2 h-7 text-xs text-[#4a9b7f] hover:text-[#4a9b7f] hover:bg-[#4a9b7f]/10 p-0"
+                                    className="mt-2 h-7 text-xs text-[#4ade80] hover:text-[#4ade80] hover:bg-[#4ade80]/10 p-0"
                                   >
                                     {rec.action}
                                     <ChevronRight size={12} className="ml-1" />
@@ -1395,10 +1398,10 @@ function App() {
                         ))
                       ) : (
                         <div className="text-center py-8">
-                          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                            <Sparkles size={28} className="text-gray-300" />
+                          <div className="w-16 h-16 rounded-2xl bg-[#1a1a1a] border border-[#333] flex items-center justify-center mx-auto mb-3">
+                            <Sparkles size={28} className="text-[#71717a]" />
                           </div>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-[#71717a]">
                             Plaats producten om AI-aanbevelingen te ontvangen
                           </p>
                         </div>
@@ -1407,7 +1410,7 @@ function App() {
 
                     <Button
                       variant="outline"
-                      className="w-full border-[#4a9b7f] text-[#4a9b7f] hover:bg-[#4a9b7f]/10"
+                      className="w-full border-[#4ade80] text-[#4ade80] hover:bg-[#4ade80]/10"
                       onClick={fetchRecommendations}
                       disabled={!project.id}
                       data-testid="refresh-ai-button"
@@ -1423,13 +1426,13 @@ function App() {
         </div>
 
         <Toaster 
-          theme="light" 
+          theme="dark" 
           position="bottom-right"
           toastOptions={{
             style: {
-              background: '#fff',
-              border: '1px solid #e5e7eb',
-              color: '#1e3a5f',
+              background: '#1a1a1a',
+              border: '1px solid #333',
+              color: '#fff',
             },
           }}
         />
