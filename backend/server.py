@@ -124,40 +124,40 @@ class AIAnalysisResponse(BaseModel):
 # ==================== SEED DATA ====================
 
 SEED_PRODUCTS = [
-    # Sanitair units
+    # Sanitair units - realistische maten
     {
         "name": "Compact Sanitair Unit",
         "category": "sanitair",
-        "description": "2 toiletten, 2 douches, geschikt voor 15-20 standplaatsen",
+        "description": "2 toiletten, 2 douches, geschikt voor 15-20 standplaatsen. Afmeting 3x6m",
         "price_purchase": 18500,
         "price_lease_monthly": 450,
         "installation_cost": 2500,
         "maintenance_yearly": 1200,
-        "dimensions": {"width": 3, "height": 2.5},
+        "dimensions": {"width": 3, "height": 6},
         "icon": "bath",
         "color": "#0ea5e9"
     },
     {
         "name": "Medium Sanitair Unit",
         "category": "sanitair",
-        "description": "4 toiletten, 4 douches, geschikt voor 30-40 standplaatsen",
+        "description": "4 toiletten, 4 douches, geschikt voor 30-40 standplaatsen. Afmeting 6x8m",
         "price_purchase": 32000,
         "price_lease_monthly": 750,
         "installation_cost": 4000,
         "maintenance_yearly": 2000,
-        "dimensions": {"width": 5, "height": 3},
+        "dimensions": {"width": 6, "height": 8},
         "icon": "bath",
         "color": "#0ea5e9"
     },
     {
         "name": "Premium Sanitair Blok",
         "category": "sanitair",
-        "description": "6 toiletten, 6 douches, familiecabines, geschikt voor 50+ standplaatsen",
+        "description": "6 toiletten, 6 douches, familiecabines, geschikt voor 50+ standplaatsen. Afmeting 8x12m",
         "price_purchase": 55000,
         "price_lease_monthly": 1200,
         "installation_cost": 6500,
         "maintenance_yearly": 3500,
-        "dimensions": {"width": 8, "height": 4},
+        "dimensions": {"width": 8, "height": 12},
         "icon": "bath",
         "color": "#0ea5e9"
     },
@@ -827,7 +827,7 @@ async def generate_quote_pdf(project_id: str):
             <h3>Kostenoverzicht</h3>
             <table>
                 <tr>
-                    <td><strong>CAPEX (Aankoopkosten)</strong></td>
+                    <td><strong>Aankoopkosten</strong></td>
                     <td class="price" style="text-align: right;">€ {quote_response.capex_total:,.2f}</td>
                 </tr>
                 <tr>
@@ -902,6 +902,20 @@ app.add_middleware(
 async def startup_event():
     # Remove banned products (coin-operated machines)
     await db.products.delete_many({"name": {"$regex": "Muntautomaat"}})
+    
+    # Update sanitair dimensions to realistic sizes
+    await db.products.update_one(
+        {"name": "Compact Sanitair Unit"},
+        {"$set": {"dimensions": {"width": 3, "height": 6}, "description": "2 toiletten, 2 douches, geschikt voor 15-20 standplaatsen. Afmeting 3x6m"}}
+    )
+    await db.products.update_one(
+        {"name": "Medium Sanitair Unit"},
+        {"$set": {"dimensions": {"width": 6, "height": 8}, "description": "4 toiletten, 4 douches, geschikt voor 30-40 standplaatsen. Afmeting 6x8m"}}
+    )
+    await db.products.update_one(
+        {"name": "Premium Sanitair Blok"},
+        {"$set": {"dimensions": {"width": 8, "height": 12}, "description": "6 toiletten, 6 douches, familiecabines, geschikt voor 50+ standplaatsen. Afmeting 8x12m"}}
+    )
     
     # Auto-seed products if database is empty
     existing = await db.products.count_documents({})

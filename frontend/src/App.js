@@ -143,6 +143,7 @@ function App() {
   const [showRealProducts, setShowRealProducts] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [sanitairConfigs, setSanitairConfigs] = useState({});
+  const [selectedProduct, setSelectedProduct] = useState(null); // click-to-place
 
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -256,85 +257,174 @@ function App() {
   const generateAILayout = async () => {
     setIsAnalyzing(true);
     try {
-      // Simulate AI layout generation
-      toast.success(`AI genereert layout voor ${project.num_spots} normale en ${project.num_large_spots} grote plekken...`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success(`Layout wordt gegenereerd voor ${project.num_spots} normale en ${project.num_large_spots} grote plekken...`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Generate sample spots on canvas
+      // Schaal: 1px = 0.1m, dus 10px = 1m
+      const scale = 10; // px per meter
+      // Realistische afmetingen (in meters)
+      const normalW = 8, normalH = 10;   // 80m² standplaats
+      const largeW = 12, largeH = 15;    // 180m² comfort/XL
+      const roadWidth = 5;               // 5m breed
+      const gapX = 2, gapY = 2;          // 2m tussenruimte
+
       const spots = [];
-      const normalSize = 40;
-      const largeSize = 60;
-      const spacing = 20;
-      const startX = 100;
-      const startY = 100;
-      const cols = 5;
-      
-      // Add road zone
-      const roadZone = {
-        id: `zone-road-${Date.now()}`,
-        name: 'Toegangsweg',
-        type: 'toegangsweg',
-        points: [
-          { x: 50, y: 50 },
-          { x: 950, y: 50 },
-          { x: 950, y: 90 },
-          { x: 50, y: 90 },
-        ],
-        color: '#9ca3af',
-      };
-      
-      // Generate normal spots
+      const cols = Math.min(5, Math.ceil(Math.sqrt(project.num_spots)));
+      const startX = 80;  // ruimte voor weg links
+      const startY = 80;  // ruimte voor weg boven
+
+      // Rondrit weg (U-vorm rondom de standplaatsen)
+      const totalNormalRows = Math.ceil(project.num_spots / cols);
+      const blockW = cols * (normalW + gapX) * scale;
+      const blockH = totalNormalRows * (normalH + gapY) * scale;
+      const roadW = roadWidth * scale;
+
+      const roadZones = [
+        {
+          id: `zone-road-top-${Date.now()}`,
+          name: 'Hoofdweg',
+          type: 'toegangsweg',
+          points: [
+            { x: startX - roadW, y: startY - roadW },
+            { x: startX + blockW + roadW, y: startY - roadW },
+            { x: startX + blockW + roadW, y: startY },
+            { x: startX - roadW, y: startY },
+          ],
+          color: '#9ca3af',
+        },
+        {
+          id: `zone-road-left-${Date.now()}`,
+          name: 'Weg links',
+          type: 'toegangsweg',
+          points: [
+            { x: startX - roadW, y: startY },
+            { x: startX, y: startY },
+            { x: startX, y: startY + blockH },
+            { x: startX - roadW, y: startY + blockH },
+          ],
+          color: '#9ca3af',
+        },
+        {
+          id: `zone-road-right-${Date.now()}`,
+          name: 'Weg rechts',
+          type: 'toegangsweg',
+          points: [
+            { x: startX + blockW, y: startY },
+            { x: startX + blockW + roadW, y: startY },
+            { x: startX + blockW + roadW, y: startY + blockH },
+            { x: startX + blockW, y: startY + blockH },
+          ],
+          color: '#9ca3af',
+        },
+        {
+          id: `zone-road-bottom-${Date.now()}`,
+          name: 'Weg onder',
+          type: 'toegangsweg',
+          points: [
+            { x: startX - roadW, y: startY + blockH },
+            { x: startX + blockW + roadW, y: startY + blockH },
+            { x: startX + blockW + roadW, y: startY + blockH + roadW },
+            { x: startX - roadW, y: startY + blockH + roadW },
+          ],
+          color: '#9ca3af',
+        },
+      ];
+
+      // Normale standplaatsen (8x10m = 80m²)
       for (let i = 0; i < project.num_spots; i++) {
         const row = Math.floor(i / cols);
         const col = i % cols;
+        const px = startX + col * (normalW + gapX) * scale;
+        const py = startY + row * (normalH + gapY) * scale;
+        const pw = normalW * scale;
+        const ph = normalH * scale;
         spots.push({
           id: `spot-${Date.now()}-${i}`,
-          name: `Standplaats ${i + 1}`,
+          name: `Plek ${i + 1} (${normalW}x${normalH}m)`,
           type: 'standplaats',
           points: [
-            { x: startX + col * (normalSize + spacing), y: startY + row * (normalSize + spacing) },
-            { x: startX + col * (normalSize + spacing) + normalSize, y: startY + row * (normalSize + spacing) },
-            { x: startX + col * (normalSize + spacing) + normalSize, y: startY + row * (normalSize + spacing) + normalSize },
-            { x: startX + col * (normalSize + spacing), y: startY + row * (normalSize + spacing) + normalSize },
+            { x: px, y: py },
+            { x: px + pw, y: py },
+            { x: px + pw, y: py + ph },
+            { x: px, y: py + ph },
           ],
           color: '#70C26C',
         });
       }
-      
-      // Generate large spots
-      const largeStartY = startY + Math.ceil(project.num_spots / cols) * (normalSize + spacing) + 50;
+
+      // Grote standplaatsen (12x15m = 180m²)
+      const largeStartY = startY + blockH + roadW + gapY * scale;
+      const largeCols = Math.min(3, project.num_large_spots);
       for (let i = 0; i < project.num_large_spots; i++) {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
+        const col = i % largeCols;
+        const row = Math.floor(i / largeCols);
+        const px = startX + col * (largeW + gapX) * scale;
+        const py = largeStartY + row * (largeH + gapY) * scale;
+        const pw = largeW * scale;
+        const ph = largeH * scale;
         spots.push({
           id: `spot-large-${Date.now()}-${i}`,
-          name: `Grote Plek ${i + 1}`,
+          name: `XL Plek ${i + 1} (${largeW}x${largeH}m)`,
           type: 'grote_standplaats',
           points: [
-            { x: startX + col * (largeSize + spacing * 2), y: largeStartY + row * (largeSize + spacing) },
-            { x: startX + col * (largeSize + spacing * 2) + largeSize, y: largeStartY + row * (largeSize + spacing) },
-            { x: startX + col * (largeSize + spacing * 2) + largeSize, y: largeStartY + row * (largeSize + spacing) + largeSize },
-            { x: startX + col * (largeSize + spacing * 2), y: largeStartY + row * (largeSize + spacing) + largeSize },
+            { x: px, y: py },
+            { x: px + pw, y: py },
+            { x: px + pw, y: py + ph },
+            { x: px, y: py + ph },
           ],
           color: '#2563eb',
         });
       }
-      
+
+      // Canvas groter maken als nodig
+      const maxX = Math.max(...[...roadZones, ...spots].flatMap(z => z.points.map(p => p.x))) + 60;
+      const maxY = Math.max(...[...roadZones, ...spots].flatMap(z => z.points.map(p => p.y))) + 60;
+
       setProject(prev => ({
         ...prev,
-        zones: [roadZone, ...spots],
+        zones: [...roadZones, ...spots],
+        canvas_width: Math.max(prev.canvas_width, maxX),
+        canvas_height: Math.max(prev.canvas_height, maxY),
       }));
-      
-      toast.success('AI layout gegenereerd met rondrit en standplaatsen!');
+
+      toast.success(`Layout gegenereerd: ${project.num_spots} standplaatsen (${normalW}x${normalH}m) + ${project.num_large_spots} XL (${largeW}x${largeH}m) met rondrit`);
     } catch (error) {
       console.error('Error generating AI layout:', error);
-      toast.error('Kon AI layout niet genereren');
+      toast.error('Kon layout niet genereren');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const handleCanvasClick = (e) => {
+    // Click-to-place mode: als er een product geselecteerd is, plaats het
+    if (selectedProduct && canvasTool === 'select') {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const snappedX = Math.round(x / 24) * 24;
+      const snappedY = Math.round(y / 24) * 24;
+
+      const newPlacedProduct = {
+        id: `placed-${Date.now()}`,
+        product_id: selectedProduct.id,
+        x: snappedX,
+        y: snappedY,
+        rotation: 0,
+        quantity: 1,
+      };
+
+      setProject(prev => ({
+        ...prev,
+        placed_products: [...prev.placed_products, newPlacedProduct],
+      }));
+
+      toast.success(`${selectedProduct.name} geplaatst`);
+      return;
+    }
+
+    // Zone drawing mode
     if (canvasTool !== 'zone') return;
     
     const canvas = canvasRef.current;
@@ -880,6 +970,8 @@ function App() {
                       const Icon = categoryIcons[product.category] || Package;
                       const color = categoryColors[product.category] || '#70C26C';
                       const isSanitair = product.category === 'sanitair';
+                      const isSelected = selectedProduct?.id === product.id;
+                      const dims = product.dimensions;
                       
                       return (
                         <div
@@ -887,7 +979,10 @@ function App() {
                           draggable="true"
                           onDragStart={(e) => handleDragStart(e, product)}
                           onDragEnd={handleDragEnd}
-                          className="bg-white border border-[#e5e2d9] rounded-xl p-3 cursor-grab active:cursor-grabbing hover:border-[#70C26C] hover:shadow-md transition-all"
+                          onClick={() => setSelectedProduct(isSelected ? null : product)}
+                          className={`bg-white border rounded-xl p-3 cursor-pointer hover:shadow-md transition-all ${
+                            isSelected ? 'border-[#70C26C] ring-2 ring-[#70C26C]/30 bg-[#70C26C]/5' : 'border-[#e5e2d9] hover:border-[#70C26C]'
+                          }`}
                           data-testid={`product-card-${product.id}`}
                         >
                           <div className="flex items-start gap-3">
@@ -903,17 +998,36 @@ function App() {
                                 ) : (
                                   <span className="text-sm font-bold text-[#70C26C]">€ {product.price_purchase.toLocaleString()}</span>
                                 )}
+                                {dims && (dims.width > 1 || dims.height > 1) && (
+                                  <span className="text-[10px] text-[#777777] bg-[#FDF9ED] px-1.5 py-0.5 rounded">{dims.width}x{dims.height}m</span>
+                                )}
                               </div>
                             </div>
                           </div>
+                          {isSelected && (
+                            <div className="mt-2 text-xs text-[#70C26C] font-medium text-center bg-[#70C26C]/10 py-1 rounded">
+                              Klik op het canvas om te plaatsen
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
 
-                  <p className="text-xs text-[#777777] text-center bg-[#FDF9ED] p-2 rounded-lg">
-                    ↑ Sleep producten naar het canvas →
-                  </p>
+                  {selectedProduct ? (
+                    <div className="flex gap-2">
+                      <div className="flex-1 text-xs text-[#70C26C] font-medium text-center bg-[#70C26C]/10 p-2 rounded-lg">
+                        Geselecteerd: {selectedProduct.name}
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedProduct(null)} className="text-[#777777]">
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[#777777] text-center bg-[#FDF9ED] p-2 rounded-lg">
+                      Klik op een product en dan op het canvas om te plaatsen. Of sleep het product direct.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -1052,7 +1166,7 @@ function App() {
                     <h3 className="font-bold text-[#333333] mb-3">Investering</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-[#777777]">Aankoopkosten (CAPEX)</span>
+                        <span className="text-[#777777]">Aankoopkosten</span>
                         <span className="font-bold text-[#70C26C]">€ {quickQuote.capex.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
@@ -1068,17 +1182,8 @@ function App() {
                   </div>
 
                   <div className="p-4 rounded-xl bg-white border border-[#e5e2d9]">
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="font-bold text-[#333333]">Operational Lease</h3>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info size={14} className="text-[#777777]" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs">
-                          <p>Uitgaande van 60 maanden incl. SLA onderhoudscontract</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
+                    <h3 className="font-bold text-[#333333] mb-1">Operational Lease</h3>
+                    <p className="text-xs text-[#777777] mb-3">Uitgaande van 60 maanden incl. SLA onderhoudscontract</p>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-[#777777]">Per maand</span>
@@ -1194,7 +1299,7 @@ function App() {
             <div className="flex-1 overflow-auto bg-[#FDF9ED] p-4">
               <div
                 ref={canvasRef}
-                className={`relative bg-white rounded-xl shadow-lg mx-auto border-2 transition-colors ${canvasTool === 'zone' ? 'cursor-crosshair' : ''} ${isDragOver ? 'border-[#70C26C] bg-[#70C26C]/5' : 'border-[#e5e2d9]'}`}
+                className={`relative bg-white rounded-xl shadow-lg mx-auto border-2 transition-colors ${canvasTool === 'zone' ? 'cursor-crosshair' : selectedProduct ? 'cursor-copy' : ''} ${isDragOver ? 'border-[#70C26C] bg-[#70C26C]/5' : 'border-[#e5e2d9]'}`}
                 style={{ 
                   width: project.canvas_width, 
                   height: project.canvas_height,
@@ -1308,7 +1413,7 @@ function App() {
                             <Package size={32} className="text-[#e5e2d9]" />
                           </div>
                           <h3 className="font-semibold text-[#333333] mb-2">Start met configureren</h3>
-                          <p className="text-sm text-[#777777]">Sleep producten hierheen of gebruik AI om een layout te genereren.</p>
+                          <p className="text-sm text-[#777777]">Klik op een product in de lijst en klik hier om te plaatsen. Of sleep het product direct.</p>
                         </>
                       )}
                     </div>
@@ -1334,12 +1439,13 @@ function App() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-3 rounded-xl bg-[#70C26C]/10 border border-[#70C26C]/20">
-                      <div className="text-xs text-[#777777]">CAPEX</div>
-                      <div className="font-bold text-[#70C26C]" data-testid="quote-capex">€ {quickQuote.capex.toLocaleString()}</div>
+                      <div className="text-xs text-[#777777]">Investering</div>
+                      <div className="font-bold text-[#70C26C]" data-testid="quote-investering">€ {quickQuote.capex.toLocaleString()}</div>
                     </div>
                     <div className="p-3 rounded-xl bg-[#244628]/10 border border-[#244628]/20">
                       <div className="text-xs text-[#777777]">Lease/mnd</div>
                       <div className="font-bold text-[#244628]" data-testid="quote-operational-lease">€ {quickQuote.opex.toLocaleString()}</div>
+                      <div className="text-[9px] text-[#777777] mt-0.5">60 mnd incl. SLA</div>
                     </div>
                   </div>
 
