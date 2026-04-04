@@ -13,50 +13,51 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 
 ### Core (Iteratie 1-3)
 - 5-stappen wizard: Project > Terrein > Producten > Energie > Offerte
-- 22 producten in 8 categorieen (Muntautomaat verwijderd, alleen Adyen)
+- 22 producten in 8 categorieen (alleen Adyen betaalterminals)
 - Canvas met zones, dekking toggle, snap-to-grid (24px)
 - AI aanbevelingen, plattegrond analyse (Vision), PDF offerte export
-- Project CRUD (opslaan/laden/verwijderen)
-- RECRA branding: Cream #FDF9ED, Dark Olive #244628, Bright Green #70C26C
+- Project CRUD, RECRA branding
 
-### Iteratie 4-5 (April 4, 2026)
+### Iteratie 4-5
 - "CAPEX" -> "Investering" / "Aankoopkosten"
-- "OPEX" -> "Operational Lease" met zichtbare tekst "60 maanden incl. SLA"
+- "OPEX" -> "Operational Lease" met zichtbare "60 maanden incl. SLA"
 - Sanitair configurator in Step 5 (Adyen, 4 modules)
-- Click-to-place mechanisme
-- Realistische sanitair maten: 3x6m, 6x8m, 8x12m
-- Rechthoekige standplaatsen: 8x10m normaal, 12x15m XL
-- Rondrit wegenloop (4 wegzones)
+- Click-to-place, realistische maten, rechthoekige standplaatsen
 
-### Iteratie 6 (April 4, 2026)
-- **Custom pointer drag**: Muisknop ingedrukt houden op product icoon, slepen naar canvas, loslaten = geplaatst
-- **Drag ghost**: Visueel preview-element dat de cursor volgt tijdens slepen
-- **Icoon | 2D toggle**: Duidelijke schakelknop in canvas toolbar
-- **2D weergave**: Producten als op-schaal rechthoeken (CANVAS_SCALE=10px/m) met afmetingen erin
-- **Icoon weergave**: Compacte 48x48 iconen (legacy)
-- **Afmetingen op kaarten**: 3x6m, 6x8m, 8x12m etc. getoond naast prijs
-- **Partner toekomst**: Gebruiker wil data van partners ontvangen om producten toe te voegen
+### Iteratie 6
+- Custom pointer drag (sidebar -> canvas) met ghost preview
+- Icoon | 2D toggle knop in toolbar
+- Producten als op-schaal rechthoeken (CANVAS_SCALE=10px/m)
+
+### Iteratie 7 (April 4, 2026)
+- **Selectie gefixt**: selectedProduct gewist na plaatsing, geen dubbel plaatsen meer
+- **Geplaatste producten selecteerbaar**: Mousedown op canvas-item toont groene ring + draaien/verwijderen
+- **Verplaatsbaar**: Mousedown + slepen verplaatst product met grid-snapping
+- **Schaal-instelling**: In Step 2 bij geuploade plattegrond — meters per blokje instellen
+- **Deselecteren**: Klik op lege canvas wist selectie
 
 ## Prioritized Backlog
 
 ### P0 - Done
-- [x] Core wizard flow + Canvas + Drag/Click-to-place
+- [x] Core wizard, canvas, drag/click-to-place
+- [x] Selectie + verplaatsing geplaatste items
+- [x] 2D toggle + op-schaal weergave
+- [x] Schaal-instelling voor plattegronden
 - [x] Investering/Operational Lease labels
 - [x] Sanitair samenstelling in offerte
-- [x] 2D toggle + op-schaal weergave
-- [x] Realistische afmetingen
-- [x] Pointer-based drag
 
 ### P1 - High Priority
+- [ ] Product scraper (Excel/website import) met 2D maten per product
 - [ ] Dynamisch terrein: layout past zich aan op geuploade plattegrond
 - [ ] Energie stap: volledige hybrid/offgrid berekening
-- [ ] RECRA Logo integratie (PNG/SVG nodig)
+- [ ] RECRA Logo (PNG/SVG nodig)
 - [ ] App.js opsplitsen in componenten
 
 ### P2 - Medium Priority
-- [ ] Partner portal: data ontvangen van leveranciers voor producten
-- [ ] Authenticatie (Free/Pro/Enterprise)
-- [ ] Deel configuratie via unieke URL
+- [ ] Partner portal: leveranciers leveren producten aan met specs + maten
+- [ ] 2D -> 3D configurator weergave
+- [ ] Auth (Free/Pro/Enterprise)
+- [ ] Deel configuratie via URL
 
 ### P3 - Nice to Have
 - [ ] AR preview, Drone data, Live sensors
