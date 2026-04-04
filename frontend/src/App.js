@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { 
@@ -9,7 +9,7 @@ import {
   Settings, HelpCircle, Phone, Mail, MapPin,
   Droplets, PenTool, MousePointer, Layers, Eye, EyeOff,
   BatteryCharging, Sun, Plug, ToggleLeft, ToggleRight,
-  Car, TreePine, Tent, CircleDot
+  Car, TreePine, Tent, CircleDot, Grip, Move, Square
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { ScrollArea } from './components/ui/scroll-area';
@@ -48,6 +48,7 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+const CANVAS_SCALE = 10; // 10px per meter, dus 3m = 30px
 
 // Category icons and colors
 const categoryIcons = {
@@ -144,6 +145,8 @@ function App() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [sanitairConfigs, setSanitairConfigs] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null); // click-to-place
+  const [pointerDrag, setPointerDrag] = useState(null); // { product, x, y } for custom drag
+  const [viewMode, setViewMode] = useState('2d'); // 'icon' or '2d'
 
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -534,9 +537,67 @@ function App() {
     }
   };
 
+  // Custom pointer-based drag (works in all browsers)
+  const handlePointerDragStart = useCallback((e, product) => {
+    e.preventDefault();
+    setPointerDrag({ product, x: e.clientX, y: e.clientY });
+    setSelectedProduct(null);
+  }, []);
+
+  useEffect(() => {
+    if (!pointerDrag) return;
+    
+    const handleMove = (e) => {
+      setPointerDrag(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
+    };
+    const handleUp = (e) => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+          const snappedX = Math.round(x / 24) * 24;
+          const snappedY = Math.round(y / 24) * 24;
+          const newPlaced = {
+            id: `placed-${Date.now()}`,
+            product_id: pointerDrag.product.id,
+            x: snappedX,
+            y: snappedY,
+            rotation: 0,
+            quantity: 1,
+          };
+          setProject(prev => ({
+            ...prev,
+            placed_products: [...prev.placed_products, newPlaced],
+          }));
+          toast.success(`${pointerDrag.product.name} geplaatst`);
+        }
+      }
+      setPointerDrag(null);
+    };
+    
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [pointerDrag]);
+
   const handleItemClick = (item) => {
     if (canvasTool !== 'select') return;
     setSelectedItem(selectedItem?.id === item.id ? null : item);
+  };
+
+  // Get product dimensions in pixels for canvas rendering
+  const getProductPxSize = (product) => {
+    const dims = product.dimensions;
+    if (!dims) return { w: 32, h: 32 };
+    const w = Math.max(dims.width * CANVAS_SCALE, 24);
+    const h = Math.max(dims.height * CANVAS_SCALE, 24);
+    return { w, h };
   };
 
   const removeItem = (itemId) => {
@@ -976,9 +1037,6 @@ function App() {
                       return (
                         <div
                           key={product.id}
-                          draggable="true"
-                          onDragStart={(e) => handleDragStart(e, product)}
-                          onDragEnd={handleDragEnd}
                           onClick={() => setSelectedProduct(isSelected ? null : product)}
                           className={`bg-white border rounded-xl p-3 cursor-pointer hover:shadow-md transition-all ${
                             isSelected ? 'border-[#70C26C] ring-2 ring-[#70C26C]/30 bg-[#70C26C]/5' : 'border-[#e5e2d9] hover:border-[#70C26C]'
@@ -986,7 +1044,13 @@ function App() {
                           data-testid={`product-card-${product.id}`}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}15` }}>
+                            {/* Drag handle - hold & drag to canvas */}
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#70C26C]/40 select-none"
+                              style={{ backgroundColor: `${color}15` }}
+                              onMouseDown={(e) => handlePointerDragStart(e, product)}
+                              data-testid={`drag-handle-${product.id}`}
+                            >
                               <Icon size={20} style={{ color }} />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -998,7 +1062,7 @@ function App() {
                                 ) : (
                                   <span className="text-sm font-bold text-[#70C26C]">€ {product.price_purchase.toLocaleString()}</span>
                                 )}
-                                {dims && (dims.width > 1 || dims.height > 1) && (
+                                {dims && (dims.width >= 1 || dims.height >= 1) && (
                                   <span className="text-[10px] text-[#777777] bg-[#FDF9ED] px-1.5 py-0.5 rounded">{dims.width}x{dims.height}m</span>
                                 )}
                               </div>
@@ -1283,6 +1347,24 @@ function App() {
               </div>
 
               <div className="flex items-center gap-2 text-sm text-[#777777]">
+                <div className="flex items-center bg-[#FDF9ED] rounded-lg p-0.5 border border-[#e5e2d9]" data-testid="view-mode-toggle">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode('icon')}
+                    className={`text-xs px-2 h-7 ${viewMode === 'icon' ? 'bg-white shadow-sm text-[#333333]' : 'text-[#777777]'}`}
+                  >
+                    <Package size={14} className="mr-1" /> Icoon
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setViewMode('2d')}
+                    className={`text-xs px-2 h-7 ${viewMode === '2d' ? 'bg-white shadow-sm text-[#333333]' : 'text-[#777777]'}`}
+                  >
+                    <Square size={14} className="mr-1" /> 2D
+                  </Button>
+                </div>
                 <span>{project.name} • {project.placed_products.length} producten</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -1348,11 +1430,13 @@ function App() {
                   const Icon = categoryIcons[product.category] || Package;
                   const color = categoryColors[product.category] || '#70C26C';
                   const isSelected = selectedItem?.id === placed.id;
+                  const { w, h } = getProductPxSize(product);
+                  const dims = product.dimensions;
                   
                   return (
                     <div
                       key={placed.id}
-                      className={`absolute cursor-pointer transition-all ${isSelected ? 'ring-2 ring-[#70C26C] ring-offset-2' : ''}`}
+                      className={`absolute cursor-pointer transition-all ${isSelected ? 'ring-2 ring-[#70C26C] ring-offset-2 z-20' : 'z-10'}`}
                       style={{ left: placed.x, top: placed.y, transform: `rotate(${placed.rotation}deg)` }}
                       onClick={(e) => { e.stopPropagation(); handleItemClick(placed); }}
                       data-testid={`placed-item-${placed.id}`}
@@ -1363,21 +1447,42 @@ function App() {
                           style={{
                             width: product.coverage_radius * 4,
                             height: product.coverage_radius * 4,
-                            left: -(product.coverage_radius * 2) + 24,
-                            top: -(product.coverage_radius * 2) + 24,
+                            left: -(product.coverage_radius * 2) + w / 2,
+                            top: -(product.coverage_radius * 2) + h / 2,
                             backgroundColor: color,
                             border: `2px dashed ${color}`,
                           }}
                         />
                       )}
                       
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg border-2 border-white" style={{ backgroundColor: color }}>
-                        <Icon size={24} className="text-white" />
-                      </div>
+                      {viewMode === '2d' ? (
+                        /* 2D mode: scaled rectangle with real dimensions */
+                        <div
+                          className="rounded border-2 flex flex-col items-center justify-center overflow-hidden"
+                          style={{
+                            width: w,
+                            height: h,
+                            backgroundColor: `${color}20`,
+                            borderColor: color,
+                          }}
+                        >
+                          <Icon size={Math.min(w, h) * 0.4} style={{ color }} className="flex-shrink-0" />
+                          {w > 28 && h > 36 && (
+                            <span className="text-[7px] font-bold mt-0.5 leading-tight text-center" style={{ color }}>
+                              {dims ? `${dims.width}x${dims.height}m` : ''}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        /* Icon mode: compact icon */
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg border-2 border-white" style={{ backgroundColor: color }}>
+                          <Icon size={24} className="text-white" />
+                        </div>
+                      )}
                       
-                      <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                        <span className="text-[10px] bg-white px-1.5 py-0.5 rounded shadow-sm text-[#333333] border border-[#e5e2d9]">
-                          {product.name.split(' ')[0]}
+                      <div className={`absolute ${viewMode === '2d' ? `top-[${h + 4}px]` : 'top-14'} left-1/2 -translate-x-1/2 whitespace-nowrap`} style={{ top: viewMode === '2d' ? h + 4 : 56 }}>
+                        <span className="text-[9px] bg-white px-1.5 py-0.5 rounded shadow-sm text-[#333333] border border-[#e5e2d9]">
+                          {product.name.length > 15 ? product.name.split(' ').slice(0, 2).join(' ') : product.name}
                         </span>
                       </div>
                     </div>
@@ -1535,6 +1640,32 @@ function App() {
         </div>
 
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+
+        {/* Drag ghost - follows cursor during pointer drag */}
+        {pointerDrag && (
+          <div
+            className="fixed pointer-events-none z-50"
+            style={{ left: pointerDrag.x - 20, top: pointerDrag.y - 20 }}
+          >
+            <div
+              className="rounded border-2 flex items-center justify-center shadow-xl opacity-80"
+              style={{
+                width: Math.max((pointerDrag.product.dimensions?.width || 2) * CANVAS_SCALE, 24),
+                height: Math.max((pointerDrag.product.dimensions?.height || 2) * CANVAS_SCALE, 24),
+                backgroundColor: `${categoryColors[pointerDrag.product.category] || '#70C26C'}30`,
+                borderColor: categoryColors[pointerDrag.product.category] || '#70C26C',
+              }}
+            >
+              {React.createElement(categoryIcons[pointerDrag.product.category] || Package, {
+                size: 18,
+                style: { color: categoryColors[pointerDrag.product.category] || '#70C26C' },
+              })}
+            </div>
+            <div className="text-[9px] text-center mt-1 font-medium text-[#333333] bg-white px-1 py-0.5 rounded shadow-sm border border-[#e5e2d9] whitespace-nowrap">
+              {pointerDrag.product.name}
+            </div>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );
