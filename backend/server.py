@@ -367,6 +367,55 @@ SEED_PRODUCTS = [
         "icon": "key",
         "color": "#ec4899"
     },
+    # Douchelezers - RECRA Specialty
+    {
+        "name": "Contactloze Douchelezer Basis",
+        "category": "douchelezer",
+        "description": "PIN/contactloos betalen per douchebeurt, online tariefbeheer",
+        "price_purchase": 850,
+        "price_lease_monthly": 25,
+        "installation_cost": 150,
+        "maintenance_yearly": 75,
+        "dimensions": {"width": 0.2, "height": 0.3},
+        "icon": "droplets",
+        "color": "#06b6d4"
+    },
+    {
+        "name": "Douchelezer Pro",
+        "category": "douchelezer",
+        "description": "Geavanceerde betaalterminal, Apple Pay/Google Pay, realtime dashboard",
+        "price_purchase": 1250,
+        "price_lease_monthly": 35,
+        "installation_cost": 200,
+        "maintenance_yearly": 100,
+        "dimensions": {"width": 0.2, "height": 0.3},
+        "icon": "droplets",
+        "color": "#06b6d4"
+    },
+    {
+        "name": "Douchelezer Enterprise",
+        "category": "douchelezer",
+        "description": "Premium systeem met touchscreen, meerdere betaalopties, integratie reserveringssysteem",
+        "price_purchase": 1850,
+        "price_lease_monthly": 50,
+        "installation_cost": 300,
+        "maintenance_yearly": 150,
+        "dimensions": {"width": 0.25, "height": 0.35},
+        "icon": "droplets",
+        "color": "#06b6d4"
+    },
+    {
+        "name": "Elektra Muntautomaat",
+        "category": "douchelezer",
+        "description": "Contactloze betaling voor elektra op standplaatsen",
+        "price_purchase": 950,
+        "price_lease_monthly": 28,
+        "installation_cost": 175,
+        "maintenance_yearly": 80,
+        "dimensions": {"width": 0.2, "height": 0.3},
+        "icon": "droplets",
+        "color": "#06b6d4"
+    },
 ]
 
 # ==================== ROUTES ====================

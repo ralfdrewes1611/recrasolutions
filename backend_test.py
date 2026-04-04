@@ -94,10 +94,10 @@ class RECRABackendTester:
             self.products = response
             product_count = len(response)
             
-            if product_count == 19:
-                self.log(f"✅ Found exactly 19 products as expected")
+            if product_count == 23:
+                self.log(f"✅ Found exactly 23 products as expected")
             else:
-                self.log(f"❌ Expected 19 products, found {product_count}")
+                self.log(f"❌ Expected 23 products, found {product_count}")
                 return False
             
             # Verify product structure
@@ -115,10 +115,10 @@ class RECRABackendTester:
             
             # Check categories
             categories = set(p['category'] for p in response)
-            expected_categories = {'sanitair', 'slagboom', 'camera', 'wifi', 'verlichting', 'betaalsysteem', 'toegangscontrole'}
+            expected_categories = {'sanitair', 'slagboom', 'camera', 'wifi', 'verlichting', 'betaalsysteem', 'toegangscontrole', 'douchelezer'}
             
             if expected_categories.issubset(categories):
-                self.log(f"✅ All 7 expected categories found: {categories}")
+                self.log(f"✅ All 8 expected categories found: {categories}")
             else:
                 missing = expected_categories - categories
                 self.log(f"❌ Missing categories: {missing}")

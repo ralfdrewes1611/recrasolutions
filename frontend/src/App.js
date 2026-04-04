@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { 
   ChevronRight, ChevronLeft, Upload, Grid3X3, Package, 
-  Sparkles, FileText, Download, Plus, Minus, Trash2,
-  Bath, Camera, Wifi, Lightbulb, CreditCard, Key, 
-  ArrowRight, Zap, Check, AlertTriangle, Info, X,
-  Move, RotateCw, Maximize2
+  Sparkles, FileText, Download, Plus, Trash2, Bath, Camera, 
+  Wifi, Lightbulb, CreditCard, Key, ArrowRight, Zap, Check, 
+  AlertTriangle, Info, X, RotateCw, FolderOpen, Save, Menu,
+  Settings, HelpCircle, Phone, Mail, MapPin, Clock, Users,
+  Shield, Droplets, PenTool, MousePointer, Undo, Redo,
+  ZoomIn, ZoomOut, Maximize2, Layers, Eye, EyeOff
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { ScrollArea } from './components/ui/scroll-area';
@@ -27,6 +29,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from './components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './components/ui/dropdown-menu';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -40,48 +58,69 @@ const categoryIcons = {
   verlichting: Lightbulb,
   betaalsysteem: CreditCard,
   toegangscontrole: Key,
+  douchelezer: Droplets,
 };
 
 const categoryColors = {
-  sanitair: '#0ea5e9',
+  sanitair: '#4a9b7f',
   slagboom: '#f59e0b',
   camera: '#ef4444',
-  wifi: '#10b981',
-  verlichting: '#fbbf24',
+  wifi: '#3b82f6',
+  verlichting: '#eab308',
   betaalsysteem: '#8b5cf6',
   toegangscontrole: '#ec4899',
+  douchelezer: '#06b6d4',
+};
+
+const categoryLabels = {
+  sanitair: 'Sanitair Units',
+  slagboom: 'Slagbomen',
+  camera: "Camera's",
+  wifi: 'WiFi Systemen',
+  verlichting: 'Verlichting',
+  betaalsysteem: 'Betaalsystemen',
+  toegangscontrole: 'Toegangscontrole',
+  douchelezer: 'Douchelezers',
 };
 
 const projectTypes = [
-  { value: 'camperplaats', label: 'Camperplaats', description: 'Specifiek voor campers en motorhomes' },
-  { value: 'camping', label: 'Camping', description: 'Traditionele camping met diverse accommodaties' },
-  { value: 'resort', label: 'Resort', description: 'Premium verblijfsaccommodatie' },
-  { value: 'tijdelijke_housing', label: 'Tijdelijke Housing', description: 'Re-Nest en flexibele huisvesting' },
+  { value: 'camperplaats', label: 'Camperplaats', icon: '🚐', description: 'Specifiek voor campers en motorhomes' },
+  { value: 'camping', label: 'Camping', icon: '⛺', description: 'Traditionele camping met diverse accommodaties' },
+  { value: 'resort', label: 'Resort', icon: '🏨', description: 'Premium verblijfsaccommodatie' },
+  { value: 'jachthaven', label: 'Jachthaven', icon: '⛵', description: 'Havens en watersportfaciliteiten' },
 ];
 
 const WIZARD_STEPS = [
-  { id: 1, title: 'Project', icon: Package },
-  { id: 2, title: 'Terrein', icon: Grid3X3 },
-  { id: 3, title: 'Producten', icon: Zap },
-  { id: 4, title: 'Offerte', icon: FileText },
+  { id: 1, title: 'Project', description: 'Basisgegevens', icon: Package },
+  { id: 2, title: 'Terrein', description: 'Plattegrond & Zones', icon: MapPin },
+  { id: 3, title: 'Producten', description: 'Configureren', icon: Settings },
+  { id: 4, title: 'Offerte', description: 'Afronden', icon: FileText },
+];
+
+const CANVAS_TOOLS = [
+  { id: 'select', icon: MousePointer, label: 'Selecteren' },
+  { id: 'zone', icon: PenTool, label: 'Zone tekenen' },
 ];
 
 function App() {
-  // State
+  // Core state
   const [currentStep, setCurrentStep] = useState(1);
   const [products, setProducts] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [project, setProject] = useState({
     id: null,
     name: 'Nieuw Project',
     project_type: 'camping',
     floor_plan_base64: null,
     scale_meters_per_pixel: 0.1,
-    canvas_width: 800,
-    canvas_height: 600,
+    canvas_width: 1000,
+    canvas_height: 700,
     placed_products: [],
     zones: [],
     num_spots: 30,
   });
+  
+  // UI state
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [quote, setQuote] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
@@ -89,16 +128,23 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [draggedProduct, setDraggedProduct] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showProjectList, setShowProjectList] = useState(false);
+  const [canvasTool, setCanvasTool] = useState('select');
+  const [isDrawingZone, setIsDrawingZone] = useState(false);
+  const [currentZonePoints, setCurrentZonePoints] = useState([]);
+  const [showCoverage, setShowCoverage] = useState(true);
+  const [sidebarTab, setSidebarTab] = useState('products');
 
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Fetch products on mount
+  // Fetch data on mount
   useEffect(() => {
     fetchProducts();
+    fetchProjects();
   }, []);
 
-  // Calculate quote when products change
+  // Update quote and recommendations when products change
   useEffect(() => {
     if (project.id && project.placed_products.length > 0) {
       calculateQuote();
@@ -116,22 +162,74 @@ function App() {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${API}/projects`);
+      setProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
+  };
+
   const saveProject = async () => {
     try {
       setLoading(true);
+      let savedProject;
       if (project.id) {
         const response = await axios.put(`${API}/projects/${project.id}`, project);
-        setProject(response.data);
+        savedProject = response.data;
       } else {
         const response = await axios.post(`${API}/projects`, project);
-        setProject(response.data);
+        savedProject = response.data;
       }
+      setProject(savedProject);
+      fetchProjects();
       toast.success('Project opgeslagen');
+      return savedProject;
     } catch (error) {
       console.error('Error saving project:', error);
       toast.error('Kon project niet opslaan');
+      return null;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadProject = async (projectId) => {
+    try {
+      const response = await axios.get(`${API}/projects/${projectId}`);
+      setProject(response.data);
+      setShowProjectList(false);
+      setCurrentStep(3);
+      toast.success('Project geladen');
+    } catch (error) {
+      console.error('Error loading project:', error);
+      toast.error('Kon project niet laden');
+    }
+  };
+
+  const deleteProject = async (projectId) => {
+    try {
+      await axios.delete(`${API}/projects/${projectId}`);
+      fetchProjects();
+      if (project.id === projectId) {
+        setProject({
+          id: null,
+          name: 'Nieuw Project',
+          project_type: 'camping',
+          floor_plan_base64: null,
+          scale_meters_per_pixel: 0.1,
+          canvas_width: 1000,
+          canvas_height: 700,
+          placed_products: [],
+          zones: [],
+          num_spots: 30,
+        });
+      }
+      toast.success('Project verwijderd');
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast.error('Kon project niet verwijderen');
     }
   };
 
@@ -164,7 +262,6 @@ function App() {
       const base64 = e.target.result;
       setProject(prev => ({ ...prev, floor_plan_base64: base64 }));
       
-      // Analyze with AI
       setIsAnalyzing(true);
       try {
         const response = await axios.post(`${API}/ai/analyze-floorplan`, {
@@ -173,14 +270,8 @@ function App() {
         });
         
         if (response.data.estimated_spots) {
-          setProject(prev => ({ 
-            ...prev, 
-            num_spots: response.data.estimated_spots 
-          }));
-        }
-        
-        if (response.data.suggestions?.length > 0) {
-          toast.success(response.data.suggestions[0]);
+          setProject(prev => ({ ...prev, num_spots: response.data.estimated_spots }));
+          toast.success(`AI heeft ${response.data.estimated_spots} standplaatsen gedetecteerd`);
         }
       } catch (error) {
         console.error('Error analyzing floor plan:', error);
@@ -191,16 +282,57 @@ function App() {
     reader.readAsDataURL(file);
   };
 
+  const handleCanvasClick = (e) => {
+    if (canvasTool !== 'zone') return;
+    
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setCurrentZonePoints(prev => [...prev, { x, y }]);
+    setIsDrawingZone(true);
+  };
+
+  const finishZone = () => {
+    if (currentZonePoints.length < 3) {
+      toast.error('Een zone moet minimaal 3 punten hebben');
+      return;
+    }
+    
+    const newZone = {
+      id: `zone-${Date.now()}`,
+      name: `Zone ${project.zones.length + 1}`,
+      type: 'standplaats',
+      points: currentZonePoints,
+      color: '#4a9b7f',
+    };
+    
+    setProject(prev => ({
+      ...prev,
+      zones: [...prev.zones, newZone],
+    }));
+    
+    setCurrentZonePoints([]);
+    setIsDrawingZone(false);
+    setCanvasTool('select');
+    toast.success('Zone toegevoegd');
+  };
+
+  const cancelZone = () => {
+    setCurrentZonePoints([]);
+    setIsDrawingZone(false);
+  };
+
   const handleCanvasDrop = (e) => {
     e.preventDefault();
-    if (!draggedProduct) return;
+    if (!draggedProduct || canvasTool !== 'select') return;
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Snap to grid (24px)
     const snappedX = Math.round(x / 24) * 24;
     const snappedY = Math.round(y / 24) * 24;
 
@@ -219,6 +351,7 @@ function App() {
     }));
 
     setDraggedProduct(null);
+    toast.success(`${draggedProduct.name} geplaatst`);
   };
 
   const handleCanvasDragOver = (e) => {
@@ -226,6 +359,7 @@ function App() {
   };
 
   const handleItemClick = (item) => {
+    if (canvasTool !== 'select') return;
     setSelectedItem(selectedItem?.id === item.id ? null : item);
   };
 
@@ -235,19 +369,30 @@ function App() {
       placed_products: prev.placed_products.filter(p => p.id !== itemId),
     }));
     setSelectedItem(null);
+    toast.success('Product verwijderd');
+  };
+
+  const removeZone = (zoneId) => {
+    setProject(prev => ({
+      ...prev,
+      zones: prev.zones.filter(z => z.id !== zoneId),
+    }));
+    toast.success('Zone verwijderd');
   };
 
   const exportPDF = async () => {
+    let projectToExport = project;
+    
     if (!project.id) {
-      toast.error('Sla eerst het project op');
-      return;
+      const saved = await saveProject();
+      if (!saved) return;
+      projectToExport = saved;
     }
 
     try {
       setLoading(true);
-      const response = await axios.post(`${API}/quote/pdf?project_id=${project.id}`);
+      const response = await axios.post(`${API}/quote/pdf?project_id=${projectToExport.id}`);
       
-      // Open HTML in new window for printing
       const printWindow = window.open('', '_blank');
       printWindow.document.write(response.data.html);
       printWindow.document.close();
@@ -263,9 +408,7 @@ function App() {
     }
   };
 
-  const getProductById = (productId) => {
-    return products.find(p => p.id === productId);
-  };
+  const getProductById = (productId) => products.find(p => p.id === productId);
 
   const filteredProducts = selectedCategory === 'all' 
     ? products 
@@ -273,724 +416,1020 @@ function App() {
 
   const categories = [...new Set(products.map(p => p.category))];
 
-  // Quick quote calculation from placed products
+  // Quick quote calculation
   const quickQuote = project.placed_products.reduce((acc, pp) => {
     const product = getProductById(pp.product_id);
     if (product) {
       acc.capex += product.price_purchase * pp.quantity;
       acc.opex += product.price_lease_monthly * pp.quantity;
       acc.install += product.installation_cost * pp.quantity;
+      acc.maintenance += product.maintenance_yearly * pp.quantity;
     }
     return acc;
-  }, { capex: 0, opex: 0, install: 0 });
+  }, { capex: 0, opex: 0, install: 0, maintenance: 0 });
+
+  const newProject = () => {
+    setProject({
+      id: null,
+      name: 'Nieuw Project',
+      project_type: 'camping',
+      floor_plan_base64: null,
+      scale_meters_per_pixel: 0.1,
+      canvas_width: 1000,
+      canvas_height: 700,
+      placed_products: [],
+      zones: [],
+      num_spots: 30,
+    });
+    setCurrentStep(1);
+    setShowProjectList(false);
+  };
 
   return (
     <TooltipProvider>
-      <div className="h-screen w-full flex overflow-hidden bg-[#09090b] text-white font-['Manrope']">
-        {/* Left Sidebar - Wizard & Products */}
-        <div className="w-80 flex-shrink-0 border-r border-[#27272a] bg-[#09090b] flex flex-col z-20">
-          {/* Logo */}
-          <div className="p-6 border-b border-[#27272a]">
-            <h1 className="font-['Outfit'] text-2xl font-semibold tracking-tight">
-              <span className="text-[#0ea5e9]">RECRA</span>
-              <span className="text-[#10b981]"> Solutions</span>
-            </h1>
-            <p className="text-sm text-[#71717a] mt-1">Configurator Platform</p>
+      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#f8faf9]">
+        {/* Header */}
+        <header className="h-16 header-gradient flex items-center justify-between px-6 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-white font-bold text-lg tracking-tight">RECRA Solutions</h1>
+                <p className="text-white/70 text-xs">Configurator Platform</p>
+              </div>
+            </div>
           </div>
 
-          {/* Wizard Steps */}
-          <div className="p-4 border-b border-[#27272a]">
-            <div className="flex items-center justify-between">
-              {WIZARD_STEPS.map((step, index) => {
-                const Icon = step.icon;
-                const isActive = currentStep === step.id;
-                const isCompleted = currentStep > step.id;
-                
-                return (
-                  <React.Fragment key={step.id}>
+          <div className="flex items-center gap-3">
+            <Dialog open={showProjectList} onOpenChange={setShowProjectList}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:bg-white/10"
+                  data-testid="open-projects-btn"
+                >
+                  <FolderOpen size={18} className="mr-2" />
+                  Projecten
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl bg-white">
+                <DialogHeader>
+                  <DialogTitle className="text-[#1e3a5f]">Mijn Projecten</DialogTitle>
+                  <DialogDescription>
+                    Selecteer een project om verder te werken of start een nieuw project.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <Button 
+                    onClick={newProject} 
+                    className="w-full mb-4 btn-recra-primary"
+                    data-testid="new-project-btn"
+                  >
+                    <Plus size={18} className="mr-2" />
+                    Nieuw Project
+                  </Button>
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-2">
+                      {projects.map((p) => (
+                        <div
+                          key={p.id}
+                          className={`project-card flex items-center justify-between ${
+                            project.id === p.id ? 'active' : ''
+                          }`}
+                          data-testid={`project-item-${p.id}`}
+                        >
+                          <div 
+                            className="flex-1 cursor-pointer"
+                            onClick={() => loadProject(p.id)}
+                          >
+                            <h4 className="font-medium text-[#1e3a5f]">{p.name}</h4>
+                            <p className="text-sm text-gray-500">
+                              {p.project_type} • {p.placed_products?.length || 0} producten
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-400 hover:text-red-500"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteProject(p.id);
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      ))}
+                      {projects.length === 0 && (
+                        <div className="text-center py-8 text-gray-400">
+                          <FolderOpen size={48} className="mx-auto mb-2 opacity-50" />
+                          <p>Nog geen projecten</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-white/10"
+              onClick={saveProject}
+              disabled={loading}
+              data-testid="save-project-header-btn"
+            >
+              <Save size={18} className="mr-2" />
+              Opslaan
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <HelpCircle size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white">
+                <DropdownMenuItem>
+                  <Phone size={16} className="mr-2" />
+                  +31 634200253
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Mail size={16} className="mr-2" />
+                  info@recrasolutions.com
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <HelpCircle size={16} className="mr-2" />
+                  Handleiding
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Sidebar */}
+          <div className="w-80 flex-shrink-0 border-r border-gray-200 bg-white flex flex-col">
+            {/* Wizard Steps */}
+            <div className="p-4 border-b border-gray-100">
+              <div className="space-y-1">
+                {WIZARD_STEPS.map((step) => {
+                  const Icon = step.icon;
+                  const isActive = currentStep === step.id;
+                  const isCompleted = currentStep > step.id;
+                  
+                  return (
                     <button
+                      key={step.id}
                       onClick={() => setCurrentStep(step.id)}
-                      className={`flex flex-col items-center gap-1 transition-all ${
+                      className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
                         isActive 
-                          ? 'text-[#0ea5e9]' 
-                          : isCompleted 
-                            ? 'text-[#10b981]' 
-                            : 'text-[#71717a]'
+                          ? 'bg-[#4a9b7f]/10 border border-[#4a9b7f]/30' 
+                          : isCompleted
+                            ? 'bg-green-50'
+                            : 'hover:bg-gray-50'
                       }`}
                       data-testid={`wizard-step-${step.id}`}
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         isActive 
-                          ? 'bg-[#0ea5e9]/20 border border-[#0ea5e9]' 
+                          ? 'bg-[#4a9b7f] text-white' 
                           : isCompleted
-                            ? 'bg-[#10b981]/20 border border-[#10b981]'
-                            : 'bg-[#18181b] border border-[#27272a]'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-100 text-gray-400'
                       }`}>
-                        {isCompleted ? <Check size={14} /> : <Icon size={14} />}
+                        {isCompleted ? <Check size={16} /> : <Icon size={16} />}
                       </div>
-                      <span className="text-[10px] font-medium">{step.title}</span>
+                      <div className="text-left">
+                        <div className={`text-sm font-medium ${
+                          isActive ? 'text-[#4a9b7f]' : isCompleted ? 'text-green-600' : 'text-gray-600'
+                        }`}>
+                          {step.title}
+                        </div>
+                        <div className="text-xs text-gray-400">{step.description}</div>
+                      </div>
                     </button>
-                    {index < WIZARD_STEPS.length - 1 && (
-                      <div className={`flex-1 h-px mx-2 ${
-                        currentStep > step.id ? 'bg-[#10b981]' : 'bg-[#27272a]'
-                      }`} />
-                    )}
-                  </React.Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Step Content */}
-          <ScrollArea className="flex-1">
-            <div className="p-4">
-              {/* Step 1: Project Details */}
-              {currentStep === 1 && (
-                <div className="space-y-4 animate-slide-in" data-testid="step-1-content">
-                  <div>
-                    <Label htmlFor="project-name" className="text-[#a1a1aa] text-sm">
-                      Projectnaam
-                    </Label>
-                    <Input
-                      id="project-name"
-                      value={project.name}
-                      onChange={(e) => setProject(prev => ({ ...prev, name: e.target.value }))}
-                      className="mt-1 bg-[#18181b] border-[#27272a] text-white"
-                      placeholder="Bijv. Camping De Zonnehoek"
-                      data-testid="project-name-input"
-                    />
-                  </div>
+            {/* Step Content */}
+            <ScrollArea className="flex-1">
+              <div className="p-4">
+                {/* Step 1: Project Details */}
+                {currentStep === 1 && (
+                  <div className="space-y-5 animate-fade-in-up" data-testid="step-1-content">
+                    <div>
+                      <Label htmlFor="project-name" className="text-sm font-medium text-gray-700">
+                        Projectnaam
+                      </Label>
+                      <Input
+                        id="project-name"
+                        value={project.name}
+                        onChange={(e) => setProject(prev => ({ ...prev, name: e.target.value }))}
+                        className="mt-1.5"
+                        placeholder="Bijv. Camping De Zonnehoek"
+                        data-testid="project-name-input"
+                      />
+                    </div>
 
-                  <div>
-                    <Label className="text-[#a1a1aa] text-sm">Projecttype</Label>
-                    <div className="mt-2 space-y-2">
-                      {projectTypes.map((type) => (
-                        <button
-                          key={type.value}
-                          onClick={() => setProject(prev => ({ ...prev, project_type: type.value }))}
-                          className={`w-full p-3 rounded-lg border text-left transition-all ${
-                            project.project_type === type.value
-                              ? 'border-[#0ea5e9] bg-[#0ea5e9]/10'
-                              : 'border-[#27272a] bg-[#18181b] hover:border-[#0ea5e9]/50'
-                          }`}
-                          data-testid={`project-type-${type.value}`}
-                        >
-                          <div className="font-medium text-sm">{type.label}</div>
-                          <div className="text-xs text-[#71717a] mt-0.5">{type.description}</div>
-                        </button>
-                      ))}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Type locatie</Label>
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        {projectTypes.map((type) => (
+                          <button
+                            key={type.value}
+                            onClick={() => setProject(prev => ({ ...prev, project_type: type.value }))}
+                            className={`p-3 rounded-xl border-2 text-left transition-all ${
+                              project.project_type === type.value
+                                ? 'border-[#4a9b7f] bg-[#4a9b7f]/5'
+                                : 'border-gray-200 hover:border-[#4a9b7f]/50'
+                            }`}
+                            data-testid={`project-type-${type.value}`}
+                          >
+                            <span className="text-2xl">{type.icon}</span>
+                            <div className="font-medium text-sm mt-1 text-gray-800">{type.label}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="num-spots" className="text-sm font-medium text-gray-700">
+                        Aantal standplaatsen
+                      </Label>
+                      <Input
+                        id="num-spots"
+                        type="number"
+                        value={project.num_spots}
+                        onChange={(e) => setProject(prev => ({ ...prev, num_spots: parseInt(e.target.value) || 0 }))}
+                        className="mt-1.5"
+                        min="1"
+                        data-testid="num-spots-input"
+                      />
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-[#4a9b7f]/10 to-[#4a9b7f]/5 border border-[#4a9b7f]/20">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#4a9b7f]/20 flex items-center justify-center flex-shrink-0">
+                          <Sparkles size={16} className="text-[#4a9b7f]" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm text-[#2d5a3d]">Slimme configuratie</h4>
+                          <p className="text-xs text-gray-600 mt-1">
+                            Onze AI helpt u met optimale productplaatsing en geeft advies op basis van uw terreininrichting.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <Label htmlFor="num-spots" className="text-[#a1a1aa] text-sm">
-                      Aantal standplaatsen
-                    </Label>
-                    <Input
-                      id="num-spots"
-                      type="number"
-                      value={project.num_spots}
-                      onChange={(e) => setProject(prev => ({ ...prev, num_spots: parseInt(e.target.value) || 0 }))}
-                      className="mt-1 bg-[#18181b] border-[#27272a] text-white font-mono"
-                      min="1"
-                      data-testid="num-spots-input"
-                    />
-                  </div>
-                </div>
-              )}
+                {/* Step 2: Terrain */}
+                {currentStep === 2 && (
+                  <div className="space-y-5 animate-fade-in-up" data-testid="step-2-content">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Plattegrond uploaden</Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        data-testid="floor-plan-input"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`mt-2 w-full p-8 rounded-xl border-2 border-dashed transition-all ${
+                          project.floor_plan_base64
+                            ? 'border-[#4a9b7f] bg-[#4a9b7f]/5'
+                            : 'border-gray-300 hover:border-[#4a9b7f] bg-gray-50'
+                        }`}
+                        data-testid="upload-floor-plan-btn"
+                      >
+                        {isAnalyzing ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <Sparkles className="w-10 h-10 text-[#4a9b7f] animate-pulse-soft" />
+                            <span className="text-sm font-medium text-[#4a9b7f]">AI analyseert plattegrond...</span>
+                          </div>
+                        ) : project.floor_plan_base64 ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <Check className="w-10 h-10 text-[#4a9b7f]" />
+                            <span className="text-sm font-medium text-[#4a9b7f]">Plattegrond geladen</span>
+                            <span className="text-xs text-gray-500">Klik om te wijzigen</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-2">
+                            <Upload className="w-10 h-10 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">Upload uw plattegrond</span>
+                            <span className="text-xs text-gray-400">PDF of afbeelding (max. 10MB)</span>
+                          </div>
+                        )}
+                      </button>
+                    </div>
 
-              {/* Step 2: Terrain Upload */}
-              {currentStep === 2 && (
-                <div className="space-y-4 animate-slide-in" data-testid="step-2-content">
-                  <div>
-                    <Label className="text-[#a1a1aa] text-sm">Plattegrond uploaden</Label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      data-testid="floor-plan-input"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`mt-2 w-full p-8 rounded-xl border-2 border-dashed transition-all ${
-                        project.floor_plan_base64
-                          ? 'border-[#10b981] bg-[#10b981]/5'
-                          : 'border-[#27272a] hover:border-[#0ea5e9] bg-[#18181b]'
-                      }`}
-                      data-testid="upload-floor-plan-btn"
-                    >
-                      {isAnalyzing ? (
-                        <div className="flex flex-col items-center gap-2">
-                          <Sparkles className="w-8 h-8 text-[#10b981] animate-pulse" />
-                          <span className="text-sm text-[#10b981]">AI analyseert...</span>
-                        </div>
-                      ) : project.floor_plan_base64 ? (
-                        <div className="flex flex-col items-center gap-2">
-                          <Check className="w-8 h-8 text-[#10b981]" />
-                          <span className="text-sm text-[#10b981]">Plattegrond geladen</span>
-                          <span className="text-xs text-[#71717a]">Klik om te wijzigen</span>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">Zones</Label>
+                      <p className="text-xs text-gray-500 mb-3">
+                        Definieer zones op uw terrein voor betere AI-aanbevelingen.
+                      </p>
+                      
+                      {project.zones.length > 0 ? (
+                        <div className="space-y-2">
+                          {project.zones.map((zone, index) => (
+                            <div 
+                              key={zone.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: zone.color }}
+                                />
+                                <span className="text-sm font-medium">{zone.name}</span>
+                                <Badge variant="secondary" className="text-xs">
+                                  {zone.type}
+                                </Badge>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-gray-400 hover:text-red-500"
+                                onClick={() => removeZone(zone.id)}
+                              >
+                                <X size={14} />
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-2">
-                          <Upload className="w-8 h-8 text-[#71717a]" />
-                          <span className="text-sm text-[#a1a1aa]">Upload plattegrond</span>
-                          <span className="text-xs text-[#71717a]">PDF of afbeelding</span>
+                        <div className="text-center py-6 bg-gray-50 rounded-xl">
+                          <Layers className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-400">Nog geen zones gedefinieerd</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            Gebruik het zone-gereedschap op het canvas
+                          </p>
                         </div>
                       )}
-                    </button>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="scale" className="text-[#a1a1aa] text-sm">
-                      Schaal (meters per pixel)
-                    </Label>
-                    <Input
-                      id="scale"
-                      type="number"
-                      step="0.01"
-                      value={project.scale_meters_per_pixel}
-                      onChange={(e) => setProject(prev => ({ 
-                        ...prev, 
-                        scale_meters_per_pixel: parseFloat(e.target.value) || 0.1 
-                      }))}
-                      className="mt-1 bg-[#18181b] border-[#27272a] text-white font-mono"
-                      data-testid="scale-input"
-                    />
-                  </div>
-
-                  <div className="p-4 rounded-lg bg-[#18181b] border border-[#27272a]">
-                    <div className="flex items-center gap-2 text-[#10b981] mb-2">
-                      <Sparkles size={16} />
-                      <span className="text-sm font-medium">AI Tip</span>
-                    </div>
-                    <p className="text-xs text-[#a1a1aa]">
-                      Upload een plattegrond en onze AI herkent automatisch zones en schat het aantal standplaatsen.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Product Selection */}
-              {currentStep === 3 && (
-                <div className="space-y-4 animate-slide-in" data-testid="step-3-content">
-                  <div>
-                    <Label className="text-[#a1a1aa] text-sm">Categorie</Label>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="mt-1 bg-[#18181b] border-[#27272a]" data-testid="category-select">
-                        <SelectValue placeholder="Alle categorieën" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#18181b] border-[#27272a]">
-                        <SelectItem value="all">Alle categorieën</SelectItem>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    {filteredProducts.map((product) => {
-                      const Icon = categoryIcons[product.category] || Package;
-                      const color = categoryColors[product.category] || '#0ea5e9';
-                      
-                      return (
-                        <div
-                          key={product.id}
-                          draggable
-                          onDragStart={() => setDraggedProduct(product)}
-                          onDragEnd={() => setDraggedProduct(null)}
-                          className="product-card bg-[#18181b] border border-[#27272a] rounded-lg p-3 cursor-grab active:cursor-grabbing"
-                          data-testid={`product-card-${product.id}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div 
-                              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                              style={{ backgroundColor: `${color}20` }}
-                            >
-                              <Icon size={20} style={{ color }} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm truncate">{product.name}</div>
-                              <div className="text-xs text-[#71717a] mt-0.5 line-clamp-2">{product.description}</div>
-                              <div className="flex items-center gap-2 mt-2">
-                                <Badge variant="secondary" className="text-xs bg-[#27272a] text-[#a1a1aa]">
-                                  {product.category}
-                                </Badge>
-                                <span className="text-xs font-mono text-[#0ea5e9]">
-                                  € {product.price_purchase.toLocaleString()}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <p className="text-xs text-[#71717a] text-center">
-                    Sleep producten naar de plattegrond
-                  </p>
-                </div>
-              )}
-
-              {/* Step 4: Quote */}
-              {currentStep === 4 && (
-                <div className="space-y-4 animate-slide-in" data-testid="step-4-content">
-                  <div className="p-4 rounded-lg bg-[#18181b] border border-[#27272a]">
-                    <h3 className="font-['Outfit'] font-semibold text-lg mb-4">Kostenoverzicht</h3>
-                    
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#a1a1aa]">CAPEX (Aankoop)</span>
-                        <span className="font-mono text-[#0ea5e9]">
-                          € {quickQuote.capex.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-[#a1a1aa]">Installatie</span>
-                        <span className="font-mono">€ {quickQuote.install.toLocaleString()}</span>
-                      </div>
-                      <div className="h-px bg-[#27272a]" />
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Totaal investering</span>
-                        <span className="font-mono text-lg text-[#0ea5e9]">
-                          € {(quickQuote.capex + quickQuote.install).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-[#27272a]">
-                      <h4 className="text-sm text-[#a1a1aa] mb-2">OPEX (Lease)</h4>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Per maand</span>
-                        <span className="font-mono text-[#10b981]">
-                          € {quickQuote.opex.toLocaleString()}
-                        </span>
-                      </div>
                     </div>
                   </div>
+                )}
 
-                  <Button
-                    onClick={exportPDF}
-                    disabled={loading || project.placed_products.length === 0}
-                    className="w-full bg-white text-[#09090b] hover:bg-gray-200 font-semibold"
-                    data-testid="export-pdf-button"
-                  >
-                    <Download size={16} className="mr-2" />
-                    Offerte downloaden (PDF)
-                  </Button>
-
-                  <Button
-                    onClick={saveProject}
-                    disabled={loading}
-                    variant="outline"
-                    className="w-full border-[#0ea5e9] text-[#0ea5e9] hover:bg-[#0ea5e9]/10"
-                    data-testid="save-project-button"
-                  >
-                    Project opslaan
-                  </Button>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-
-          {/* Navigation */}
-          <div className="p-4 border-t border-[#27272a] flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-              disabled={currentStep === 1}
-              className="flex-1 border-[#27272a]"
-              data-testid="wizard-prev-button"
-            >
-              <ChevronLeft size={16} />
-              Vorige
-            </Button>
-            <Button
-              onClick={() => {
-                if (currentStep < 4) {
-                  setCurrentStep(prev => prev + 1);
-                  if (!project.id) saveProject();
-                }
-              }}
-              disabled={currentStep === 4}
-              className="flex-1 bg-gradient-to-r from-[#0ea5e9] to-[#10b981] hover:shadow-[0_0_20px_rgba(14,165,233,0.4)]"
-              data-testid="wizard-next-button"
-            >
-              Volgende
-              <ChevronRight size={16} />
-            </Button>
-          </div>
-        </div>
-
-        {/* Main Canvas Area */}
-        <div className="flex-1 relative overflow-hidden bg-[#09090b]">
-          {/* Canvas Header */}
-          <div className="absolute top-0 left-0 right-0 z-10 p-4 flex justify-between items-center">
-            <div className="glass rounded-lg px-4 py-2 border border-white/5">
-              <span className="text-sm text-[#a1a1aa]">
-                {project.name} • {project.placed_products.length} items geplaatst
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" className="border-[#27272a] bg-[#18181b]">
-                    <Grid3X3 size={16} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Snap to grid: 24px</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-
-          {/* Canvas */}
-          <div
-            ref={canvasRef}
-            className="w-full h-full canvas-dot-pattern relative"
-            onDrop={handleCanvasDrop}
-            onDragOver={handleCanvasDragOver}
-            data-testid="site-canvas"
-          >
-            {/* Floor plan background */}
-            {project.floor_plan_base64 && (
-              <img
-                src={project.floor_plan_base64}
-                alt="Plattegrond"
-                className="absolute inset-0 w-full h-full object-contain opacity-40"
-              />
-            )}
-
-            {/* Placed products */}
-            {project.placed_products.map((placed) => {
-              const product = getProductById(placed.product_id);
-              if (!product) return null;
-              
-              const Icon = categoryIcons[product.category] || Package;
-              const color = categoryColors[product.category] || '#0ea5e9';
-              const isSelected = selectedItem?.id === placed.id;
-              
-              return (
-                <div
-                  key={placed.id}
-                  className={`canvas-item absolute cursor-pointer transition-all ${
-                    isSelected ? 'selected' : ''
-                  }`}
-                  style={{
-                    left: placed.x,
-                    top: placed.y,
-                    transform: `rotate(${placed.rotation}deg)`,
-                  }}
-                  onClick={() => handleItemClick(placed)}
-                  data-testid={`placed-item-${placed.id}`}
-                >
-                  {/* Coverage radius */}
-                  {product.coverage_radius && (
-                    <div
-                      className="coverage-circle absolute rounded-full"
-                      style={{
-                        width: product.coverage_radius * 4,
-                        height: product.coverage_radius * 4,
-                        left: -(product.coverage_radius * 2) + 20,
-                        top: -(product.coverage_radius * 2) + 20,
-                        backgroundColor: `${color}30`,
-                        border: `1px dashed ${color}50`,
-                      }}
-                    />
-                  )}
-                  
-                  {/* Product icon */}
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg"
-                    style={{ 
-                      backgroundColor: color,
-                      boxShadow: isSelected ? `0 0 20px ${color}` : undefined,
-                    }}
-                  >
-                    <Icon size={20} className="text-white" />
-                  </div>
-                  
-                  {/* Label */}
-                  <div className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                    <span className="text-[10px] bg-[#18181b]/90 px-2 py-0.5 rounded text-[#a1a1aa]">
-                      {product.name.split(' ')[0]}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Selected item controls */}
-            {selectedItem && (
-              <div
-                className="absolute glass rounded-lg p-2 flex gap-1 border border-white/10"
-                style={{
-                  left: selectedItem.x + 50,
-                  top: selectedItem.y - 10,
-                }}
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-8 h-8"
-                      onClick={() => {
-                        setProject(prev => ({
-                          ...prev,
-                          placed_products: prev.placed_products.map(p =>
-                            p.id === selectedItem.id
-                              ? { ...p, rotation: (p.rotation + 45) % 360 }
-                              : p
-                          ),
-                        }));
-                      }}
-                    >
-                      <RotateCw size={14} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Roteren</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-8 h-8 text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                      onClick={() => removeItem(selectedItem.id)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Verwijderen</TooltipContent>
-                </Tooltip>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {project.placed_products.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center max-w-sm">
-                  <div className="w-16 h-16 rounded-2xl bg-[#18181b] border border-[#27272a] flex items-center justify-center mx-auto mb-4">
-                    <Package size={32} className="text-[#71717a]" />
-                  </div>
-                  <h3 className="font-['Outfit'] font-medium text-lg mb-2">Start met configureren</h3>
-                  <p className="text-sm text-[#71717a]">
-                    Sleep producten vanuit het linkerpaneel naar deze plattegrond om uw terrein in te richten.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Sidebar - Quote & AI */}
-        <div className="w-96 flex-shrink-0 border-l border-[#27272a] bg-[#09090b]/80 backdrop-blur-2xl flex flex-col z-20 shadow-2xl">
-          <Tabs defaultValue="quote" className="flex flex-col h-full">
-            <TabsList className="w-full p-1 bg-[#18181b] rounded-none border-b border-[#27272a]">
-              <TabsTrigger 
-                value="quote" 
-                className="flex-1 data-[state=active]:bg-[#0ea5e9]/20 data-[state=active]:text-[#0ea5e9]"
-                data-testid="tab-quote"
-              >
-                <FileText size={14} className="mr-2" />
-                Offerte
-              </TabsTrigger>
-              <TabsTrigger 
-                value="ai" 
-                className="flex-1 data-[state=active]:bg-[#10b981]/20 data-[state=active]:text-[#10b981]"
-                data-testid="tab-ai"
-              >
-                <Sparkles size={14} className="mr-2" />
-                AI Advies
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="quote" className="flex-1 m-0 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="p-6 space-y-4">
-                  <h2 className="font-['Outfit'] font-semibold text-xl">Real-time Offerte</h2>
-                  
-                  {/* Summary cards */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-xl bg-[#18181b] border border-[#27272a]">
-                      <div className="text-xs text-[#71717a] mb-1">CAPEX</div>
-                      <div className="font-mono text-lg text-[#0ea5e9]" data-testid="quote-capex">
-                        € {quickQuote.capex.toLocaleString()}
-                      </div>
+                {/* Step 3: Products */}
+                {currentStep === 3 && (
+                  <div className="space-y-4 animate-fade-in-up" data-testid="step-3-content">
+                    <div>
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-full" data-testid="category-select">
+                          <SelectValue placeholder="Alle categorieën" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="all">Alle categorieën</SelectItem>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {categoryLabels[cat] || cat}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#18181b] border border-[#27272a]">
-                      <div className="text-xs text-[#71717a] mb-1">OPEX/mnd</div>
-                      <div className="font-mono text-lg text-[#10b981]" data-testid="quote-opex">
-                        € {quickQuote.opex.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Product list */}
-                  <div>
-                    <h3 className="text-sm font-medium text-[#a1a1aa] mb-3">Geplaatste producten</h3>
                     <div className="space-y-2">
-                      {Object.entries(
-                        project.placed_products.reduce((acc, pp) => {
-                          const product = getProductById(pp.product_id);
-                          if (product) {
-                            if (!acc[pp.product_id]) {
-                              acc[pp.product_id] = { product, count: 0 };
-                            }
-                            acc[pp.product_id].count += pp.quantity;
-                          }
-                          return acc;
-                        }, {})
-                      ).map(([productId, { product, count }]) => {
+                      {filteredProducts.map((product) => {
                         const Icon = categoryIcons[product.category] || Package;
-                        const color = categoryColors[product.category];
+                        const color = categoryColors[product.category] || '#4a9b7f';
                         
                         return (
                           <div
-                            key={productId}
-                            className="flex items-center justify-between p-3 rounded-lg bg-[#18181b] border border-[#27272a]"
+                            key={product.id}
+                            draggable
+                            onDragStart={() => setDraggedProduct(product)}
+                            onDragEnd={() => setDraggedProduct(null)}
+                            className="product-card bg-white border border-gray-200 rounded-xl p-3 cursor-grab active:cursor-grabbing"
+                            data-testid={`product-card-${product.id}`}
                           >
-                            <div className="flex items-center gap-3">
-                              <div
-                                className="w-8 h-8 rounded-md flex items-center justify-center"
-                                style={{ backgroundColor: `${color}20` }}
+                            <div className="flex items-start gap-3">
+                              <div 
+                                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: `${color}15` }}
                               >
-                                <Icon size={16} style={{ color }} />
+                                <Icon size={24} style={{ color }} />
                               </div>
-                              <div>
-                                <div className="text-sm font-medium">{product.name}</div>
-                                <div className="text-xs text-[#71717a]">
-                                  {count}x • € {(product.price_purchase * count).toLocaleString()}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-sm text-gray-800 truncate">
+                                  {product.name}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                  {product.description}
+                                </div>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <span className="text-sm font-bold text-[#4a9b7f]">
+                                    € {product.price_purchase.toLocaleString()}
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    of € {product.price_lease_monthly}/mnd
+                                  </span>
                                 </div>
                               </div>
                             </div>
                           </div>
                         );
                       })}
+                    </div>
 
-                      {project.placed_products.length === 0 && (
-                        <div className="text-center py-8 text-[#71717a] text-sm">
-                          Nog geen producten geplaatst
+                    <p className="text-xs text-gray-400 text-center pt-2">
+                      Sleep producten naar het canvas om te plaatsen
+                    </p>
+                  </div>
+                )}
+
+                {/* Step 4: Quote */}
+                {currentStep === 4 && (
+                  <div className="space-y-5 animate-fade-in-up" data-testid="step-4-content">
+                    <div className="card-recra p-5">
+                      <h3 className="font-bold text-lg text-[#1e3a5f] mb-4">Investering</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Aankoopkosten (CAPEX)</span>
+                          <span className="font-bold text-[#4a9b7f]">
+                            € {quickQuote.capex.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Installatiekosten</span>
+                          <span className="font-medium">€ {quickQuote.install.toLocaleString()}</span>
+                        </div>
+                        <div className="h-px bg-gray-200" />
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-[#1e3a5f]">Totaal investering</span>
+                          <span className="text-xl font-bold text-[#4a9b7f]">
+                            € {(quickQuote.capex + quickQuote.install).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="card-recra p-5">
+                      <h3 className="font-bold text-lg text-[#1e3a5f] mb-4">Lease optie (OPEX)</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Per maand</span>
+                          <span className="font-bold text-[#4a9b7f]">
+                            € {quickQuote.opex.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Per jaar</span>
+                          <span className="font-medium">€ {(quickQuote.opex * 12).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Onderhoud per jaar</span>
+                          <span className="font-medium">€ {quickQuote.maintenance.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={exportPDF}
+                      disabled={loading || project.placed_products.length === 0}
+                      className="w-full btn-recra-primary h-12"
+                      data-testid="export-pdf-button"
+                    >
+                      <Download size={18} className="mr-2" />
+                      Offerte downloaden (PDF)
+                    </Button>
+
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500">
+                        Of neem direct contact op voor persoonlijk advies
+                      </p>
+                      <a 
+                        href="tel:+31634200253" 
+                        className="text-sm font-medium text-[#4a9b7f] hover:underline"
+                      >
+                        +31 634200253
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            {/* Navigation */}
+            <div className="p-4 border-t border-gray-100 flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
+                disabled={currentStep === 1}
+                className="flex-1"
+                data-testid="wizard-prev-button"
+              >
+                <ChevronLeft size={16} className="mr-1" />
+                Vorige
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (currentStep < 4) {
+                    setCurrentStep(prev => prev + 1);
+                    if (currentStep === 1 && !project.id) {
+                      await saveProject();
+                    }
+                  }
+                }}
+                disabled={currentStep === 4}
+                className="flex-1 btn-recra-primary"
+                data-testid="wizard-next-button"
+              >
+                Volgende
+                <ChevronRight size={16} className="ml-1" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Main Canvas Area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Canvas Toolbar */}
+            <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+              <div className="flex items-center gap-2">
+                {CANVAS_TOOLS.map((tool) => {
+                  const Icon = tool.icon;
+                  return (
+                    <Tooltip key={tool.id}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={canvasTool === tool.id ? 'default' : 'ghost'}
+                          size="sm"
+                          onClick={() => setCanvasTool(tool.id)}
+                          className={canvasTool === tool.id ? 'bg-[#4a9b7f] text-white' : ''}
+                          data-testid={`tool-${tool.id}`}
+                        >
+                          <Icon size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{tool.label}</TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+                
+                {isDrawingZone && (
+                  <>
+                    <div className="h-6 w-px bg-gray-200 mx-2" />
+                    <Button
+                      size="sm"
+                      onClick={finishZone}
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      <Check size={14} className="mr-1" />
+                      Zone voltooien
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={cancelZone}
+                    >
+                      <X size={14} className="mr-1" />
+                      Annuleren
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">
+                  {project.name} • {project.placed_products.length} producten
+                </span>
+                <div className="h-6 w-px bg-gray-200 mx-2" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowCoverage(!showCoverage)}
+                      className={showCoverage ? 'text-[#4a9b7f]' : 'text-gray-400'}
+                    >
+                      {showCoverage ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {showCoverage ? 'Verberg bereik' : 'Toon bereik'}
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <Grid3X3 size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Snap to grid (24px)</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+
+            {/* Canvas */}
+            <div className="flex-1 overflow-auto bg-gray-100 p-4">
+              <div
+                ref={canvasRef}
+                className={`relative bg-white rounded-xl shadow-lg canvas-grid-pattern mx-auto ${
+                  canvasTool === 'zone' ? 'cursor-crosshair' : ''
+                }`}
+                style={{ 
+                  width: project.canvas_width, 
+                  height: project.canvas_height,
+                  minWidth: project.canvas_width,
+                }}
+                onClick={handleCanvasClick}
+                onDrop={handleCanvasDrop}
+                onDragOver={handleCanvasDragOver}
+                data-testid="site-canvas"
+              >
+                {/* Floor plan background */}
+                {project.floor_plan_base64 && (
+                  <img
+                    src={project.floor_plan_base64}
+                    alt="Plattegrond"
+                    className="absolute inset-0 w-full h-full object-contain opacity-50 pointer-events-none"
+                  />
+                )}
+
+                {/* Zones SVG */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                  {project.zones.map((zone) => (
+                    <polygon
+                      key={zone.id}
+                      className="zone-polygon"
+                      points={zone.points.map(p => `${p.x},${p.y}`).join(' ')}
+                      style={{ stroke: zone.color }}
+                    />
+                  ))}
+                  {/* Current drawing zone */}
+                  {currentZonePoints.length > 0 && (
+                    <>
+                      <polyline
+                        points={currentZonePoints.map(p => `${p.x},${p.y}`).join(' ')}
+                        fill="none"
+                        stroke="#4a9b7f"
+                        strokeWidth="2"
+                        strokeDasharray="5,5"
+                      />
+                      {currentZonePoints.map((point, i) => (
+                        <circle
+                          key={i}
+                          cx={point.x}
+                          cy={point.y}
+                          r="5"
+                          fill="#4a9b7f"
+                        />
+                      ))}
+                    </>
+                  )}
+                </svg>
+
+                {/* Placed products */}
+                {project.placed_products.map((placed) => {
+                  const product = getProductById(placed.product_id);
+                  if (!product) return null;
+                  
+                  const Icon = categoryIcons[product.category] || Package;
+                  const color = categoryColors[product.category] || '#4a9b7f';
+                  const isSelected = selectedItem?.id === placed.id;
+                  
+                  return (
+                    <div
+                      key={placed.id}
+                      className={`canvas-item absolute ${isSelected ? 'selected' : ''}`}
+                      style={{
+                        left: placed.x,
+                        top: placed.y,
+                        transform: `rotate(${placed.rotation}deg)`,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleItemClick(placed);
+                      }}
+                      data-testid={`placed-item-${placed.id}`}
+                    >
+                      {/* Coverage radius */}
+                      {showCoverage && product.coverage_radius && (
+                        <div
+                          className="coverage-circle absolute rounded-full"
+                          style={{
+                            width: product.coverage_radius * 4,
+                            height: product.coverage_radius * 4,
+                            left: -(product.coverage_radius * 2) + 24,
+                            top: -(product.coverage_radius * 2) + 24,
+                            backgroundColor: color,
+                            border: `2px dashed ${color}`,
+                          }}
+                        />
+                      )}
+                      
+                      {/* Product icon */}
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg border-2 border-white"
+                        style={{ 
+                          backgroundColor: color,
+                          boxShadow: isSelected ? `0 0 0 3px ${color}40` : undefined,
+                        }}
+                      >
+                        <Icon size={24} className="text-white" />
+                      </div>
+                      
+                      {/* Label */}
+                      <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                        <span className="text-[11px] bg-white px-2 py-1 rounded shadow-sm text-gray-700 font-medium">
+                          {product.name.split(' ')[0]}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Selected item controls */}
+                {selectedItem && (
+                  <div
+                    className="absolute bg-white rounded-lg shadow-xl p-1 flex gap-1 border border-gray-200"
+                    style={{
+                      left: selectedItem.x + 60,
+                      top: selectedItem.y - 8,
+                    }}
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8"
+                          onClick={() => {
+                            setProject(prev => ({
+                              ...prev,
+                              placed_products: prev.placed_products.map(p =>
+                                p.id === selectedItem.id
+                                  ? { ...p, rotation: (p.rotation + 45) % 360 }
+                                  : p
+                              ),
+                            }));
+                          }}
+                        >
+                          <RotateCw size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Roteren</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="w-8 h-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => removeItem(selectedItem.id)}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Verwijderen</TooltipContent>
+                    </Tooltip>
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {project.placed_products.length === 0 && !project.floor_plan_base64 && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center max-w-sm p-8">
+                      <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                        <Package size={40} className="text-gray-300" />
+                      </div>
+                      <h3 className="font-semibold text-lg text-gray-700 mb-2">
+                        Start met configureren
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Upload een plattegrond of sleep producten vanuit het linkerpaneel naar dit canvas om uw terrein in te richten.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="w-80 flex-shrink-0 border-l border-gray-200 bg-white flex flex-col">
+            <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
+              <TabsList className="w-full p-1 bg-gray-50 rounded-none border-b border-gray-200 h-auto">
+                <TabsTrigger 
+                  value="quote" 
+                  className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  data-testid="tab-quote"
+                >
+                  <FileText size={14} className="mr-1.5" />
+                  Offerte
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ai" 
+                  className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  data-testid="tab-ai"
+                >
+                  <Sparkles size={14} className="mr-1.5" />
+                  AI Advies
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="quote" className="flex-1 m-0 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-5 space-y-5">
+                    <div>
+                      <h2 className="font-bold text-lg text-[#1e3a5f]">Real-time Offerte</h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Automatisch berekend op basis van uw configuratie
+                      </p>
+                    </div>
+                    
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#4a9b7f]/10 to-[#4a9b7f]/5 border border-[#4a9b7f]/20">
+                        <div className="text-xs text-gray-500 mb-1">CAPEX</div>
+                        <div className="text-xl font-bold text-[#4a9b7f]" data-testid="quote-capex">
+                          € {quickQuote.capex.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#1e3a5f]/10 to-[#1e3a5f]/5 border border-[#1e3a5f]/20">
+                        <div className="text-xs text-gray-500 mb-1">OPEX/mnd</div>
+                        <div className="text-xl font-bold text-[#1e3a5f]" data-testid="quote-opex">
+                          € {quickQuote.opex.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product list */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Geplaatste producten</h3>
+                      <div className="space-y-2">
+                        {Object.entries(
+                          project.placed_products.reduce((acc, pp) => {
+                            const product = getProductById(pp.product_id);
+                            if (product) {
+                              if (!acc[pp.product_id]) {
+                                acc[pp.product_id] = { product, count: 0 };
+                              }
+                              acc[pp.product_id].count += pp.quantity;
+                            }
+                            return acc;
+                          }, {})
+                        ).map(([productId, { product, count }]) => {
+                          const Icon = categoryIcons[product.category] || Package;
+                          const color = categoryColors[product.category];
+                          
+                          return (
+                            <div
+                              key={productId}
+                              className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                  style={{ backgroundColor: `${color}15` }}
+                                >
+                                  <Icon size={18} style={{ color }} />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-medium text-gray-800">{product.name}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {count}x • € {(product.price_purchase * count).toLocaleString()}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {project.placed_products.length === 0 && (
+                          <div className="text-center py-8 text-gray-400">
+                            <Package size={32} className="mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">Nog geen producten geplaatst</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Total */}
+                    <div className="p-4 rounded-xl bg-[#1e3a5f] text-white">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-white/80">Totaal investering</span>
+                        <span className="text-2xl font-bold" data-testid="quote-total">
+                          € {(quickQuote.capex + quickQuote.install).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm text-white/60">
+                        <span>Inclusief installatie</span>
+                        <span>€ {quickQuote.install.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="ai" className="flex-1 m-0 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4a9b7f] to-[#2d5a3d] flex items-center justify-center">
+                        <Sparkles className="text-white" size={16} />
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-lg text-[#1e3a5f]">AI Aanbevelingen</h2>
+                        <p className="text-xs text-gray-500">Gebaseerd op uw configuratie</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {recommendations.length > 0 ? (
+                        recommendations.map((rec, index) => (
+                          <div
+                            key={index}
+                            className={`rounded-xl border p-4 ${
+                              rec.type === 'warning'
+                                ? 'border-amber-200 bg-amber-50'
+                                : rec.type === 'suggestion'
+                                  ? 'border-blue-200 bg-blue-50'
+                                  : 'border-green-200 bg-green-50'
+                            }`}
+                            data-testid={`ai-recommendation-${index}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                rec.type === 'warning'
+                                  ? 'bg-amber-100 text-amber-600'
+                                  : rec.type === 'suggestion'
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-green-100 text-green-600'
+                              }`}>
+                                {rec.type === 'warning' ? (
+                                  <AlertTriangle size={16} />
+                                ) : rec.type === 'suggestion' ? (
+                                  <Info size={16} />
+                                ) : (
+                                  <Zap size={16} />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm text-gray-800">{rec.title}</h4>
+                                <p className="text-xs text-gray-600 mt-1">{rec.description}</p>
+                                {rec.action && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="mt-2 h-7 text-xs text-[#4a9b7f] hover:text-[#4a9b7f] hover:bg-[#4a9b7f]/10 p-0"
+                                  >
+                                    {rec.action}
+                                    <ChevronRight size={12} className="ml-1" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                            <Sparkles size={28} className="text-gray-300" />
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            Plaats producten om AI-aanbevelingen te ontvangen
+                          </p>
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Total */}
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-[#0ea5e9]/10 to-[#10b981]/10 border border-[#0ea5e9]/20">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[#a1a1aa]">Totaal investering</span>
-                      <span className="font-mono text-xl text-[#0ea5e9]" data-testid="quote-total">
-                        € {(quickQuote.capex + quickQuote.install).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#71717a]">Incl. installatie</span>
-                      <span className="font-mono text-[#71717a]">
-                        € {quickQuote.install.toLocaleString()}
-                      </span>
-                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-[#4a9b7f] text-[#4a9b7f] hover:bg-[#4a9b7f]/10"
+                      onClick={fetchRecommendations}
+                      disabled={!project.id}
+                      data-testid="refresh-ai-button"
+                    >
+                      <Sparkles size={14} className="mr-2" />
+                      Vernieuw aanbevelingen
+                    </Button>
                   </div>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-
-            <TabsContent value="ai" className="flex-1 m-0 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="text-[#10b981]" size={20} />
-                    <h2 className="font-['Outfit'] font-semibold text-xl">AI Aanbevelingen</h2>
-                  </div>
-
-                  <div className="space-y-3">
-                    {recommendations.length > 0 ? (
-                      recommendations.map((rec, index) => (
-                        <div
-                          key={index}
-                          className={`relative overflow-hidden rounded-xl border p-4 ${
-                            rec.type === 'warning'
-                              ? 'border-[#f59e0b]/40 bg-gradient-to-b from-[#18181b] to-[#09090b]'
-                              : rec.type === 'suggestion'
-                                ? 'border-[#0ea5e9]/40 bg-gradient-to-b from-[#18181b] to-[#09090b]'
-                                : 'border-[#10b981]/40 bg-gradient-to-b from-[#18181b] to-[#09090b]'
-                          }`}
-                          data-testid={`ai-recommendation-${index}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                              rec.type === 'warning'
-                                ? 'bg-[#f59e0b]/20 text-[#f59e0b]'
-                                : rec.type === 'suggestion'
-                                  ? 'bg-[#0ea5e9]/20 text-[#0ea5e9]'
-                                  : 'bg-[#10b981]/20 text-[#10b981]'
-                            }`}>
-                              {rec.type === 'warning' ? (
-                                <AlertTriangle size={16} />
-                              ) : rec.type === 'suggestion' ? (
-                                <Info size={16} />
-                              ) : (
-                                <Zap size={16} />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium text-sm">{rec.title}</h4>
-                              <p className="text-xs text-[#a1a1aa] mt-1">{rec.description}</p>
-                              {rec.action && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="mt-2 h-7 text-xs text-[#0ea5e9] hover:text-[#0ea5e9] hover:bg-[#0ea5e9]/10 p-0"
-                                >
-                                  {rec.action}
-                                  <ChevronRight size={12} className="ml-1" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8">
-                        <div className="w-12 h-12 rounded-xl bg-[#18181b] border border-[#27272a] flex items-center justify-center mx-auto mb-3">
-                          <Sparkles size={24} className="text-[#71717a]" />
-                        </div>
-                        <p className="text-sm text-[#71717a]">
-                          Plaats producten om AI-aanbevelingen te ontvangen
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#10b981] text-[#10b981] hover:bg-[#10b981]/10"
-                    onClick={fetchRecommendations}
-                    disabled={!project.id}
-                    data-testid="refresh-ai-button"
-                  >
-                    <Sparkles size={14} className="mr-2" />
-                    Vernieuw aanbevelingen
-                  </Button>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
 
         <Toaster 
-          theme="dark" 
+          theme="light" 
           position="bottom-right"
           toastOptions={{
             style: {
-              background: '#18181b',
-              border: '1px solid #27272a',
-              color: '#fff',
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              color: '#1e3a5f',
             },
           }}
         />
