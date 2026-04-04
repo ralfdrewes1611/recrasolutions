@@ -1,7 +1,7 @@
 # RECRA Solutions Configurator Platform - PRD
 
 ## Original Problem Statement
-Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions, gericht op recreatieparken, campings en outdoor hospitality. Een schaalbare tool waarin klanten zelfstandig hun terrein kunnen configureren, producten kunnen plaatsen op een plattegrond en realtime een offerte + technisch plan ontvangen.
+Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions, gericht op recreatieparken, campings en outdoor hospitality. Klanten configureren hun terrein, plaatsen producten op een plattegrond en ontvangen realtime een offerte + technisch plan.
 
 ## Architecture
 - **Frontend**: React 19 + Tailwind CSS + Shadcn UI
@@ -9,78 +9,55 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 - **Database**: MongoDB
 - **AI**: OpenAI GPT-5.2 via Emergent Integrations
 
-## User Personas
-1. **Park Manager** - Configures their recreation park with products
-2. **Sales Representative** - Uses tool for customer quotes
-3. **Technical Planner** - Plans product placement and coverage
-
-## Core Requirements
-- Multi-step wizard configurator (Project > Terrein > Producten > Energie > Offerte)
-- Drag & drop AND click-to-place site planner with snap-to-grid (24px)
-- 8 product categories: sanitair, slagbomen, camera's, WiFi, verlichting, betaalsystemen, toegangscontrole, douchelezers
-- Real-time Investering / Operational Lease calculation (60 mnd incl. SLA)
-- AI-powered recommendations
-- PDF quote export with RECRA branding
-- Zone definition tools
-- Project management (save/load/delete)
-- Modular sanitair configuration in quote step (Adyen only)
-- Realistic product dimensions (sanitair: 3x6m, 6x8m, 8x12m)
-- Realistic pitch sizes (normal: 8x10m=80m2, XL: 12x15m=180m2)
-
 ## What's Been Implemented
 
-### Iteration 1-2 (April 3, 2026)
-- Products API with 22 seeded products
-- Projects CRUD API, Quote calculation API
-- AI recommendations API (rule-based + GPT-5.2)
-- Floor plan analysis API (OpenAI Vision)
-- PDF quote generation API
-- 5-step wizard, Product catalog with filtering
-- Canvas with zones and coverage toggle
+### Core (Iteratie 1-3)
+- 5-stappen wizard: Project > Terrein > Producten > Energie > Offerte
+- 22 producten in 8 categorieen (Muntautomaat verwijderd, alleen Adyen)
+- Canvas met zones, dekking toggle, snap-to-grid (24px)
+- AI aanbevelingen, plattegrond analyse (Vision), PDF offerte export
+- Project CRUD (opslaan/laden/verwijderen)
+- RECRA branding: Cream #FDF9ED, Dark Olive #244628, Bright Green #70C26C
 
-### Iteration 4 (April 4, 2026)
-- Drag & Drop fix (pointer-events-none on empty state)
-- OPEX -> Operational Lease renamed
-- Muntautomaat removed from DB
-- Sanitair configurator moved to Step 5
+### Iteratie 4-5 (April 4, 2026)
+- "CAPEX" -> "Investering" / "Aankoopkosten"
+- "OPEX" -> "Operational Lease" met zichtbare tekst "60 maanden incl. SLA"
+- Sanitair configurator in Step 5 (Adyen, 4 modules)
+- Click-to-place mechanisme
+- Realistische sanitair maten: 3x6m, 6x8m, 8x12m
+- Rechthoekige standplaatsen: 8x10m normaal, 12x15m XL
+- Rondrit wegenloop (4 wegzones)
 
-### Iteration 5 (April 4, 2026)
-- **Click-to-place**: Click product in sidebar, then click canvas to place
-- **"CAPEX" removed**: Sidebar now shows "Investering", Step 5 shows "Aankoopkosten"
-- **Lease text visible**: "60 mnd incl. SLA" shown as text, not tooltip
-- **Realistic sanitair dimensions**: Compact 3x6m, Medium 6x8m, Premium 8x12m
-- **Rectangular pitches**: AI layout generates 8x10m normal and 12x15m XL pitches
-- **Road loop**: 4 road zones (Hoofdweg, Weg links, Weg rechts, Weg onder)
-- **Product dimensions shown**: On product cards next to price
-- **Canvas cursor**: Changes to copy cursor when click-to-place is active
+### Iteratie 6 (April 4, 2026)
+- **Custom pointer drag**: Muisknop ingedrukt houden op product icoon, slepen naar canvas, loslaten = geplaatst
+- **Drag ghost**: Visueel preview-element dat de cursor volgt tijdens slepen
+- **Icoon | 2D toggle**: Duidelijke schakelknop in canvas toolbar
+- **2D weergave**: Producten als op-schaal rechthoeken (CANVAS_SCALE=10px/m) met afmetingen erin
+- **Icoon weergave**: Compacte 48x48 iconen (legacy)
+- **Afmetingen op kaarten**: 3x6m, 6x8m, 8x12m etc. getoond naast prijs
+- **Partner toekomst**: Gebruiker wil data van partners ontvangen om producten toe te voegen
 
 ## Prioritized Backlog
 
-### P0 - Critical (Done)
-- [x] Core configurator flow
-- [x] Product placement (drag + click-to-place)
-- [x] Quote calculation
-- [x] PDF export
-- [x] Zone definition tools
-- [x] Project save/load
-- [x] RECRA branding
-- [x] Operational Lease terminology (no CAPEX/OPEX)
-- [x] Adyen-only payments
-- [x] Modular sanitair configuration
-- [x] Realistic dimensions
+### P0 - Done
+- [x] Core wizard flow + Canvas + Drag/Click-to-place
+- [x] Investering/Operational Lease labels
+- [x] Sanitair samenstelling in offerte
+- [x] 2D toggle + op-schaal weergave
+- [x] Realistische afmetingen
+- [x] Pointer-based drag
 
 ### P1 - High Priority
-- [ ] Dynamic terrain: layout adapts to uploaded plattegrond instead of static grid
-- [ ] 2D Top-Down Product View Toggle on canvas
-- [ ] RECRA Logo integration (need PNG/SVG)
-- [ ] Energy step - full calculation with hybrid/offgrid components
-- [ ] App.js refactoring into smaller components
+- [ ] Dynamisch terrein: layout past zich aan op geuploade plattegrond
+- [ ] Energie stap: volledige hybrid/offgrid berekening
+- [ ] RECRA Logo integratie (PNG/SVG nodig)
+- [ ] App.js opsplitsen in componenten
 
 ### P2 - Medium Priority
-- [ ] User authentication (Free/Pro/Enterprise)
-- [ ] Partner/admin portal
-- [ ] Share configuration via unique URL
+- [ ] Partner portal: data ontvangen van leveranciers voor producten
+- [ ] Authenticatie (Free/Pro/Enterprise)
+- [ ] Deel configuratie via unieke URL
 
 ### P3 - Nice to Have
 - [ ] AR preview, Drone data, Live sensors
-- [ ] CRM integration, Grenke lease, White-label
+- [ ] CRM integratie, Grenke lease, White-label
