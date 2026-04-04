@@ -141,7 +141,8 @@ function App() {
   const [showCoverage, setShowCoverage] = useState(true);
   const [sidebarTab, setSidebarTab] = useState('products');
   const [showRealProducts, setShowRealProducts] = useState(false);
-  const [sanitairConfig, setSanitairConfig] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [sanitairConfigs, setSanitairConfigs] = useState({});
 
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -424,12 +425,8 @@ function App() {
       placed_products: [...prev.placed_products, newPlacedProduct],
     }));
 
-    // Check if sanitair - open config dialog
-    if (product.category === 'sanitair') {
-      setSanitairConfig({ productId: product.id, placedId: newPlacedProduct.id });
-    }
-
     setDraggedProduct(null);
+    setIsDragOver(false);
     toast.success(`${product.name} geplaatst`);
   };
 
@@ -437,6 +434,14 @@ function App() {
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'copy';
+    if (!isDragOver) setIsDragOver(true);
+  };
+
+  const handleCanvasDragLeave = (e) => {
+    e.preventDefault();
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setIsDragOver(false);
+    }
   };
 
   const handleItemClick = (item) => {
@@ -517,7 +522,25 @@ function App() {
     return acc;
   }, { watts: 0 });
 
-  // Quick quote calculation
+  // Quick quote calculation (includes sanitair config extras)
+  const SANITAIR_EXTRAS = {
+    extra_douches: { label: 'Extra douches', price: 2500, lease: 60 },
+    familiecabine: { label: 'Familiecabine', price: 3000, lease: 72 },
+    warmtepomp: { label: 'Warmtepomp', price: 4500, lease: 108 },
+    zonneboiler: { label: 'Zonneboiler', price: 3500, lease: 84 },
+  };
+
+  const sanitairExtrasTotal = Object.entries(sanitairConfigs).reduce((acc, [placedId, config]) => {
+    (config.extras || []).forEach(extraKey => {
+      const extra = SANITAIR_EXTRAS[extraKey];
+      if (extra) {
+        acc.capex += extra.price;
+        acc.lease += extra.lease;
+      }
+    });
+    return acc;
+  }, { capex: 0, lease: 0 });
+
   const quickQuote = project.placed_products.reduce((acc, pp) => {
     const product = getProductById(pp.product_id);
     if (product) {
@@ -527,7 +550,7 @@ function App() {
       acc.maintenance += product.maintenance_yearly * pp.quantity;
     }
     return acc;
-  }, { capex: 0, opex: 0, install: 0, maintenance: 0 });
+  }, { capex: sanitairExtrasTotal.capex, opex: sanitairExtrasTotal.lease, install: 0, maintenance: 0 });
 
   const newProject = () => {
     setProject({
@@ -973,6 +996,58 @@ function App() {
               {/* Step 5: Quote */}
               {currentStep === 5 && (
                 <div className="space-y-4" data-testid="step-5-content">
+                  {/* Sanitair configuratie sectie */}
+                  {project.placed_products.some(pp => {
+                    const p = getProductById(pp.product_id);
+                    return p && p.category === 'sanitair';
+                  }) && (
+                    <div className="p-4 rounded-xl bg-white border border-[#e5e2d9]">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Bath size={18} className="text-[#70C26C]" />
+                        <h3 className="font-bold text-[#333333]">Sanitair Samenstellen</h3>
+                      </div>
+                      <p className="text-xs text-[#777777] mb-3">Configureer modules en betaalmethode per sanitair unit.</p>
+                      {project.placed_products.filter(pp => {
+                        const p = getProductById(pp.product_id);
+                        return p && p.category === 'sanitair';
+                      }).map((pp) => {
+                        const product = getProductById(pp.product_id);
+                        const config = sanitairConfigs[pp.id] || { payment: 'adyen_contactless', extras: [] };
+                        
+                        const toggleExtra = (extraKey) => {
+                          setSanitairConfigs(prev => {
+                            const current = prev[pp.id] || { payment: 'adyen_contactless', extras: [] };
+                            const extras = current.extras.includes(extraKey)
+                              ? current.extras.filter(e => e !== extraKey)
+                              : [...current.extras, extraKey];
+                            return { ...prev, [pp.id]: { ...current, extras } };
+                          });
+                        };
+
+                        return (
+                          <div key={pp.id} className="mb-3 p-3 rounded-lg border border-[#e5e2d9] bg-[#FFFEF8]" data-testid={`sanitair-config-${pp.id}`}>
+                            <div className="font-medium text-sm text-[#333333] mb-2">{product.name}</div>
+                            <div className="text-xs text-[#777777] mb-2">Betaling: Adyen (Contactloos PIN/Apple Pay/Google Pay)</div>
+                            <div className="space-y-1.5">
+                              {Object.entries(SANITAIR_EXTRAS).map(([key, extra]) => (
+                                <label key={key} className="flex items-center gap-2 cursor-pointer" data-testid={`sanitair-extra-${key}-${pp.id}`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={config.extras.includes(key)}
+                                    onChange={() => toggleExtra(key)}
+                                    className="rounded border-[#70C26C] text-[#70C26C]"
+                                  />
+                                  <span className="text-sm text-[#333333] flex-1">{extra.label}</span>
+                                  <span className="text-xs font-medium text-[#70C26C]">+€{extra.price.toLocaleString()}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   <div className="p-4 rounded-xl bg-white border border-[#e5e2d9]">
                     <h3 className="font-bold text-[#333333] mb-3">Investering</h3>
                     <div className="space-y-2">
@@ -1119,7 +1194,7 @@ function App() {
             <div className="flex-1 overflow-auto bg-[#FDF9ED] p-4">
               <div
                 ref={canvasRef}
-                className={`relative bg-white rounded-xl shadow-lg mx-auto border border-[#e5e2d9] ${canvasTool === 'zone' ? 'cursor-crosshair' : ''}`}
+                className={`relative bg-white rounded-xl shadow-lg mx-auto border-2 transition-colors ${canvasTool === 'zone' ? 'cursor-crosshair' : ''} ${isDragOver ? 'border-[#70C26C] bg-[#70C26C]/5' : 'border-[#e5e2d9]'}`}
                 style={{ 
                   width: project.canvas_width, 
                   height: project.canvas_height,
@@ -1130,6 +1205,7 @@ function App() {
                 onClick={handleCanvasClick}
                 onDrop={handleCanvasDrop}
                 onDragOver={handleCanvasDragOver}
+                onDragLeave={handleCanvasDragLeave}
                 data-testid="site-canvas"
               >
                 {/* Floor plan background */}
@@ -1215,15 +1291,26 @@ function App() {
                   </div>
                 )}
 
-                {/* Empty state */}
+                {/* Empty state - pointer-events-none to allow drag & drop through */}
                 {project.placed_products.length === 0 && project.zones.length === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="text-center max-w-sm p-8">
-                      <div className="w-16 h-16 rounded-2xl bg-[#FDF9ED] border border-[#e5e2d9] flex items-center justify-center mx-auto mb-4">
-                        <Package size={32} className="text-[#e5e2d9]" />
-                      </div>
-                      <h3 className="font-semibold text-[#333333] mb-2">Start met configureren</h3>
-                      <p className="text-sm text-[#777777]">Sleep producten hierheen of gebruik AI om een layout te genereren.</p>
+                      {isDragOver ? (
+                        <>
+                          <div className="w-16 h-16 rounded-2xl bg-[#70C26C]/10 border-2 border-dashed border-[#70C26C] flex items-center justify-center mx-auto mb-4">
+                            <Plus size={32} className="text-[#70C26C]" />
+                          </div>
+                          <h3 className="font-semibold text-[#70C26C] mb-2">Laat hier los</h3>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-16 h-16 rounded-2xl bg-[#FDF9ED] border border-[#e5e2d9] flex items-center justify-center mx-auto mb-4">
+                            <Package size={32} className="text-[#e5e2d9]" />
+                          </div>
+                          <h3 className="font-semibold text-[#333333] mb-2">Start met configureren</h3>
+                          <p className="text-sm text-[#777777]">Sleep producten hierheen of gebruik AI om een layout te genereren.</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1252,7 +1339,7 @@ function App() {
                     </div>
                     <div className="p-3 rounded-xl bg-[#244628]/10 border border-[#244628]/20">
                       <div className="text-xs text-[#777777]">Lease/mnd</div>
-                      <div className="font-bold text-[#244628]" data-testid="quote-opex">€ {quickQuote.opex.toLocaleString()}</div>
+                      <div className="font-bold text-[#244628]" data-testid="quote-operational-lease">€ {quickQuote.opex.toLocaleString()}</div>
                     </div>
                   </div>
 
@@ -1340,54 +1427,6 @@ function App() {
             </Tabs>
           </div>
         </div>
-
-        {/* Sanitair Config Dialog */}
-        <Dialog open={!!sanitairConfig} onOpenChange={() => setSanitairConfig(null)}>
-          <DialogContent className="bg-white max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-[#333333]">Sanitair Unit Configureren</DialogTitle>
-              <DialogDescription className="text-[#777777]">
-                Stel uw sanitair unit modulair samen met Adyen betaalterminal.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              <div>
-                <Label className="text-sm font-medium">Betaalmethode (Adyen)</Label>
-                <div className="mt-2 space-y-2">
-                  <label className="flex items-center gap-2 p-3 rounded-lg border border-[#e5e2d9] cursor-pointer hover:border-[#70C26C]">
-                    <input type="radio" name="payment" defaultChecked className="text-[#70C26C]" />
-                    <span className="text-sm text-[#333333]">Contactloos (PIN/Apple Pay/Google Pay)</span>
-                  </label>
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Extra opties</Label>
-                <div className="mt-2 space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-[#70C26C]" />
-                    <span className="text-sm text-[#333333]">Extra douches (+€2.500)</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-[#70C26C]" />
-                    <span className="text-sm text-[#333333]">Familiecabine (+€3.000)</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-[#70C26C]" />
-                    <span className="text-sm text-[#333333]">Warmtepomp (+€4.500)</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-[#70C26C]" />
-                    <span className="text-sm text-[#333333]">Zonneboiler (+€3.500)</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setSanitairConfig(null)}>Annuleren</Button>
-              <Button className="flex-1 bg-[#70C26C] hover:bg-[#5fb35b] text-white" onClick={() => { toast.success('Sanitair configuratie opgeslagen'); setSanitairConfig(null); }}>Opslaan</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </div>

@@ -404,18 +404,6 @@ SEED_PRODUCTS = [
         "icon": "droplets",
         "color": "#06b6d4"
     },
-    {
-        "name": "Elektra Muntautomaat",
-        "category": "douchelezer",
-        "description": "Contactloze betaling voor elektra op standplaatsen",
-        "price_purchase": 950,
-        "price_lease_monthly": 28,
-        "installation_cost": 175,
-        "maintenance_yearly": 80,
-        "dimensions": {"width": 0.2, "height": 0.3},
-        "icon": "droplets",
-        "color": "#06b6d4"
-    },
 ]
 
 # ==================== ROUTES ====================
@@ -852,7 +840,8 @@ async def generate_quote_pdf(project_id: str):
                 </tr>
             </table>
             
-            <h3 style="margin-top: 20px;">OPEX (Operationele kosten)</h3>
+            <h3 style="margin-top: 20px;">Operational Lease</h3>
+            <p style="font-size: 12px; color: #666;">Uitgaande van 60 maanden incl. SLA onderhoudscontract</p>
             <table>
                 <tr>
                     <td>Lease per maand</td>
@@ -911,6 +900,9 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    # Remove banned products (coin-operated machines)
+    await db.products.delete_many({"name": {"$regex": "Muntautomaat"}})
+    
     # Auto-seed products if database is empty
     existing = await db.products.count_documents({})
     if existing == 0:
@@ -920,6 +912,8 @@ async def startup_event():
             doc['created_at'] = doc['created_at'].isoformat()
             await db.products.insert_one(doc)
         logger.info(f"Seeded {len(SEED_PRODUCTS)} products")
+    else:
+        logger.info(f"Database contains {existing} products")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
