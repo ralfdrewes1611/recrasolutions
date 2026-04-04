@@ -146,6 +146,7 @@ function App() {
   const [sanitairConfigs, setSanitairConfigs] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null); // click-to-place
   const [pointerDrag, setPointerDrag] = useState(null); // { product, x, y } for custom drag
+  const [movingItem, setMovingItem] = useState(null); // { placedId, offsetX, offsetY } for repositioning
   const [viewMode, setViewMode] = useState('2d'); // 'icon' or '2d'
 
   const canvasRef = useRef(null);
@@ -400,6 +401,9 @@ function App() {
   };
 
   const handleCanvasClick = (e) => {
+    // Als we een item aan het verplaatsen zijn, negeer klik
+    if (movingItem) return;
+
     // Click-to-place mode: als er een product geselecteerd is, plaats het
     if (selectedProduct && canvasTool === 'select') {
       const canvas = canvasRef.current;
@@ -424,6 +428,13 @@ function App() {
       }));
 
       toast.success(`${selectedProduct.name} geplaatst`);
+      setSelectedProduct(null); // Wis selectie na plaatsing
+      return;
+    }
+
+    // Deselect placed item als we op lege canvas klikken
+    if (canvasTool === 'select' && selectedItem) {
+      setSelectedItem(null);
       return;
     }
 
@@ -585,6 +596,53 @@ function App() {
       document.removeEventListener('mouseup', handleUp);
     };
   }, [pointerDrag]);
+
+  // Move placed items by dragging them on the canvas
+  const handlePlacedItemMouseDown = useCallback((e, placed) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    setMovingItem({
+      placedId: placed.id,
+      offsetX: e.clientX - rect.left - placed.x,
+      offsetY: e.clientY - rect.top - placed.y,
+    });
+    setSelectedItem(placed);
+    setSelectedProduct(null);
+  }, []);
+
+  useEffect(() => {
+    if (!movingItem) return;
+    
+    const handleMove = (e) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left - movingItem.offsetX;
+      const y = e.clientY - rect.top - movingItem.offsetY;
+      const snappedX = Math.round(x / 24) * 24;
+      const snappedY = Math.round(y / 24) * 24;
+      
+      setProject(prev => ({
+        ...prev,
+        placed_products: prev.placed_products.map(p =>
+          p.id === movingItem.placedId ? { ...p, x: Math.max(0, snappedX), y: Math.max(0, snappedY) } : p
+        ),
+      }));
+    };
+    const handleUp = () => {
+      setMovingItem(null);
+    };
+    
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [movingItem]);
 
   const handleItemClick = (item) => {
     if (canvasTool !== 'select') return;
@@ -945,6 +1003,36 @@ function App() {
                     </button>
                   </div>
 
+
+                  {project.floor_plan_base64 && (
+                    <div className="p-3 rounded-xl bg-white border border-[#e5e2d9]" data-testid="scale-settings">
+                      <Label className="text-sm font-medium text-[#333333] mb-2 block">Schaal instellen</Label>
+                      <p className="text-xs text-[#777777] mb-2">Hoeveel meter is 1 blokje (24px) op de tekening?</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <div className="w-6 h-6 border border-[#e5e2d9] bg-[#FDF9ED] rounded" />
+                          <span className="text-sm text-[#333333]">=</span>
+                          <Input
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            max="20"
+                            value={Math.round(project.scale_meters_per_pixel * 24 * 10) / 10}
+                            onChange={(e) => {
+                              const metersPerBlock = parseFloat(e.target.value) || 1;
+                              setProject(prev => ({ ...prev, scale_meters_per_pixel: metersPerBlock / 24 }));
+                            }}
+                            className="w-20 bg-white border-[#e5e2d9] h-8 text-sm"
+                            data-testid="scale-input"
+                          />
+                          <span className="text-sm text-[#777777]">meter</span>
+                        </div>
+                        <div className="text-xs text-[#777777] bg-[#FDF9ED] px-2 py-1 rounded">
+                          Canvas: {Math.round(project.canvas_width * project.scale_meters_per_pixel)}x{Math.round(project.canvas_height * project.scale_meters_per_pixel)}m
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="p-4 rounded-xl bg-[#70C26C]/10 border border-[#70C26C]/20">
                     <div className="flex items-center gap-2 mb-3">
                       <Sparkles size={18} className="text-[#70C26C]" />
@@ -1381,7 +1469,7 @@ function App() {
             <div className="flex-1 overflow-auto bg-[#FDF9ED] p-4">
               <div
                 ref={canvasRef}
-                className={`relative bg-white rounded-xl shadow-lg mx-auto border-2 transition-colors ${canvasTool === 'zone' ? 'cursor-crosshair' : selectedProduct ? 'cursor-copy' : ''} ${isDragOver ? 'border-[#70C26C] bg-[#70C26C]/5' : 'border-[#e5e2d9]'}`}
+                className={`relative bg-white rounded-xl shadow-lg mx-auto border-2 transition-colors ${canvasTool === 'zone' ? 'cursor-crosshair' : selectedProduct ? 'cursor-copy' : movingItem ? 'cursor-grabbing' : ''} ${isDragOver ? 'border-[#70C26C] bg-[#70C26C]/5' : 'border-[#e5e2d9]'}`}
                 style={{ 
                   width: project.canvas_width, 
                   height: project.canvas_height,
@@ -1436,9 +1524,10 @@ function App() {
                   return (
                     <div
                       key={placed.id}
-                      className={`absolute cursor-pointer transition-all ${isSelected ? 'ring-2 ring-[#70C26C] ring-offset-2 z-20' : 'z-10'}`}
+                      className={`absolute transition-all ${movingItem?.placedId === placed.id ? 'cursor-grabbing z-30 opacity-80' : isSelected ? 'cursor-grab ring-2 ring-[#70C26C] ring-offset-2 z-20' : 'cursor-grab z-10 hover:ring-1 hover:ring-[#70C26C]/50'}`}
                       style={{ left: placed.x, top: placed.y, transform: `rotate(${placed.rotation}deg)` }}
-                      onClick={(e) => { e.stopPropagation(); handleItemClick(placed); }}
+                      onMouseDown={(e) => handlePlacedItemMouseDown(e, placed)}
+                      onClick={(e) => { e.stopPropagation(); }}
                       data-testid={`placed-item-${placed.id}`}
                     >
                       {showCoverage && product.coverage_radius && (
@@ -1490,16 +1579,21 @@ function App() {
                 })}
 
                 {/* Selected item controls */}
-                {selectedItem && (
-                  <div className="absolute bg-white rounded-lg shadow-xl p-1 flex gap-1 border border-[#e5e2d9]" style={{ left: selectedItem.x + 60, top: selectedItem.y - 8 }}>
-                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setProject(prev => ({ ...prev, placed_products: prev.placed_products.map(p => p.id === selectedItem.id ? { ...p, rotation: (p.rotation + 45) % 360 } : p) }))}>
-                      <RotateCw size={14} />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 text-red-500" onClick={() => removeItem(selectedItem.id)}>
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                )}
+                {selectedItem && !movingItem && (() => {
+                  const selProduct = getProductById(selectedItem.product_id);
+                  const selSize = selProduct ? getProductPxSize(selProduct) : { w: 48, h: 48 };
+                  const panelLeft = selectedItem.x + (viewMode === '2d' ? selSize.w + 8 : 56);
+                  return (
+                    <div className="absolute bg-white rounded-lg shadow-xl p-1.5 flex gap-1 border border-[#e5e2d9] z-30" style={{ left: panelLeft, top: selectedItem.y - 4 }}>
+                      <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setProject(prev => ({ ...prev, placed_products: prev.placed_products.map(p => p.id === selectedItem.id ? { ...p, rotation: (p.rotation + 45) % 360 } : p) }))}>
+                        <RotateCw size={14} />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="w-8 h-8 text-red-500" onClick={() => removeItem(selectedItem.id)}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  );
+                })()}
 
                 {/* Empty state - pointer-events-none to allow drag & drop through */}
                 {project.placed_products.length === 0 && project.zones.length === 0 && (
