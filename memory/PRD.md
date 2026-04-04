@@ -15,69 +15,78 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 3. **Technical Planner** - Plans product placement and coverage
 
 ## Core Requirements
-- Multi-step wizard configurator (Project → Terrain → Products → Quote)
+- Multi-step wizard configurator (Project > Terrein > Producten > Energie > Offerte)
 - Drag & drop site planner with snap-to-grid (24px)
 - 8 product categories: sanitair, slagbomen, camera's, WiFi, verlichting, betaalsystemen, toegangscontrole, douchelezers
-- Real-time CAPEX/OPEX calculation
+- Real-time CAPEX / Operational Lease calculation
 - AI-powered recommendations
 - PDF quote export with RECRA branding
 - Zone definition tools
 - Project management (save/load/delete)
+- Modular sanitair configuration in quote step
+- Only Adyen payment terminals (no coin machines)
 
 ## What's Been Implemented
 
-### Iteration 1 (April 3, 2026)
-- ✅ Products API with 19 seeded products
-- ✅ Projects CRUD API
-- ✅ Quote calculation API
-- ✅ AI recommendations API
-- ✅ Floor plan analysis API (OpenAI Vision)
-- ✅ PDF quote generation API
-- ✅ 4-step wizard navigation
-- ✅ Product catalog with category filtering
-- ✅ Drag & drop canvas with snap-to-grid
-- ✅ Real-time quote sidebar
+### Iteration 1-2 (April 3, 2026)
+- Products API with 22 seeded products (Muntautomaat removed)
+- Projects CRUD API
+- Quote calculation API
+- AI recommendations API (rule-based + GPT-5.2)
+- Floor plan analysis API (OpenAI Vision)
+- PDF quote generation API
+- 5-step wizard navigation
+- Product catalog with category filtering
+- Drag & drop canvas with snap-to-grid
+- Real-time quote sidebar
+- UI Redesign - Light theme matching recrasolutions.com
+- Douchelezers - 3 douchelezer products
+- Zone Definition Tool - Polygon drawing on canvas
+- Project Management - Save/Load/Delete projects
+- Coverage Toggle - Show/hide product coverage radius
 
-### Iteration 2 (April 3, 2026)
-- ✅ **UI Redesign** - Light theme matching recrasolutions.com (Inter font, green accents #4a9b7f, #2d5a3d)
-- ✅ **Douchelezers** - Added 4 new douchelezer products (RECRA specialty product)
-- ✅ **Zone Definition Tool** - Polygon drawing on canvas with finish/cancel controls
-- ✅ **Project Management** - Save/Load/Delete projects via dialog
-- ✅ **Coverage Toggle** - Show/hide product coverage radius
-- ✅ 23 total products across 8 categories
-- ✅ Header with Projecten, Opslaan buttons
-- ✅ Canvas toolbar with Select and Zone tools
+### Iteration 4 (April 4, 2026)
+- **Drag & Drop Fix** - Fixed empty state overlay blocking drag events (pointer-events-none)
+- **OPEX -> Operational Lease** - Renamed throughout app and PDF, with tooltip "60 maanden incl. SLA"
+- **Muntautomaat Removed** - Purged from DB seed and existing databases on startup
+- **Sanitair Configurator** - Moved to Step 5 (Offerte) with modular options:
+  - Extra douches (+EUR 2.500)
+  - Familiecabine (+EUR 3.000)
+  - Warmtepomp (+EUR 4.500)
+  - Zonneboiler (+EUR 3.500)
+- **Drag Feedback** - Visual border change + "Laat hier los" text when dragging over canvas
+- **Adyen Only** - All payment via Adyen contactless (PIN/Apple Pay/Google Pay)
 
 ## Prioritized Backlog
 
 ### P0 - Critical (Done)
 - [x] Core configurator flow
-- [x] Product placement on canvas
+- [x] Product placement on canvas (drag & drop working)
 - [x] Quote calculation
 - [x] PDF export
 - [x] Zone definition tools
 - [x] Project save/load functionality
 - [x] RECRA branding/look & feel
+- [x] Operational Lease terminology
+- [x] Adyen-only payments (no coin machines)
+- [x] Modular sanitair configuration in offerte
 
-### P1 - High Priority (Future)
+### P1 - High Priority
+- [ ] AI Auto-Layout - AI-generated terrain layout with road and pitches
+- [ ] 2D Top-Down Product View Toggle on canvas
+- [ ] RECRA Logo integration (need PNG/SVG from user)
+- [ ] Energy step - full calculation logic with hybrid/offgrid options
+- [ ] App.js refactoring into smaller components
+
+### P2 - Medium Priority
 - [ ] User authentication (Free/Pro/Enterprise tiers)
 - [ ] Partner/admin portal
-- [ ] Floor plan AI auto-detection improvements
+- [ ] Share configuration via unique URL
 
-### P2 - Medium Priority (Future)
-- [ ] CRM integration
-- [ ] Lease partner integration (Grenke)
-- [ ] White-label support
-- [ ] Sharing/collaboration features
-
-### P3 - Nice to Have (Future)
+### P3 - Nice to Have
 - [ ] AR preview
 - [ ] Drone data integration
 - [ ] Live sensor simulation
-- [ ] Partner marketplace
-
-## Next Tasks
-1. User authentication met Free/Pro/Enterprise tiers
-2. Partner/admin portal voor projectverdeling
-3. Verbeterde AI zone-herkenning
-4. Reserveringssysteem integraties
+- [ ] CRM integration
+- [ ] Lease partner integration (Grenke)
+- [ ] White-label support
