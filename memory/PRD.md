@@ -16,77 +16,71 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 
 ## Core Requirements
 - Multi-step wizard configurator (Project > Terrein > Producten > Energie > Offerte)
-- Drag & drop site planner with snap-to-grid (24px)
+- Drag & drop AND click-to-place site planner with snap-to-grid (24px)
 - 8 product categories: sanitair, slagbomen, camera's, WiFi, verlichting, betaalsystemen, toegangscontrole, douchelezers
-- Real-time CAPEX / Operational Lease calculation
+- Real-time Investering / Operational Lease calculation (60 mnd incl. SLA)
 - AI-powered recommendations
 - PDF quote export with RECRA branding
 - Zone definition tools
 - Project management (save/load/delete)
-- Modular sanitair configuration in quote step
-- Only Adyen payment terminals (no coin machines)
+- Modular sanitair configuration in quote step (Adyen only)
+- Realistic product dimensions (sanitair: 3x6m, 6x8m, 8x12m)
+- Realistic pitch sizes (normal: 8x10m=80m2, XL: 12x15m=180m2)
 
 ## What's Been Implemented
 
 ### Iteration 1-2 (April 3, 2026)
-- Products API with 22 seeded products (Muntautomaat removed)
-- Projects CRUD API
-- Quote calculation API
+- Products API with 22 seeded products
+- Projects CRUD API, Quote calculation API
 - AI recommendations API (rule-based + GPT-5.2)
 - Floor plan analysis API (OpenAI Vision)
 - PDF quote generation API
-- 5-step wizard navigation
-- Product catalog with category filtering
-- Drag & drop canvas with snap-to-grid
-- Real-time quote sidebar
-- UI Redesign - Light theme matching recrasolutions.com
-- Douchelezers - 3 douchelezer products
-- Zone Definition Tool - Polygon drawing on canvas
-- Project Management - Save/Load/Delete projects
-- Coverage Toggle - Show/hide product coverage radius
+- 5-step wizard, Product catalog with filtering
+- Canvas with zones and coverage toggle
 
 ### Iteration 4 (April 4, 2026)
-- **Drag & Drop Fix** - Fixed empty state overlay blocking drag events (pointer-events-none)
-- **OPEX -> Operational Lease** - Renamed throughout app and PDF, with tooltip "60 maanden incl. SLA"
-- **Muntautomaat Removed** - Purged from DB seed and existing databases on startup
-- **Sanitair Configurator** - Moved to Step 5 (Offerte) with modular options:
-  - Extra douches (+EUR 2.500)
-  - Familiecabine (+EUR 3.000)
-  - Warmtepomp (+EUR 4.500)
-  - Zonneboiler (+EUR 3.500)
-- **Drag Feedback** - Visual border change + "Laat hier los" text when dragging over canvas
-- **Adyen Only** - All payment via Adyen contactless (PIN/Apple Pay/Google Pay)
+- Drag & Drop fix (pointer-events-none on empty state)
+- OPEX -> Operational Lease renamed
+- Muntautomaat removed from DB
+- Sanitair configurator moved to Step 5
+
+### Iteration 5 (April 4, 2026)
+- **Click-to-place**: Click product in sidebar, then click canvas to place
+- **"CAPEX" removed**: Sidebar now shows "Investering", Step 5 shows "Aankoopkosten"
+- **Lease text visible**: "60 mnd incl. SLA" shown as text, not tooltip
+- **Realistic sanitair dimensions**: Compact 3x6m, Medium 6x8m, Premium 8x12m
+- **Rectangular pitches**: AI layout generates 8x10m normal and 12x15m XL pitches
+- **Road loop**: 4 road zones (Hoofdweg, Weg links, Weg rechts, Weg onder)
+- **Product dimensions shown**: On product cards next to price
+- **Canvas cursor**: Changes to copy cursor when click-to-place is active
 
 ## Prioritized Backlog
 
 ### P0 - Critical (Done)
 - [x] Core configurator flow
-- [x] Product placement on canvas (drag & drop working)
+- [x] Product placement (drag + click-to-place)
 - [x] Quote calculation
 - [x] PDF export
 - [x] Zone definition tools
-- [x] Project save/load functionality
-- [x] RECRA branding/look & feel
-- [x] Operational Lease terminology
-- [x] Adyen-only payments (no coin machines)
-- [x] Modular sanitair configuration in offerte
+- [x] Project save/load
+- [x] RECRA branding
+- [x] Operational Lease terminology (no CAPEX/OPEX)
+- [x] Adyen-only payments
+- [x] Modular sanitair configuration
+- [x] Realistic dimensions
 
 ### P1 - High Priority
-- [ ] AI Auto-Layout - AI-generated terrain layout with road and pitches
+- [ ] Dynamic terrain: layout adapts to uploaded plattegrond instead of static grid
 - [ ] 2D Top-Down Product View Toggle on canvas
-- [ ] RECRA Logo integration (need PNG/SVG from user)
-- [ ] Energy step - full calculation logic with hybrid/offgrid options
+- [ ] RECRA Logo integration (need PNG/SVG)
+- [ ] Energy step - full calculation with hybrid/offgrid components
 - [ ] App.js refactoring into smaller components
 
 ### P2 - Medium Priority
-- [ ] User authentication (Free/Pro/Enterprise tiers)
+- [ ] User authentication (Free/Pro/Enterprise)
 - [ ] Partner/admin portal
 - [ ] Share configuration via unique URL
 
 ### P3 - Nice to Have
-- [ ] AR preview
-- [ ] Drone data integration
-- [ ] Live sensor simulation
-- [ ] CRM integration
-- [ ] Lease partner integration (Grenke)
-- [ ] White-label support
+- [ ] AR preview, Drone data, Live sensors
+- [ ] CRM integration, Grenke lease, White-label
