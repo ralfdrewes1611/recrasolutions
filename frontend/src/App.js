@@ -62,14 +62,14 @@ const categoryIcons = {
 };
 
 const categoryColors = {
-  sanitair: '#4ade80',
-  slagboom: '#fbbf24',
-  camera: '#f87171',
-  wifi: '#60a5fa',
-  verlichting: '#facc15',
-  betaalsysteem: '#a78bfa',
-  toegangscontrole: '#f472b6',
-  douchelezer: '#22d3ee',
+  sanitair: '#70C26C',
+  slagboom: '#d97706',
+  camera: '#dc2626',
+  wifi: '#2563eb',
+  verlichting: '#ca8a04',
+  betaalsysteem: '#7c3aed',
+  toegangscontrole: '#db2777',
+  douchelezer: '#0891b2',
 };
 
 const categoryLabels = {
@@ -305,7 +305,7 @@ function App() {
       name: `Zone ${project.zones.length + 1}`,
       type: 'standplaats',
       points: currentZonePoints,
-      color: '#4a9b7f',
+      color: '#70C26C',
     };
     
     setProject(prev => ({
@@ -447,20 +447,14 @@ function App() {
 
   return (
     <TooltipProvider>
-      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#0a0a0a]">
-        {/* Header */}
-        <header className="h-16 bg-[#121212] border-b border-[#333] flex items-center justify-between px-6 flex-shrink-0">
+      <div className="h-screen w-full flex flex-col overflow-hidden bg-[#FDF9ED]">
+        {/* Header - Dark olive green like RECRA website */}
+        <header className="h-16 bg-[#244628] flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#4ade80]/20 rounded-lg flex items-center justify-center">
-                <Package className="w-6 h-6 text-[#4ade80]" />
-              </div>
-              <div>
-                <h1 className="text-white font-bold text-lg tracking-tight">
-                  RECRA<span className="text-[#4ade80]">solutions</span>
-                </h1>
-                <p className="text-[#71717a] text-xs">Configurator Platform</p>
-              </div>
+            {/* RECRA Logo - Matching website style */}
+            <div className="flex flex-col items-center">
+              <span className="text-white font-medium text-xl tracking-[0.3em]">RECRA</span>
+              <span className="text-white/70 text-[10px] tracking-[0.15em]">— SOLUTIONS —</span>
             </div>
           </div>
 
@@ -469,24 +463,24 @@ function App() {
               <DialogTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="text-white hover:bg-white/10"
+                  className="text-white/90 hover:text-white hover:bg-white/10"
                   data-testid="open-projects-btn"
                 >
                   <FolderOpen size={18} className="mr-2" />
                   Projecten
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-[#1a1a1a] border-[#333] text-white">
+              <DialogContent className="max-w-2xl bg-white border-[#e5e2d9]">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Mijn Projecten</DialogTitle>
-                  <DialogDescription className="text-[#a1a1aa]">
+                  <DialogTitle className="text-[#333333]">Mijn Projecten</DialogTitle>
+                  <DialogDescription className="text-[#777777]">
                     Selecteer een project om verder te werken of start een nieuw project.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
                   <Button 
                     onClick={newProject} 
-                    className="w-full mb-4 bg-[#4ade80] text-black hover:bg-[#22c55e] font-semibold"
+                    className="w-full mb-4 bg-[#70C26C] hover:bg-[#5fb35b] text-white font-semibold"
                     data-testid="new-project-btn"
                   >
                     <Plus size={18} className="mr-2" />
@@ -506,15 +500,15 @@ function App() {
                             className="flex-1 cursor-pointer"
                             onClick={() => loadProject(p.id)}
                           >
-                            <h4 className="font-medium text-white">{p.name}</h4>
-                            <p className="text-sm text-[#71717a]">
+                            <h4 className="font-medium text-[#333333]">{p.name}</h4>
+                            <p className="text-sm text-[#777777]">
                               {p.project_type} • {p.placed_products?.length || 0} producten
                             </p>
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-[#71717a] hover:text-red-400"
+                            className="text-[#777777] hover:text-red-500"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteProject(p.id);
@@ -525,7 +519,7 @@ function App() {
                         </div>
                       ))}
                       {projects.length === 0 && (
-                        <div className="text-center py-8 text-[#71717a]">
+                        <div className="text-center py-8 text-[#777777]">
                           <FolderOpen size={48} className="mx-auto mb-2 opacity-50" />
                           <p>Nog geen projecten</p>
                         </div>
@@ -538,7 +532,7 @@ function App() {
 
             <Button 
               variant="ghost" 
-              className="text-white hover:bg-white/10"
+              className="text-white/90 hover:text-white hover:bg-white/10"
               onClick={saveProject}
               disabled={loading}
               data-testid="save-project-header-btn"
@@ -547,23 +541,29 @@ function App() {
               Opslaan
             </Button>
 
+            <Button 
+              className="bg-[#70C26C] hover:bg-[#5fb35b] text-white font-medium"
+            >
+              Contact
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="text-white/90 hover:text-white hover:bg-white/10">
                   <HelpCircle size={20} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-[#333]">
-                <DropdownMenuItem className="text-white hover:bg-[#242424]">
+              <DropdownMenuContent align="end" className="bg-white border-[#e5e2d9]">
+                <DropdownMenuItem className="text-[#333333]">
                   <Phone size={16} className="mr-2" />
                   +31 634200253
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-[#242424]">
+                <DropdownMenuItem className="text-[#333333]">
                   <Mail size={16} className="mr-2" />
                   info@recrasolutions.com
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[#333]" />
-                <DropdownMenuItem className="text-white hover:bg-[#242424]">
+                <DropdownMenuSeparator className="bg-[#e5e2d9]" />
+                <DropdownMenuItem className="text-[#333333]">
                   <HelpCircle size={16} className="mr-2" />
                   Handleiding
                 </DropdownMenuItem>
@@ -575,9 +575,9 @@ function App() {
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Sidebar */}
-          <div className="w-80 flex-shrink-0 border-r border-[#333] bg-[#121212] flex flex-col">
+          <div className="w-80 flex-shrink-0 border-r border-[#e5e2d9] bg-[#FFFEF8] flex flex-col">
             {/* Wizard Steps */}
-            <div className="p-4 border-b border-[#333]">
+            <div className="p-4 border-b border-[#e5e2d9]">
               <div className="space-y-1">
                 {WIZARD_STEPS.map((step) => {
                   const Icon = step.icon;
@@ -590,29 +590,29 @@ function App() {
                       onClick={() => setCurrentStep(step.id)}
                       className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
                         isActive 
-                          ? 'bg-[#4ade80]/10 border border-[#4ade80]/30' 
+                          ? 'bg-[#70C26C]/10 border border-[#70C26C]/30' 
                           : isCompleted
-                            ? 'bg-[#22c55e]/10'
-                            : 'hover:bg-[#1a1a1a]'
+                            ? 'bg-[#70C26C]/5'
+                            : 'hover:bg-[#FDF9ED]'
                       }`}
                       data-testid={`wizard-step-${step.id}`}
                     >
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                         isActive 
-                          ? 'bg-[#4ade80] text-black' 
+                          ? 'bg-[#70C26C] text-white' 
                           : isCompleted
-                            ? 'bg-[#22c55e] text-black'
-                            : 'bg-[#242424] text-[#71717a]'
+                            ? 'bg-[#70C26C] text-white'
+                            : 'bg-[#e5e2d9] text-[#777777]'
                       }`}>
                         {isCompleted ? <Check size={16} /> : <Icon size={16} />}
                       </div>
                       <div className="text-left">
                         <div className={`text-sm font-medium ${
-                          isActive ? 'text-[#4ade80]' : isCompleted ? 'text-[#22c55e]' : 'text-[#a1a1aa]'
+                          isActive ? 'text-[#70C26C]' : isCompleted ? 'text-[#70C26C]' : 'text-[#333333]'
                         }`}>
                           {step.title}
                         </div>
-                        <div className="text-xs text-[#71717a]">{step.description}</div>
+                        <div className="text-xs text-[#777777]">{step.description}</div>
                       </div>
                     </button>
                   );
@@ -627,42 +627,42 @@ function App() {
                 {currentStep === 1 && (
                   <div className="space-y-5 animate-fade-in-up" data-testid="step-1-content">
                     <div>
-                      <Label htmlFor="project-name" className="text-sm font-medium text-[#a1a1aa]">
+                      <Label htmlFor="project-name" className="text-sm font-medium text-[#333333]">
                         Projectnaam
                       </Label>
                       <Input
                         id="project-name"
                         value={project.name}
                         onChange={(e) => setProject(prev => ({ ...prev, name: e.target.value }))}
-                        className="mt-1.5 bg-[#1a1a1a] border-[#333] text-white"
+                        className="mt-1.5 bg-white border-[#e5e2d9] text-[#333333] focus:border-[#70C26C] focus:ring-[#70C26C]/20"
                         placeholder="Bijv. Camping De Zonnehoek"
                         data-testid="project-name-input"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-[#a1a1aa]">Type locatie</Label>
+                      <Label className="text-sm font-medium text-[#333333]">Type locatie</Label>
                       <div className="mt-2 grid grid-cols-2 gap-2">
                         {projectTypes.map((type) => (
                           <button
                             key={type.value}
                             onClick={() => setProject(prev => ({ ...prev, project_type: type.value }))}
-                            className={`p-3 rounded-xl border-2 text-left transition-all ${
+                            className={`p-3 rounded-xl border-2 text-left transition-all bg-white ${
                               project.project_type === type.value
-                                ? 'border-[#4ade80] bg-[#4ade80]/10'
-                                : 'border-[#333] bg-[#1a1a1a] hover:border-[#4ade80]/50'
+                                ? 'border-[#70C26C] bg-[#70C26C]/5'
+                                : 'border-[#e5e2d9] hover:border-[#70C26C]/50'
                             }`}
                             data-testid={`project-type-${type.value}`}
                           >
                             <span className="text-2xl">{type.icon}</span>
-                            <div className="font-medium text-sm mt-1 text-white">{type.label}</div>
+                            <div className="font-medium text-sm mt-1 text-[#333333]">{type.label}</div>
                           </button>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="num-spots" className="text-sm font-medium text-[#a1a1aa]">
+                      <Label htmlFor="num-spots" className="text-sm font-medium text-[#333333]">
                         Aantal standplaatsen
                       </Label>
                       <Input
@@ -670,20 +670,20 @@ function App() {
                         type="number"
                         value={project.num_spots}
                         onChange={(e) => setProject(prev => ({ ...prev, num_spots: parseInt(e.target.value) || 0 }))}
-                        className="mt-1.5 bg-[#1a1a1a] border-[#333] text-white"
+                        className="mt-1.5 bg-white border-[#e5e2d9] text-[#333333] focus:border-[#70C26C]"
                         min="1"
                         data-testid="num-spots-input"
                       />
                     </div>
 
-                    <div className="p-4 rounded-xl bg-gradient-to-br from-[#4ade80]/10 to-[#4ade80]/5 border border-[#4ade80]/20">
+                    <div className="p-4 rounded-xl bg-[#70C26C]/10 border border-[#70C26C]/20">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#4ade80]/20 flex items-center justify-center flex-shrink-0">
-                          <Sparkles size={16} className="text-[#4ade80]" />
+                        <div className="w-8 h-8 rounded-lg bg-[#70C26C]/20 flex items-center justify-center flex-shrink-0">
+                          <Sparkles size={16} className="text-[#70C26C]" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-[#4ade80]">Slimme configuratie</h4>
-                          <p className="text-xs text-[#a1a1aa] mt-1">
+                          <h4 className="font-medium text-sm text-[#244628]">Slimme configuratie</h4>
+                          <p className="text-xs text-[#777777] mt-1">
                             Onze AI helpt u met optimale productplaatsing en geeft advies op basis van uw terreininrichting.
                           </p>
                         </div>
@@ -696,7 +696,7 @@ function App() {
                 {currentStep === 2 && (
                   <div className="space-y-5 animate-fade-in-up" data-testid="step-2-content">
                     <div>
-                      <Label className="text-sm font-medium text-[#a1a1aa]">Plattegrond uploaden</Label>
+                      <Label className="text-sm font-medium text-[#333333]">Plattegrond uploaden</Label>
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -707,37 +707,37 @@ function App() {
                       />
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className={`mt-2 w-full p-8 rounded-xl border-2 border-dashed transition-all ${
+                        className={`mt-2 w-full p-8 rounded-xl border-2 border-dashed transition-all bg-white ${
                           project.floor_plan_base64
-                            ? 'border-[#4ade80] bg-[#4ade80]/5'
-                            : 'border-[#333] hover:border-[#4ade80] bg-[#1a1a1a]'
+                            ? 'border-[#70C26C] bg-[#70C26C]/5'
+                            : 'border-[#e5e2d9] hover:border-[#70C26C]'
                         }`}
                         data-testid="upload-floor-plan-btn"
                       >
                         {isAnalyzing ? (
                           <div className="flex flex-col items-center gap-2">
-                            <Sparkles className="w-10 h-10 text-[#4ade80] animate-pulse-soft" />
-                            <span className="text-sm font-medium text-[#4ade80]">AI analyseert plattegrond...</span>
+                            <Sparkles className="w-10 h-10 text-[#70C26C] animate-pulse-soft" />
+                            <span className="text-sm font-medium text-[#70C26C]">AI analyseert plattegrond...</span>
                           </div>
                         ) : project.floor_plan_base64 ? (
                           <div className="flex flex-col items-center gap-2">
-                            <Check className="w-10 h-10 text-[#4ade80]" />
-                            <span className="text-sm font-medium text-[#4ade80]">Plattegrond geladen</span>
-                            <span className="text-xs text-[#71717a]">Klik om te wijzigen</span>
+                            <Check className="w-10 h-10 text-[#70C26C]" />
+                            <span className="text-sm font-medium text-[#70C26C]">Plattegrond geladen</span>
+                            <span className="text-xs text-[#777777]">Klik om te wijzigen</span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-2">
-                            <Upload className="w-10 h-10 text-[#71717a]" />
-                            <span className="text-sm font-medium text-[#a1a1aa]">Upload uw plattegrond</span>
-                            <span className="text-xs text-[#71717a]">PDF of afbeelding (max. 10MB)</span>
+                            <Upload className="w-10 h-10 text-[#777777]" />
+                            <span className="text-sm font-medium text-[#333333]">Upload uw plattegrond</span>
+                            <span className="text-xs text-[#777777]">PDF of afbeelding (max. 10MB)</span>
                           </div>
                         )}
                       </button>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-[#a1a1aa] mb-2 block">Zones</Label>
-                      <p className="text-xs text-[#71717a] mb-3">
+                      <Label className="text-sm font-medium text-[#333333] mb-2 block">Zones</Label>
+                      <p className="text-xs text-[#777777] mb-3">
                         Definieer zones op uw terrein voor betere AI-aanbevelingen.
                       </p>
                       
@@ -746,22 +746,22 @@ function App() {
                           {project.zones.map((zone, index) => (
                             <div 
                               key={zone.id}
-                              className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded-lg border border-[#333]"
+                              className="flex items-center justify-between p-3 bg-white rounded-lg border border-[#e5e2d9]"
                             >
                               <div className="flex items-center gap-2">
                                 <div 
                                   className="w-3 h-3 rounded-full"
                                   style={{ backgroundColor: zone.color }}
                                 />
-                                <span className="text-sm font-medium text-white">{zone.name}</span>
-                                <Badge variant="secondary" className="text-xs bg-[#242424] text-[#a1a1aa]">
+                                <span className="text-sm font-medium text-[#333333]">{zone.name}</span>
+                                <Badge variant="secondary" className="text-xs bg-[#FDF9ED] text-[#777777]">
                                   {zone.type}
                                 </Badge>
                               </div>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-[#71717a] hover:text-red-400"
+                                className="h-7 w-7 text-[#777777] hover:text-red-500"
                                 onClick={() => removeZone(zone.id)}
                               >
                                 <X size={14} />
@@ -770,10 +770,10 @@ function App() {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-6 bg-[#1a1a1a] rounded-xl border border-[#333]">
-                          <Layers className="w-8 h-8 text-[#71717a] mx-auto mb-2" />
-                          <p className="text-sm text-[#71717a]">Nog geen zones gedefinieerd</p>
-                          <p className="text-xs text-[#71717a] mt-1">
+                        <div className="text-center py-6 bg-white rounded-xl border border-[#e5e2d9]">
+                          <Layers className="w-8 h-8 text-[#e5e2d9] mx-auto mb-2" />
+                          <p className="text-sm text-[#777777]">Nog geen zones gedefinieerd</p>
+                          <p className="text-xs text-[#777777] mt-1">
                             Gebruik het zone-gereedschap op het canvas
                           </p>
                         </div>
@@ -787,10 +787,10 @@ function App() {
                   <div className="space-y-4 animate-fade-in-up" data-testid="step-3-content">
                     <div>
                       <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="w-full bg-[#1a1a1a] border-[#333] text-white" data-testid="category-select">
+                        <SelectTrigger className="w-full bg-white border-[#e5e2d9]" data-testid="category-select">
                           <SelectValue placeholder="Alle categorieën" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-[#333]">
+                        <SelectContent className="bg-white border-[#e5e2d9]">
                           <SelectItem value="all">Alle categorieën</SelectItem>
                           {categories.map((cat) => (
                             <SelectItem key={cat} value={cat}>
@@ -804,7 +804,7 @@ function App() {
                     <div className="space-y-2">
                       {filteredProducts.map((product) => {
                         const Icon = categoryIcons[product.category] || Package;
-                        const color = categoryColors[product.category] || '#4ade80';
+                        const color = categoryColors[product.category] || '#70C26C';
                         
                         return (
                           <div
@@ -812,28 +812,28 @@ function App() {
                             draggable
                             onDragStart={() => setDraggedProduct(product)}
                             onDragEnd={() => setDraggedProduct(null)}
-                            className="product-card bg-[#1a1a1a] border border-[#333] rounded-xl p-3 cursor-grab active:cursor-grabbing"
+                            className="product-card bg-white border border-[#e5e2d9] rounded-xl p-3 cursor-grab active:cursor-grabbing"
                             data-testid={`product-card-${product.id}`}
                           >
                             <div className="flex items-start gap-3">
                               <div 
                                 className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                                style={{ backgroundColor: `${color}20` }}
+                                style={{ backgroundColor: `${color}15` }}
                               >
                                 <Icon size={24} style={{ color }} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-sm text-white truncate">
+                                <div className="font-semibold text-sm text-[#333333] truncate">
                                   {product.name}
                                 </div>
-                                <div className="text-xs text-[#71717a] mt-0.5 line-clamp-2">
+                                <div className="text-xs text-[#777777] mt-0.5 line-clamp-2">
                                   {product.description}
                                 </div>
                                 <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-sm font-bold text-[#4ade80]">
+                                  <span className="text-sm font-bold text-[#70C26C]">
                                     € {product.price_purchase.toLocaleString()}
                                   </span>
-                                  <span className="text-xs text-[#71717a]">
+                                  <span className="text-xs text-[#777777]">
                                     of € {product.price_lease_monthly}/mnd
                                   </span>
                                 </div>
@@ -844,7 +844,7 @@ function App() {
                       })}
                     </div>
 
-                    <p className="text-xs text-[#71717a] text-center pt-2">
+                    <p className="text-xs text-[#777777] text-center pt-2">
                       Sleep producten naar het canvas om te plaatsen
                     </p>
                   </div>
@@ -853,46 +853,46 @@ function App() {
                 {/* Step 4: Quote */}
                 {currentStep === 4 && (
                   <div className="space-y-5 animate-fade-in-up" data-testid="step-4-content">
-                    <div className="p-5 rounded-xl bg-[#1a1a1a] border border-[#333]">
-                      <h3 className="font-bold text-lg text-white mb-4">Investering</h3>
+                    <div className="p-5 rounded-xl bg-white border border-[#e5e2d9]">
+                      <h3 className="font-bold text-lg text-[#333333] mb-4">Investering</h3>
                       
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-[#a1a1aa]">Aankoopkosten (CAPEX)</span>
-                          <span className="font-bold text-[#4ade80]">
+                          <span className="text-[#777777]">Aankoopkosten (CAPEX)</span>
+                          <span className="font-bold text-[#70C26C]">
                             € {quickQuote.capex.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-[#a1a1aa]">Installatiekosten</span>
-                          <span className="font-medium text-white">€ {quickQuote.install.toLocaleString()}</span>
+                          <span className="text-[#777777]">Installatiekosten</span>
+                          <span className="font-medium text-[#333333]">€ {quickQuote.install.toLocaleString()}</span>
                         </div>
-                        <div className="h-px bg-[#333]" />
+                        <div className="h-px bg-[#e5e2d9]" />
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-white">Totaal investering</span>
-                          <span className="text-xl font-bold text-[#4ade80]">
+                          <span className="font-semibold text-[#333333]">Totaal investering</span>
+                          <span className="text-xl font-bold text-[#70C26C]">
                             € {(quickQuote.capex + quickQuote.install).toLocaleString()}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-xl bg-[#1a1a1a] border border-[#333]">
-                      <h3 className="font-bold text-lg text-white mb-4">Lease optie (OPEX)</h3>
+                    <div className="p-5 rounded-xl bg-white border border-[#e5e2d9]">
+                      <h3 className="font-bold text-lg text-[#333333] mb-4">Lease optie (OPEX)</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-[#a1a1aa]">Per maand</span>
-                          <span className="font-bold text-[#4ade80]">
+                          <span className="text-[#777777]">Per maand</span>
+                          <span className="font-bold text-[#70C26C]">
                             € {quickQuote.opex.toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-[#a1a1aa]">Per jaar</span>
-                          <span className="font-medium text-white">€ {(quickQuote.opex * 12).toLocaleString()}</span>
+                          <span className="text-[#777777]">Per jaar</span>
+                          <span className="font-medium text-[#333333]">€ {(quickQuote.opex * 12).toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-[#a1a1aa]">Onderhoud per jaar</span>
-                          <span className="font-medium text-white">€ {quickQuote.maintenance.toLocaleString()}</span>
+                          <span className="text-[#777777]">Onderhoud per jaar</span>
+                          <span className="font-medium text-[#333333]">€ {quickQuote.maintenance.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -900,7 +900,7 @@ function App() {
                     <Button
                       onClick={exportPDF}
                       disabled={loading || project.placed_products.length === 0}
-                      className="w-full bg-[#4ade80] text-black hover:bg-[#22c55e] font-semibold h-12"
+                      className="w-full bg-[#70C26C] hover:bg-[#5fb35b] text-white font-semibold h-12"
                       data-testid="export-pdf-button"
                     >
                       <Download size={18} className="mr-2" />
@@ -908,12 +908,12 @@ function App() {
                     </Button>
 
                     <div className="text-center">
-                      <p className="text-xs text-[#71717a]">
+                      <p className="text-xs text-[#777777]">
                         Of neem direct contact op voor persoonlijk advies
                       </p>
                       <a 
                         href="tel:+31634200253" 
-                        className="text-sm font-medium text-[#4ade80] hover:underline"
+                        className="text-sm font-medium text-[#70C26C] hover:underline"
                       >
                         +31 634200253
                       </a>
@@ -924,12 +924,12 @@ function App() {
             </ScrollArea>
 
             {/* Navigation */}
-            <div className="p-4 border-t border-[#333] flex gap-2">
+            <div className="p-4 border-t border-[#e5e2d9] flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
                 disabled={currentStep === 1}
-                className="flex-1 border-[#333] bg-[#1a1a1a] text-white hover:bg-[#242424]"
+                className="flex-1 border-[#e5e2d9] bg-white text-[#333333] hover:bg-[#FDF9ED]"
                 data-testid="wizard-prev-button"
               >
                 <ChevronLeft size={16} className="mr-1" />
@@ -945,7 +945,7 @@ function App() {
                   }
                 }}
                 disabled={currentStep === 4}
-                className="flex-1 bg-[#4ade80] text-black hover:bg-[#22c55e] font-semibold"
+                className="flex-1 bg-[#70C26C] hover:bg-[#5fb35b] text-white font-semibold"
                 data-testid="wizard-next-button"
               >
                 Volgende
@@ -957,7 +957,7 @@ function App() {
           {/* Main Canvas Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Canvas Toolbar */}
-            <div className="h-12 bg-[#121212] border-b border-[#333] flex items-center justify-between px-4">
+            <div className="h-12 bg-white border-b border-[#e5e2d9] flex items-center justify-between px-4">
               <div className="flex items-center gap-2">
                 {CANVAS_TOOLS.map((tool) => {
                   const Icon = tool.icon;
@@ -968,7 +968,7 @@ function App() {
                           variant={canvasTool === tool.id ? 'default' : 'ghost'}
                           size="sm"
                           onClick={() => setCanvasTool(tool.id)}
-                          className={canvasTool === tool.id ? 'bg-[#4ade80] text-black' : 'text-[#a1a1aa] hover:bg-[#1a1a1a]'}
+                          className={canvasTool === tool.id ? 'bg-[#70C26C] hover:bg-[#5fb35b] text-white' : 'text-[#777777] hover:bg-[#FDF9ED]'}
                           data-testid={`tool-${tool.id}`}
                         >
                           <Icon size={16} />
@@ -981,11 +981,11 @@ function App() {
                 
                 {isDrawingZone && (
                   <>
-                    <div className="h-6 w-px bg-[#333] mx-2" />
+                    <div className="h-6 w-px bg-[#e5e2d9] mx-2" />
                     <Button
                       size="sm"
                       onClick={finishZone}
-                      className="bg-[#22c55e] hover:bg-[#16a34a] text-black"
+                      className="bg-[#70C26C] hover:bg-[#5fb35b] text-white"
                     >
                       <Check size={14} className="mr-1" />
                       Zone voltooien
@@ -994,7 +994,7 @@ function App() {
                       size="sm"
                       variant="ghost"
                       onClick={cancelZone}
-                      className="text-[#a1a1aa] hover:bg-[#1a1a1a]"
+                      className="text-[#777777]"
                     >
                       <X size={14} className="mr-1" />
                       Annuleren
@@ -1004,17 +1004,17 @@ function App() {
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#71717a]">
+                <span className="text-sm text-[#777777]">
                   {project.name} • {project.placed_products.length} producten
                 </span>
-                <div className="h-6 w-px bg-[#333] mx-2" />
+                <div className="h-6 w-px bg-[#e5e2d9] mx-2" />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowCoverage(!showCoverage)}
-                      className={showCoverage ? 'text-[#4ade80]' : 'text-[#71717a]'}
+                      className={showCoverage ? 'text-[#70C26C]' : 'text-[#777777]'}
                     >
                       {showCoverage ? <Eye size={16} /> : <EyeOff size={16} />}
                     </Button>
@@ -1025,7 +1025,7 @@ function App() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" className="text-[#71717a] hover:bg-[#1a1a1a]">
+                    <Button variant="ghost" size="sm" className="text-[#777777]">
                       <Grid3X3 size={16} />
                     </Button>
                   </TooltipTrigger>
@@ -1035,10 +1035,10 @@ function App() {
             </div>
 
             {/* Canvas */}
-            <div className="flex-1 overflow-auto bg-[#0a0a0a] p-4">
+            <div className="flex-1 overflow-auto bg-[#FDF9ED] p-4">
               <div
                 ref={canvasRef}
-                className={`relative bg-[#121212] rounded-xl shadow-lg canvas-grid-pattern mx-auto border border-[#333] ${
+                className={`relative bg-white rounded-xl shadow-lg canvas-grid-pattern mx-auto border border-[#e5e2d9] ${
                   canvasTool === 'zone' ? 'cursor-crosshair' : ''
                 }`}
                 style={{ 
@@ -1076,7 +1076,7 @@ function App() {
                       <polyline
                         points={currentZonePoints.map(p => `${p.x},${p.y}`).join(' ')}
                         fill="none"
-                        stroke="#4a9b7f"
+                        stroke="#70C26C"
                         strokeWidth="2"
                         strokeDasharray="5,5"
                       />
@@ -1086,7 +1086,7 @@ function App() {
                           cx={point.x}
                           cy={point.y}
                           r="5"
-                          fill="#4a9b7f"
+                          fill="#70C26C"
                         />
                       ))}
                     </>
@@ -1099,7 +1099,7 @@ function App() {
                   if (!product) return null;
                   
                   const Icon = categoryIcons[product.category] || Package;
-                  const color = categoryColors[product.category] || '#4a9b7f';
+                  const color = categoryColors[product.category] || '#70C26C';
                   const isSelected = selectedItem?.id === placed.id;
                   
                   return (
@@ -1145,7 +1145,7 @@ function App() {
                       
                       {/* Label */}
                       <div className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                        <span className="text-[11px] bg-[#1a1a1a] px-2 py-1 rounded shadow-sm text-[#a1a1aa] font-medium border border-[#333]">
+                        <span className="text-[11px] bg-white px-2 py-1 rounded shadow-sm text-[#333333] font-medium border border-[#e5e2d9]">
                           {product.name.split(' ')[0]}
                         </span>
                       </div>
@@ -1156,7 +1156,7 @@ function App() {
                 {/* Selected item controls */}
                 {selectedItem && (
                   <div
-                    className="absolute bg-[#1a1a1a] rounded-lg shadow-xl p-1 flex gap-1 border border-[#333]"
+                    className="absolute bg-white rounded-lg shadow-xl p-1 flex gap-1 border border-[#e5e2d9]"
                     style={{
                       left: selectedItem.x + 60,
                       top: selectedItem.y - 8,
@@ -1167,7 +1167,7 @@ function App() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="w-8 h-8 text-[#a1a1aa] hover:text-white hover:bg-[#242424]"
+                          className="w-8 h-8 text-[#777777] hover:text-[#333333]"
                           onClick={() => {
                             setProject(prev => ({
                               ...prev,
@@ -1189,7 +1189,7 @@ function App() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="w-8 h-8 text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                          className="w-8 h-8 text-red-500 hover:text-red-600 hover:bg-red-50"
                           onClick={() => removeItem(selectedItem.id)}
                         >
                           <Trash2 size={14} />
@@ -1204,13 +1204,13 @@ function App() {
                 {project.placed_products.length === 0 && !project.floor_plan_base64 && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center max-w-sm p-8">
-                      <div className="w-20 h-20 rounded-2xl bg-[#1a1a1a] border border-[#333] flex items-center justify-center mx-auto mb-4">
-                        <Package size={40} className="text-[#71717a]" />
+                      <div className="w-20 h-20 rounded-2xl bg-[#FDF9ED] border border-[#e5e2d9] flex items-center justify-center mx-auto mb-4">
+                        <Package size={40} className="text-[#e5e2d9]" />
                       </div>
-                      <h3 className="font-semibold text-lg text-white mb-2">
+                      <h3 className="font-semibold text-lg text-[#333333] mb-2">
                         Start met configureren
                       </h3>
-                      <p className="text-sm text-[#71717a]">
+                      <p className="text-sm text-[#777777]">
                         Upload een plattegrond of sleep producten vanuit het linkerpaneel naar dit canvas om uw terrein in te richten.
                       </p>
                     </div>
@@ -1221,12 +1221,12 @@ function App() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-80 flex-shrink-0 border-l border-[#333] bg-[#121212] flex flex-col">
+          <div className="w-80 flex-shrink-0 border-l border-[#e5e2d9] bg-[#FFFEF8] flex flex-col">
             <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
-              <TabsList className="w-full p-1 bg-[#0a0a0a] rounded-none border-b border-[#333] h-auto">
+              <TabsList className="w-full p-1 bg-[#FDF9ED] rounded-none border-b border-[#e5e2d9] h-auto">
                 <TabsTrigger 
                   value="quote" 
-                  className="flex-1 py-2.5 data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-[#4ade80]"
+                  className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] data-[state=active]:shadow-sm"
                   data-testid="tab-quote"
                 >
                   <FileText size={14} className="mr-1.5" />
@@ -1234,7 +1234,7 @@ function App() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ai" 
-                  className="flex-1 py-2.5 data-[state=active]:bg-[#1a1a1a] data-[state=active]:text-[#4ade80]"
+                  className="flex-1 py-2.5 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] data-[state=active]:shadow-sm"
                   data-testid="tab-ai"
                 >
                   <Sparkles size={14} className="mr-1.5" />
@@ -1246,23 +1246,23 @@ function App() {
                 <ScrollArea className="h-full">
                   <div className="p-5 space-y-5">
                     <div>
-                      <h2 className="font-bold text-lg text-white">Real-time Offerte</h2>
-                      <p className="text-sm text-[#71717a] mt-1">
+                      <h2 className="font-bold text-lg text-[#333333]">Real-time Offerte</h2>
+                      <p className="text-sm text-[#777777] mt-1">
                         Automatisch berekend op basis van uw configuratie
                       </p>
                     </div>
                     
                     {/* Summary cards */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#4ade80]/10 to-[#4ade80]/5 border border-[#4ade80]/20">
-                        <div className="text-xs text-[#71717a] mb-1">CAPEX</div>
-                        <div className="text-xl font-bold text-[#4ade80]" data-testid="quote-capex">
+                      <div className="p-4 rounded-xl bg-[#70C26C]/10 border border-[#70C26C]/20">
+                        <div className="text-xs text-[#777777] mb-1">CAPEX</div>
+                        <div className="text-xl font-bold text-[#70C26C]" data-testid="quote-capex">
                           € {quickQuote.capex.toLocaleString()}
                         </div>
                       </div>
-                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#60a5fa]/10 to-[#60a5fa]/5 border border-[#60a5fa]/20">
-                        <div className="text-xs text-[#71717a] mb-1">OPEX/mnd</div>
-                        <div className="text-xl font-bold text-[#60a5fa]" data-testid="quote-opex">
+                      <div className="p-4 rounded-xl bg-[#244628]/10 border border-[#244628]/20">
+                        <div className="text-xs text-[#777777] mb-1">OPEX/mnd</div>
+                        <div className="text-xl font-bold text-[#244628]" data-testid="quote-opex">
                           € {quickQuote.opex.toLocaleString()}
                         </div>
                       </div>
@@ -1270,7 +1270,7 @@ function App() {
 
                     {/* Product list */}
                     <div>
-                      <h3 className="text-sm font-semibold text-[#a1a1aa] mb-3">Geplaatste producten</h3>
+                      <h3 className="text-sm font-semibold text-[#333333] mb-3">Geplaatste producten</h3>
                       <div className="space-y-2">
                         {Object.entries(
                           project.placed_products.reduce((acc, pp) => {
@@ -1290,18 +1290,18 @@ function App() {
                           return (
                             <div
                               key={productId}
-                              className="flex items-center justify-between p-3 rounded-xl bg-[#1a1a1a] border border-[#333]"
+                              className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#e5e2d9]"
                             >
                               <div className="flex items-center gap-3">
                                 <div
                                   className="w-10 h-10 rounded-lg flex items-center justify-center"
-                                  style={{ backgroundColor: `${color}20` }}
+                                  style={{ backgroundColor: `${color}15` }}
                                 >
                                   <Icon size={18} style={{ color }} />
                                 </div>
                                 <div>
-                                  <div className="text-sm font-medium text-white">{product.name}</div>
-                                  <div className="text-xs text-[#71717a]">
+                                  <div className="text-sm font-medium text-[#333333]">{product.name}</div>
+                                  <div className="text-xs text-[#777777]">
                                     {count}x • € {(product.price_purchase * count).toLocaleString()}
                                   </div>
                                 </div>
@@ -1311,7 +1311,7 @@ function App() {
                         })}
 
                         {project.placed_products.length === 0 && (
-                          <div className="text-center py-8 text-[#71717a]">
+                          <div className="text-center py-8 text-[#777777]">
                             <Package size={32} className="mx-auto mb-2 opacity-50" />
                             <p className="text-sm">Nog geen producten geplaatst</p>
                           </div>
@@ -1320,14 +1320,14 @@ function App() {
                     </div>
 
                     {/* Total */}
-                    <div className="p-4 rounded-xl bg-[#4ade80] text-black">
+                    <div className="p-4 rounded-xl bg-[#244628] text-white">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-black/70">Totaal investering</span>
+                        <span className="text-white/80">Totaal investering</span>
                         <span className="text-2xl font-bold" data-testid="quote-total">
                           € {(quickQuote.capex + quickQuote.install).toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-sm text-black/60">
+                      <div className="flex justify-between items-center text-sm text-white/60">
                         <span>Inclusief installatie</span>
                         <span>€ {quickQuote.install.toLocaleString()}</span>
                       </div>
@@ -1340,12 +1340,12 @@ function App() {
                 <ScrollArea className="h-full">
                   <div className="p-5 space-y-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4ade80] to-[#22c55e] flex items-center justify-center">
-                        <Sparkles className="text-black" size={16} />
+                      <div className="w-8 h-8 rounded-lg bg-[#70C26C] flex items-center justify-center">
+                        <Sparkles className="text-white" size={16} />
                       </div>
                       <div>
-                        <h2 className="font-bold text-lg text-white">AI Aanbevelingen</h2>
-                        <p className="text-xs text-[#71717a]">Gebaseerd op uw configuratie</p>
+                        <h2 className="font-bold text-lg text-[#333333]">AI Aanbevelingen</h2>
+                        <p className="text-xs text-[#777777]">Gebaseerd op uw configuratie</p>
                       </div>
                     </div>
 
@@ -1354,22 +1354,22 @@ function App() {
                         recommendations.map((rec, index) => (
                           <div
                             key={index}
-                            className={`rounded-xl border p-4 ${
+                            className={`rounded-xl border p-4 bg-white ${
                               rec.type === 'warning'
-                                ? 'border-amber-500/30 bg-amber-500/10'
+                                ? 'border-amber-300'
                                 : rec.type === 'suggestion'
-                                  ? 'border-blue-500/30 bg-blue-500/10'
-                                  : 'border-green-500/30 bg-green-500/10'
+                                  ? 'border-blue-300'
+                                  : 'border-[#70C26C]'
                             }`}
                             data-testid={`ai-recommendation-${index}`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                                 rec.type === 'warning'
-                                  ? 'bg-amber-500/20 text-amber-400'
+                                  ? 'bg-amber-100 text-amber-600'
                                   : rec.type === 'suggestion'
-                                    ? 'bg-blue-500/20 text-blue-400'
-                                    : 'bg-green-500/20 text-green-400'
+                                    ? 'bg-blue-100 text-blue-600'
+                                    : 'bg-[#70C26C]/10 text-[#70C26C]'
                               }`}>
                                 {rec.type === 'warning' ? (
                                   <AlertTriangle size={16} />
@@ -1380,13 +1380,13 @@ function App() {
                                 )}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-sm text-white">{rec.title}</h4>
-                                <p className="text-xs text-[#a1a1aa] mt-1">{rec.description}</p>
+                                <h4 className="font-semibold text-sm text-[#333333]">{rec.title}</h4>
+                                <p className="text-xs text-[#777777] mt-1">{rec.description}</p>
                                 {rec.action && (
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="mt-2 h-7 text-xs text-[#4ade80] hover:text-[#4ade80] hover:bg-[#4ade80]/10 p-0"
+                                    className="mt-2 h-7 text-xs text-[#70C26C] hover:text-[#70C26C] hover:bg-[#70C26C]/10 p-0"
                                   >
                                     {rec.action}
                                     <ChevronRight size={12} className="ml-1" />
@@ -1398,10 +1398,10 @@ function App() {
                         ))
                       ) : (
                         <div className="text-center py-8">
-                          <div className="w-16 h-16 rounded-2xl bg-[#1a1a1a] border border-[#333] flex items-center justify-center mx-auto mb-3">
-                            <Sparkles size={28} className="text-[#71717a]" />
+                          <div className="w-16 h-16 rounded-2xl bg-[#FDF9ED] border border-[#e5e2d9] flex items-center justify-center mx-auto mb-3">
+                            <Sparkles size={28} className="text-[#e5e2d9]" />
                           </div>
-                          <p className="text-sm text-[#71717a]">
+                          <p className="text-sm text-[#777777]">
                             Plaats producten om AI-aanbevelingen te ontvangen
                           </p>
                         </div>
@@ -1410,7 +1410,7 @@ function App() {
 
                     <Button
                       variant="outline"
-                      className="w-full border-[#4ade80] text-[#4ade80] hover:bg-[#4ade80]/10"
+                      className="w-full border-[#70C26C] text-[#70C26C] hover:bg-[#70C26C]/10"
                       onClick={fetchRecommendations}
                       disabled={!project.id}
                       data-testid="refresh-ai-button"
@@ -1426,13 +1426,13 @@ function App() {
         </div>
 
         <Toaster 
-          theme="dark" 
+          theme="light" 
           position="bottom-right"
           toastOptions={{
             style: {
-              background: '#1a1a1a',
-              border: '1px solid #333',
-              color: '#fff',
+              background: '#fff',
+              border: '1px solid #e5e2d9',
+              color: '#333333',
             },
           }}
         />
