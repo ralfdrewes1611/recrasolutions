@@ -17,31 +17,36 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 ## Core Requirements
 - Multi-step wizard configurator (Project → Terrain → Products → Quote)
 - Drag & drop site planner with snap-to-grid (24px)
-- 7 product categories: sanitair, slagbomen, camera's, WiFi, verlichting, betaalsystemen, toegangscontrole
+- 8 product categories: sanitair, slagbomen, camera's, WiFi, verlichting, betaalsystemen, toegangscontrole, douchelezers
 - Real-time CAPEX/OPEX calculation
 - AI-powered recommendations
 - PDF quote export with RECRA branding
+- Zone definition tools
+- Project management (save/load/delete)
 
-## What's Been Implemented (April 3, 2026)
-### Backend
+## What's Been Implemented
+
+### Iteration 1 (April 3, 2026)
 - ✅ Products API with 19 seeded products
 - ✅ Projects CRUD API
-- ✅ Quote calculation API (CAPEX/OPEX/Installation)
-- ✅ AI recommendations API (rule-based + OpenAI GPT-5.2)
+- ✅ Quote calculation API
+- ✅ AI recommendations API
 - ✅ Floor plan analysis API (OpenAI Vision)
 - ✅ PDF quote generation API
-
-### Frontend
-- ✅ Dark theme UI with RECRA branding (blue #0ea5e9, green #10b981)
 - ✅ 4-step wizard navigation
-- ✅ Project configuration (name, type, spots)
-- ✅ Floor plan upload with AI analysis
 - ✅ Product catalog with category filtering
 - ✅ Drag & drop canvas with snap-to-grid
-- ✅ Coverage radius visualization
 - ✅ Real-time quote sidebar
-- ✅ AI recommendations panel
-- ✅ PDF export functionality
+
+### Iteration 2 (April 3, 2026)
+- ✅ **UI Redesign** - Light theme matching recrasolutions.com (Inter font, green accents #4a9b7f, #2d5a3d)
+- ✅ **Douchelezers** - Added 4 new douchelezer products (RECRA specialty product)
+- ✅ **Zone Definition Tool** - Polygon drawing on canvas with finish/cancel controls
+- ✅ **Project Management** - Save/Load/Delete projects via dialog
+- ✅ **Coverage Toggle** - Show/hide product coverage radius
+- ✅ 23 total products across 8 categories
+- ✅ Header with Projecten, Opslaan buttons
+- ✅ Canvas toolbar with Select and Zone tools
 
 ## Prioritized Backlog
 
@@ -50,18 +55,20 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 - [x] Product placement on canvas
 - [x] Quote calculation
 - [x] PDF export
+- [x] Zone definition tools
+- [x] Project save/load functionality
+- [x] RECRA branding/look & feel
 
 ### P1 - High Priority (Future)
-- [ ] Zone definition tools (polygon drawing)
-- [ ] Floor plan AI auto-detection improvements
-- [ ] Project list/load functionality
+- [ ] User authentication (Free/Pro/Enterprise tiers)
 - [ ] Partner/admin portal
+- [ ] Floor plan AI auto-detection improvements
 
 ### P2 - Medium Priority (Future)
-- [ ] User authentication (Free/Pro/Enterprise tiers)
 - [ ] CRM integration
 - [ ] Lease partner integration (Grenke)
 - [ ] White-label support
+- [ ] Sharing/collaboration features
 
 ### P3 - Nice to Have (Future)
 - [ ] AR preview
@@ -70,7 +77,7 @@ Een geavanceerde AI-gedreven configurator & offerteplatform voor RECRA Solutions
 - [ ] Partner marketplace
 
 ## Next Tasks
-1. Improve AI recommendation accuracy
-2. Add zone definition polygon tool
-3. Implement project list/load from database
-4. Add user authentication tiers
+1. User authentication met Free/Pro/Enterprise tiers
+2. Partner/admin portal voor projectverdeling
+3. Verbeterde AI zone-herkenning
+4. Reserveringssysteem integraties
