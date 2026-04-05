@@ -165,33 +165,33 @@ SEED_PRODUCTS = [
     },
     # Slagbomen
     {
-        "name": "Basis Slagboom",
+        "name": "Nice M5BAR",
         "category": "slagboom",
-        "description": "Handmatige bediening, 4m arm",
-        "price_purchase": 1800,
-        "price_lease_monthly": 45,
-        "installation_cost": 500,
-        "maintenance_yearly": 150,
-        "dimensions": {"width": 0.5, "height": 4},
+        "description": "24VDC slagboom tot 5m, IP54, 450 cycli/uur, BlueBus, incl. fundatieplaat. Behuizing 0.4x0.3m",
+        "price_purchase": 3079,
+        "price_lease_monthly": 75,
+        "installation_cost": 800,
+        "maintenance_yearly": 250,
+        "dimensions": {"width": 0.4, "height": 5},
         "icon": "boom",
         "color": "#f59e0b"
     },
     {
-        "name": "Automatische Slagboom",
+        "name": "Nice M5BAR + Kentekenherkenning",
         "category": "slagboom",
-        "description": "Geautomatiseerd met RFID/nummerplaat, 5m arm",
-        "price_purchase": 4500,
-        "price_lease_monthly": 120,
+        "description": "Nice M5BAR slagboom met UniFi AI LPR kentekenherkenning, automatische doorgang",
+        "price_purchase": 3628,
+        "price_lease_monthly": 95,
         "installation_cost": 1200,
         "maintenance_yearly": 350,
-        "dimensions": {"width": 0.5, "height": 5},
+        "dimensions": {"width": 0.4, "height": 5},
         "icon": "boom",
         "color": "#f59e0b"
     },
     {
         "name": "Premium Toegangspoort",
         "category": "slagboom",
-        "description": "Dubbele slagboom met camera, intercom en betaalterminal",
+        "description": "Dubbele Nice M5BAR met UniFi camera's, intercom en betaalterminal",
         "price_purchase": 12000,
         "price_lease_monthly": 280,
         "installation_cost": 3500,
@@ -200,43 +200,69 @@ SEED_PRODUCTS = [
         "icon": "boom",
         "color": "#f59e0b"
     },
-    # Camera systemen
+    # UniFi Camera systemen
     {
-        "name": "IP Camera Basis",
+        "name": "UniFi G5 Bullet",
         "category": "camera",
-        "description": "2K resolutie, nachtzicht, 30m bereik",
-        "price_purchase": 350,
-        "price_lease_monthly": 12,
-        "installation_cost": 150,
-        "maintenance_yearly": 50,
-        "dimensions": {"width": 0.3, "height": 0.3},
+        "description": "2K 4MP, IR nachtzicht 9m, IP67, PoE, AI-detectie (personen/voertuigen). 75x74mm",
+        "price_purchase": 139,
+        "price_lease_monthly": 5,
+        "installation_cost": 100,
+        "maintenance_yearly": 25,
+        "dimensions": {"width": 0.08, "height": 0.08},
         "coverage_radius": 30,
         "icon": "camera",
         "color": "#ef4444"
     },
     {
-        "name": "PTZ Camera Pro",
+        "name": "UniFi G5 Dome Ultra",
         "category": "camera",
-        "description": "4K, 360° draaibaar, 50m bereik, AI-detectie",
-        "price_purchase": 1200,
-        "price_lease_monthly": 35,
-        "installation_cost": 350,
-        "maintenance_yearly": 120,
-        "dimensions": {"width": 0.4, "height": 0.4},
-        "coverage_radius": 50,
+        "description": "2K 4MP, IR 20m, IP65, IK06, PoE, 120° beeldhoek, vandaalbestendig. 64x68mm",
+        "price_purchase": 139,
+        "price_lease_monthly": 5,
+        "installation_cost": 100,
+        "maintenance_yearly": 25,
+        "dimensions": {"width": 0.07, "height": 0.07},
+        "coverage_radius": 20,
         "icon": "camera",
         "color": "#ef4444"
     },
     {
-        "name": "ANPR Camera",
+        "name": "UniFi G5 Pro",
         "category": "camera",
-        "description": "Nummerplaatherkenning, integratie met toegangssysteem",
-        "price_purchase": 2500,
-        "price_lease_monthly": 65,
-        "installation_cost": 600,
-        "maintenance_yearly": 200,
-        "dimensions": {"width": 0.4, "height": 0.4},
-        "coverage_radius": 15,
+        "description": "4K 8MP, 3x optische zoom, IR 25-40m, IP65, IK04, PoE. Premium buitencamera. 86x154mm",
+        "price_purchase": 399,
+        "price_lease_monthly": 12,
+        "installation_cost": 200,
+        "maintenance_yearly": 50,
+        "dimensions": {"width": 0.09, "height": 0.15},
+        "coverage_radius": 40,
+        "icon": "camera",
+        "color": "#ef4444"
+    },
+    {
+        "name": "UniFi G5 Turret Ultra",
+        "category": "camera",
+        "description": "2K 4MP, 102° beeldhoek, IR nachtzicht, IP66, PoE, AI-detectie",
+        "price_purchase": 159,
+        "price_lease_monthly": 6,
+        "installation_cost": 100,
+        "maintenance_yearly": 30,
+        "dimensions": {"width": 0.08, "height": 0.08},
+        "coverage_radius": 25,
+        "icon": "camera",
+        "color": "#ef4444"
+    },
+    {
+        "name": "UniFi AI LPR Camera",
+        "category": "camera",
+        "description": "4K 8MP kentekenherkenning, 3x zoom, IR 15m, IP66, tot 90 km/h, 2 rijbanen. 130x151x303mm",
+        "price_purchase": 549,
+        "price_lease_monthly": 16,
+        "installation_cost": 300,
+        "maintenance_yearly": 75,
+        "dimensions": {"width": 0.13, "height": 0.3},
+        "coverage_radius": 12,
         "icon": "camera",
         "color": "#ef4444"
     },
@@ -332,40 +358,52 @@ SEED_PRODUCTS = [
         "icon": "credit-card",
         "color": "#8b5cf6"
     },
-    # Toegangscontrole
+    # UniFi Access - Toegangscontrole
     {
-        "name": "RFID Lezer",
+        "name": "UniFi Access Hub",
         "category": "toegangscontrole",
-        "description": "Kaart/tag lezer, integratie met slagboom",
-        "price_purchase": 450,
-        "price_lease_monthly": 12,
-        "installation_cost": 150,
+        "description": "Single-door PoE hub, 6000 gebruikers, DIN-rail, 5x GbE poorten, UL 294. 175x126x33mm",
+        "price_purchase": 219,
+        "price_lease_monthly": 8,
+        "installation_cost": 200,
         "maintenance_yearly": 50,
+        "dimensions": {"width": 0.18, "height": 0.13},
+        "icon": "key",
+        "color": "#ec4899"
+    },
+    {
+        "name": "UniFi Access Reader Lite (UA-Lite)",
+        "category": "toegangscontrole",
+        "description": "NFC kaartlezer, PoE, koppelt met UA-Hub, smartphone toegang via UniFi Identity app",
+        "price_purchase": 109,
+        "price_lease_monthly": 4,
+        "installation_cost": 100,
+        "maintenance_yearly": 25,
+        "dimensions": {"width": 0.1, "height": 0.1},
+        "icon": "key",
+        "color": "#ec4899"
+    },
+    {
+        "name": "UniFi Access Reader Pro (UA-Pro)",
+        "category": "toegangscontrole",
+        "description": "NFC + PIN + intercom, PoE, premium toegangslezer met display en camera",
+        "price_purchase": 329,
+        "price_lease_monthly": 10,
+        "installation_cost": 200,
+        "maintenance_yearly": 50,
+        "dimensions": {"width": 0.12, "height": 0.12},
+        "icon": "key",
+        "color": "#ec4899"
+    },
+    {
+        "name": "UniFi Access Starter Kit",
+        "category": "toegangscontrole",
+        "description": "Compleet pakket: UA-Hub + UA-Pro + UA-Lite + bekabeling. Eenvoudige installatie voor 1 deur",
+        "price_purchase": 599,
+        "price_lease_monthly": 18,
+        "installation_cost": 350,
+        "maintenance_yearly": 100,
         "dimensions": {"width": 0.2, "height": 0.2},
-        "icon": "key",
-        "color": "#ec4899"
-    },
-    {
-        "name": "Mobile Key Systeem",
-        "category": "toegangscontrole",
-        "description": "Smartphone toegang via app, QR-code ondersteuning",
-        "price_purchase": 1500,
-        "price_lease_monthly": 40,
-        "installation_cost": 500,
-        "maintenance_yearly": 150,
-        "dimensions": {"width": 0.3, "height": 0.3},
-        "icon": "key",
-        "color": "#ec4899"
-    },
-    {
-        "name": "Biometrisch Toegangssysteem",
-        "category": "toegangscontrole",
-        "description": "Vingerafdruk + gezichtsherkenning",
-        "price_purchase": 3500,
-        "price_lease_monthly": 90,
-        "installation_cost": 800,
-        "maintenance_yearly": 300,
-        "dimensions": {"width": 0.4, "height": 0.4},
         "icon": "key",
         "color": "#ec4899"
     },
@@ -904,8 +942,13 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    # Remove banned products (coin-operated machines)
+    # Remove banned and outdated products
     await db.products.delete_many({"name": {"$regex": "Muntautomaat"}})
+    await db.products.delete_many({"name": {"$in": [
+        "IP Camera Basis", "PTZ Camera Pro", "ANPR Camera",
+        "Basis Slagboom", "Automatische Slagboom",
+        "RFID Lezer", "Mobile Key Systeem", "Biometrisch Toegangssysteem"
+    ]}})
     
     # Update sanitair dimensions to realistic sizes
     await db.products.update_one(
@@ -921,17 +964,18 @@ async def startup_event():
         {"$set": {"dimensions": {"width": 8, "height": 12}, "description": "6 toiletten, 6 douches, familiecabines, geschikt voor 50+ standplaatsen. Afmeting 8x12m"}}
     )
     
-    # Auto-seed products if database is empty
-    existing = await db.products.count_documents({})
-    if existing == 0:
-        for product_data in SEED_PRODUCTS:
+    # Ensure all new products exist (upsert by name)
+    for product_data in SEED_PRODUCTS:
+        existing = await db.products.find_one({"name": product_data["name"]})
+        if not existing:
             product = Product(**product_data)
             doc = product.model_dump()
             doc['created_at'] = doc['created_at'].isoformat()
             await db.products.insert_one(doc)
-        logger.info(f"Seeded {len(SEED_PRODUCTS)} products")
-    else:
-        logger.info(f"Database contains {existing} products")
+            logger.info(f"Added product: {product_data['name']}")
+    
+    existing = await db.products.count_documents({})
+    logger.info(f"Database contains {existing} products")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
