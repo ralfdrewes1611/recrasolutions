@@ -459,6 +459,33 @@ SEED_PRODUCTS = [
         "icon": "droplets",
         "color": "#06b6d4"
     },
+    # UniFi Network - Switches & NVR
+    {
+        "name": "UniFi USW-Lite-8-PoE",
+        "category": "wifi",
+        "description": "8-poorts PoE switch, 4x PoE+ (52W budget), 1x GbE uplink, managed via UniFi Network",
+        "price_purchase": 119,
+        "price_lease_monthly": 4,
+        "installation_cost": 50,
+        "maintenance_yearly": 15,
+        "dimensions": {"width": 0.2, "height": 0.1},
+        "icon": "wifi",
+        "color": "#10b981",
+        "tier": "budget"
+    },
+    {
+        "name": "UniFi UNVR Pro",
+        "category": "camera",
+        "description": "Network Video Recorder, 7x 3.5\" HDD bays (tot 84TB), tot 20 camera's, RAID, rackmount 1U",
+        "price_purchase": 499,
+        "price_lease_monthly": 15,
+        "installation_cost": 200,
+        "maintenance_yearly": 60,
+        "dimensions": {"width": 0.44, "height": 0.04},
+        "icon": "camera",
+        "color": "#ef4444",
+        "tier": "premium"
+    },
 ]
 
 # ==================== ROUTES ====================
@@ -655,9 +682,9 @@ async def calculate_quote(project_id: str):
         items=items
     )
 
-# AI Recommendations
+# AI Recommendations - Rule-based (lightweight, saves AI credits)
 @api_router.post("/ai/recommendations", response_model=AIAnalysisResponse)
-async def get_ai_recommendations(project_id: str):
+async def get_ai_recommendations(project_id: str, use_ai: bool = False):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project niet gevonden")
@@ -668,7 +695,6 @@ async def get_ai_recommendations(project_id: str):
     placed_products = project.get('placed_products', [])
     num_spots = project.get('num_spots', 0)
     
-    # Count products by category
     category_counts = {}
     for pp in placed_products:
         product = products_by_id.get(pp['product_id'])
@@ -676,69 +702,13 @@ async def get_ai_recommendations(project_id: str):
             cat = product['category']
             category_counts[cat] = category_counts.get(cat, 0) + pp.get('quantity', 1)
     
-    # Build context for AI
-    context = f"""
-    Project: {project.get('name', 'Nieuw project')}
-    Type: {project.get('project_type', 'camping')}
-    Aantal standplaatsen: {num_spots}
-    
-    Geplaatste producten per categorie:
-    {', '.join([f"{cat}: {count}" for cat, count in category_counts.items()]) or 'Geen producten geplaatst'}
-    
-    Beschikbare productcategorieën: sanitair, slagboom, camera, wifi, verlichting, betaalsysteem, toegangscontrole
-    """
-    
-    try:
-        llm_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not llm_key:
-            # Return rule-based recommendations if no API key
-            return generate_rule_based_recommendations(project, category_counts, num_spots, products)
-        
-        chat = LlmChat(
-            api_key=llm_key,
-            session_id=f"recra-{project_id}-{uuid.uuid4()}",
-            system_message="""Je bent een expert adviseur voor recreatieparken en campings. 
-            Analyseer de configuratie en geef concrete, actionable aanbevelingen in het Nederlands.
-            Focus op:
-            1. Sanitaire voorzieningen (minimaal 1 unit per 20 standplaatsen)
-            2. WiFi dekking (minimaal 1 access point per 30 standplaatsen)
-            3. Camerabewaking (minimale dekking van toegangswegen)
-            4. Verlichting (veiligheid en comfort)
-            5. Toegangscontrole (efficiëntie en veiligheid)
-            
-            Geef maximaal 5 aanbevelingen in JSON format:
-            [{"type": "warning|suggestion|optimization", "title": "korte titel", "description": "uitleg", "action": "specifieke actie"}]
-            """
-        ).with_model("openai", "gpt-5.2")
-        
-        response = await chat.send_message(UserMessage(
-            text=f"Analyseer deze camping configuratie en geef aanbevelingen:\n{context}"
-        ))
-        
-        # Parse AI response
-        import json
-        try:
-            # Try to extract JSON from response
-            json_start = response.find('[')
-            json_end = response.rfind(']') + 1
-            if json_start >= 0 and json_end > json_start:
-                recommendations_json = json.loads(response[json_start:json_end])
-                recommendations = [AIRecommendation(**r) for r in recommendations_json]
-                return AIAnalysisResponse(recommendations=recommendations)
-        except:
-            pass
-        
-        # Fallback to rule-based
-        return generate_rule_based_recommendations(project, category_counts, num_spots, products)
-        
-    except Exception as e:
-        logger.error(f"AI recommendation error: {e}")
-        return generate_rule_based_recommendations(project, category_counts, num_spots, products)
+    # Always use rule-based by default (saves credits)
+    return generate_rule_based_recommendations(project, category_counts, num_spots, products)
 
 def generate_rule_based_recommendations(project, category_counts, num_spots, products):
     recommendations = []
     
-    # Sanitair check
+    # Rule 1: Sanitair check (1 unit per 20 spots)
     sanitair_count = category_counts.get('sanitair', 0)
     required_sanitair = max(1, num_spots // 20) if num_spots > 0 else 0
     if sanitair_count < required_sanitair:
@@ -748,19 +718,26 @@ def generate_rule_based_recommendations(project, category_counts, num_spots, pro
             description=f"Met {num_spots} standplaatsen adviseren wij minimaal {required_sanitair} sanitair unit(s). U heeft er {sanitair_count}.",
             action="Voeg sanitair units toe"
         ))
+    elif sanitair_count > 0 and num_spots > 30 and sanitair_count < 2:
+        recommendations.append(AIRecommendation(
+            type="suggestion",
+            title="Overweeg extra sanitair",
+            description=f"Bij {num_spots} standplaatsen adviseren wij minimaal 2 sanitair units voor comfort en spreiding.",
+            action="Voeg een tweede sanitair unit toe"
+        ))
     
-    # WiFi check
+    # Rule 2: WiFi check (1 AP per 30 spots)
     wifi_count = category_counts.get('wifi', 0)
     required_wifi = max(1, num_spots // 30) if num_spots > 0 else 0
     if wifi_count < required_wifi:
         recommendations.append(AIRecommendation(
             type="suggestion",
             title="WiFi dekking uitbreiden",
-            description=f"Voor optimale dekking van {num_spots} standplaatsen adviseren wij minimaal {required_wifi} access point(s).",
+            description=f"Voor optimale dekking van {num_spots} standplaatsen adviseren wij minimaal {required_wifi} access point(s). U heeft er {wifi_count}.",
             action="Voeg WiFi access points toe"
         ))
     
-    # Camera check
+    # Rule 3: Camera bewaking
     camera_count = category_counts.get('camera', 0)
     if camera_count == 0 and num_spots > 0:
         recommendations.append(AIRecommendation(
@@ -769,10 +746,16 @@ def generate_rule_based_recommendations(project, category_counts, num_spots, pro
             description="Overweeg camera's te plaatsen bij toegangswegen en centrale zones voor veiligheid.",
             action="Voeg camera's toe"
         ))
+    elif camera_count > 0 and camera_count < 3 and num_spots > 30:
+        recommendations.append(AIRecommendation(
+            type="optimization",
+            title="Camera dekking verbeteren",
+            description=f"Bij {num_spots} plekken adviseren wij minimaal 3 camera's voor volledige dekking.",
+            action="Voeg extra camera's toe"
+        ))
     
-    # Access control check
+    # Rule 4: Toegangscontrole
     slagboom_count = category_counts.get('slagboom', 0)
-    toegang_count = category_counts.get('toegangscontrole', 0)
     if slagboom_count == 0 and num_spots > 10:
         recommendations.append(AIRecommendation(
             type="optimization",
@@ -781,7 +764,7 @@ def generate_rule_based_recommendations(project, category_counts, num_spots, pro
             action="Voeg een slagboom toe"
         ))
     
-    # Lighting check
+    # Rule 5: Verlichting
     verlichting_count = category_counts.get('verlichting', 0)
     if verlichting_count == 0 and num_spots > 0:
         recommendations.append(AIRecommendation(
@@ -789,6 +772,42 @@ def generate_rule_based_recommendations(project, category_counts, num_spots, pro
             title="Terreinverlichting toevoegen",
             description="LED-verlichting verhoogt de veiligheid en het comfort op uw terrein.",
             action="Voeg verlichting toe"
+        ))
+    
+    # Rule 6: Betaalsysteem check
+    betaal_count = category_counts.get('betaalsysteem', 0)
+    douchelezer_count = category_counts.get('douchelezer', 0)
+    if betaal_count == 0 and sanitair_count > 0 and douchelezer_count == 0:
+        recommendations.append(AIRecommendation(
+            type="suggestion",
+            title="Betaalsysteem overwegen",
+            description="Met sanitair units geplaatst adviseren wij een Adyen betaalterminal of douchelezer voor automatische afrekening.",
+            action="Voeg betaalsysteem of douchelezer toe"
+        ))
+    
+    # Rule 7: Kentekenherkenning bij slagboom
+    if slagboom_count > 0 and camera_count > 0:
+        # Check if they have LPR camera
+        has_lpr = any(
+            'LPR' in p.get('name', '') 
+            for p in products 
+            if p.get('id') in [pp['product_id'] for pp in project.get('placed_products', [])]
+        )
+        if not has_lpr:
+            recommendations.append(AIRecommendation(
+                type="optimization",
+                title="Kentekenherkenning toevoegen",
+                description="Combineer uw slagboom met een AI LPR camera voor automatische kentekendoorgang.",
+                action="Voeg UniFi AI LPR Camera toe"
+            ))
+    
+    # Rule 8: Large parks need mesh WiFi
+    if num_spots > 50 and wifi_count > 0 and wifi_count < 3:
+        recommendations.append(AIRecommendation(
+            type="warning",
+            title="WiFi capaciteit onvoldoende",
+            description=f"Een park met {num_spots} plekken heeft een mesh WiFi systeem nodig voor stabiele dekking.",
+            action="Upgrade naar Mesh WiFi Systeem"
         ))
     
     if not recommendations:

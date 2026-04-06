@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bath, Download, Truck } from 'lucide-react';
+import { Bath, Download, Truck, Lock } from 'lucide-react';
 import { Button } from './ui/button';
 import { AIQuoteText } from '../AIQuoteText';
 
@@ -14,11 +14,36 @@ export { SANITAIR_EXTRAS };
 
 export function Step5Quote({
   project, products, quickQuote, sanitairConfigs, setSanitairConfigs,
-  matchedSuppliers, exportPDF, loading,
+  matchedSuppliers, exportPDF, loading, userTier = 'free', onUpgrade,
 }) {
   const getProductById = (pid) => products.find(p => p.id === pid);
 
-  const travelTotal = (matchedSuppliers || []).reduce((sum, ms) => sum + (ms.travel?.total_travel_cost || 0), 0);
+  // Only count travel costs for categories that have placed products
+  const categoriesUsed = new Set();
+  project.placed_products.forEach(pp => {
+    const p = getProductById(pp.product_id);
+    if (p) categoriesUsed.add(p.category);
+  });
+
+  // Filter suppliers to only those matching used categories
+  const relevantSuppliers = (matchedSuppliers || []).filter(ms => {
+    const cats = ms.supplier?.categories || [];
+    return cats.some(c => categoriesUsed.has(c));
+  });
+
+  // Deduplicate: only show the best supplier per category
+  const seenCats = new Set();
+  const bestSuppliers = [];
+  for (const ms of relevantSuppliers) {
+    const cats = ms.supplier?.categories || [];
+    const matchedCat = cats.find(c => categoriesUsed.has(c) && !seenCats.has(c));
+    if (matchedCat) {
+      seenCats.add(matchedCat);
+      bestSuppliers.push({ ...ms, matchedCategory: matchedCat });
+    }
+  }
+
+  const travelTotal = bestSuppliers.reduce((sum, ms) => sum + (ms.travel?.total_travel_cost || 0), 0);
 
   return (
     <div className="space-y-4" data-testid="step-5-content">
@@ -101,18 +126,18 @@ export function Step5Quote({
       </div>
 
       {/* Reiskosten detail */}
-      {matchedSuppliers && matchedSuppliers.length > 0 && (
+      {bestSuppliers.length > 0 && (
         <div className="p-4 rounded-xl bg-white border border-[#e5e2d9]">
           <div className="flex items-center gap-2 mb-3">
             <Truck size={18} className="text-[#70C26C]" />
             <h3 className="font-bold text-[#333333]">Reiskosten Leveranciers</h3>
           </div>
           <div className="space-y-2">
-            {matchedSuppliers.map((ms, i) => (
+            {bestSuppliers.map((ms, i) => (
               <div key={i} className="flex justify-between items-center p-2 rounded-lg bg-[#FDF9ED]">
                 <div>
                   <div className="text-sm font-medium text-[#333333]">{ms.supplier?.name}</div>
-                  <div className="text-[10px] text-[#777777]">{ms.travel?.distance_km} km - {Math.round((ms.travel?.travel_time_hours || 0) * 60)} min</div>
+                  <div className="text-[10px] text-[#777777]">{ms.matchedCategory} - {ms.travel?.distance_km} km - {Math.round((ms.travel?.travel_time_hours || 0) * 60)} min</div>
                 </div>
                 <span className="text-sm font-bold text-[#70C26C]">€ {ms.travel?.total_travel_cost?.toLocaleString()}</span>
               </div>
@@ -139,15 +164,26 @@ export function Step5Quote({
 
       <AIQuoteText project={project} products={products} quickQuote={quickQuote} />
 
-      <Button
-        onClick={exportPDF}
-        disabled={loading || project.placed_products.length === 0}
-        className="w-full bg-[#70C26C] hover:bg-[#5fb35b] text-white font-semibold h-12"
-        data-testid="export-pdf-button"
-      >
-        <Download size={18} className="mr-2" />
-        Offerte downloaden (PDF)
-      </Button>
+      {userTier === 'free' ? (
+        <Button
+          onClick={onUpgrade}
+          className="w-full bg-[#244628] hover:bg-[#1a341d] text-white font-semibold h-12"
+          data-testid="export-pdf-locked"
+        >
+          <Lock size={18} className="mr-2" />
+          Upgrade naar Pro voor PDF export
+        </Button>
+      ) : (
+        <Button
+          onClick={exportPDF}
+          disabled={loading || project.placed_products.length === 0}
+          className="w-full bg-[#70C26C] hover:bg-[#5fb35b] text-white font-semibold h-12"
+          data-testid="export-pdf-button"
+        >
+          <Download size={18} className="mr-2" />
+          Offerte downloaden (PDF)
+        </Button>
+      )}
     </div>
   );
 }

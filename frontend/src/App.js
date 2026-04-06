@@ -12,7 +12,7 @@ import {
   ChevronRight, ChevronLeft, Package, Sparkles, FileText,
   Plus, Trash2, MapPin, FolderOpen, Save, Settings,
   HelpCircle, Phone, Mail, PenTool, MousePointer, Eye, EyeOff,
-  BatteryCharging, Square, Check, X, Loader2, Zap, AlertTriangle, Download, RotateCw,
+  BatteryCharging, Square, Check, X, Loader2, Zap, AlertTriangle, Download, RotateCw, Lock, Crown,
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { ScrollArea } from './components/ui/scroll-area';
@@ -39,11 +39,17 @@ const WIZARD_STEPS = [
   { id: 5, title: 'Offerte', description: 'Afronden', icon: FileText },
 ];
 
+// Paywall tiers
+const TIER_LABELS = { free: 'Free', pro: 'Pro', enterprise: 'Enterprise' };
+const TIER_COLORS = { free: '#777777', pro: '#70C26C', enterprise: '#244628' };
+
 function App() {
   const [activeFlow, setActiveFlow] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [products, setProducts] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [userTier, setUserTier] = useState('free'); // free | pro | enterprise
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [project, setProject] = useState({
     id: null, name: 'Nieuw Project', project_type: 'camping', project_flow: 'recreatie',
     address: '', lat: 52.0, lng: 5.0, floor_plan_base64: null, scale_meters_per_pixel: 0.1,
@@ -415,6 +421,9 @@ function App() {
             <span className="text-[#70C26C] text-sm font-medium capitalize" data-testid="active-flow-label">
               {activeFlow === 'fec' ? 'FEC & Experience' : activeFlow === 'chalet' ? 'Chalet & Stay' : 'Recreatie Infra'}
             </span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${TIER_COLORS[userTier]}20`, color: TIER_COLORS[userTier] }} data-testid="user-tier-badge">
+              {TIER_LABELS[userTier]}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <Dialog open={showProjectList} onOpenChange={setShowProjectList}>
@@ -520,6 +529,7 @@ function App() {
                   project={project} products={products} quickQuote={quickQuote}
                   sanitairConfigs={sanitairConfigs} setSanitairConfigs={setSanitairConfigs}
                   matchedSuppliers={matchedSuppliers} exportPDF={exportPDF} loading={loading}
+                  userTier={userTier} onUpgrade={() => setShowUpgradeModal(true)}
                 />
               )}
             </div>
@@ -679,7 +689,9 @@ function App() {
             <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
               <TabsList className="w-full p-1 bg-[#FDF9ED] rounded-none border-b border-[#e5e2d9] h-auto">
                 <TabsTrigger value="products" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs">Offerte</TabsTrigger>
-                <TabsTrigger value="suppliers" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs">Leveranciers</TabsTrigger>
+                <TabsTrigger value="suppliers" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs" onClick={(e) => { if (userTier !== 'enterprise') { e.preventDefault(); setShowUpgradeModal(true); } }} disabled={userTier !== 'enterprise'}>
+                  {userTier !== 'enterprise' && <Lock size={10} className="mr-1 inline" />}Leveranciers
+                </TabsTrigger>
                 <TabsTrigger value="ai" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs">AI Advies</TabsTrigger>
               </TabsList>
 
@@ -781,6 +793,43 @@ function App() {
         </div>
 
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+
+        {/* Upgrade Modal */}
+        <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+          <DialogContent className="max-w-lg bg-white border-[#e5e2d9]">
+            <DialogHeader>
+              <DialogTitle className="text-[#244628] flex items-center gap-2"><Crown size={20} className="text-[#70C26C]" /> Upgrade je plan</DialogTitle>
+              <DialogDescription className="text-[#777777]">Kies het plan dat bij je past</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-4">
+              {[
+                { tier: 'free', label: 'Free', price: '€0', features: ['Configurator', 'AI aanbevelingen', 'Projecten opslaan'] },
+                { tier: 'pro', label: 'Pro', price: '€49/mnd', features: ['Alles van Free', 'Offerte PDF downloaden', 'AI offertetekst'] },
+                { tier: 'enterprise', label: 'Enterprise', price: '€149/mnd', features: ['Alles van Pro', 'Partner matching', 'Leveranciers dashboard', 'API toegang'] },
+              ].map((plan) => (
+                <button
+                  key={plan.tier}
+                  onClick={() => { setUserTier(plan.tier); setShowUpgradeModal(false); toast.success(`Plan gewijzigd naar ${plan.label}`); }}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${userTier === plan.tier ? 'border-[#70C26C] bg-[#70C26C]/5' : 'border-[#e5e2d9] hover:border-[#70C26C]/50 bg-white'}`}
+                  data-testid={`plan-${plan.tier}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-[#333333]">{plan.label}</span>
+                    <span className="font-bold text-[#70C26C]">{plan.price}</span>
+                  </div>
+                  <ul className="space-y-1">
+                    {plan.features.map((f, i) => (
+                      <li key={i} className="text-xs text-[#777777] flex items-center gap-1.5">
+                        <Check size={12} className="text-[#70C26C]" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+                  {userTier === plan.tier && <div className="mt-2 text-xs text-[#70C26C] font-medium">Huidig plan</div>}
+                </button>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Drag ghost */}
         {pointerDrag && (
