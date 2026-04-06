@@ -57,14 +57,27 @@ export function FecWizard({ onBack, userTier }) {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [revenueReport, setRevenueReport] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [dragState, setDragState] = useState(null); // { zoneId, offsetX, offsetY }
+  const [resizeState, setResizeState] = useState(null); // { zoneId, startX, startY, startW, startH }
   const canvasRef = useRef(null);
+
+  // Canvas dimensions
+  const CANVAS_W = Math.max(700, Math.sqrt(project.total_area_m2) * 22);
+  const CANVAS_H = Math.max(450, Math.sqrt(project.total_area_m2) * 15);
+  const PX_PER_M2 = (CANVAS_W * CANVAS_H) / project.total_area_m2;
+
+  const pxToM2 = (w, h) => Math.round((w * h) / PX_PER_M2);
+  const m2ToPx = (m2) => {
+    const side = Math.sqrt(m2 * PX_PER_M2);
+    return { w: Math.round(side * 1.4), h: Math.round(side / 1.4) };
+  };
 
   useEffect(() => {
     axios.get(`${API}/fec/products`).then(r => setFecProducts(r.data)).catch(() => {});
     axios.get(`${API}/fec/top5`).then(r => setTop5(r.data)).catch(() => {});
   }, []);
 
-  // Auto-calculate revenue when products change
   const calculateRevenue = useCallback(async () => {
     if (selectedProducts.length === 0) { setRevenueReport(null); return; }
     try {
@@ -85,7 +98,7 @@ export function FecWizard({ onBack, userTier }) {
     return s + (p ? p.footprint_m2 * sp.quantity : 0);
   }, 0);
   const zoneArea = project.zones.reduce((s, z) => s + z.area_m2, 0);
-  const remainingM2 = project.total_area_m2 - totalFootprint;
+  const remainingM2 = project.total_area_m2 - zoneArea;
 
   const addProduct = (productId) => {
     const existing = selectedProducts.find(sp => sp.product_id === productId);
@@ -109,7 +122,16 @@ export function FecWizard({ onBack, userTier }) {
 
   const addZone = (type) => {
     const meta = ZONE_META[type];
-    const newZone = { id: `zone-${Date.now()}`, type, name: meta.label, area_m2: 50, expected_capacity: 20, color: meta.color };
+    const { w, h } = m2ToPx(50);
+    // Stack zones with offset so they don't overlap
+    const offsetIdx = project.zones.length;
+    const x = 20 + (offsetIdx % 3) * (w + 16);
+    const y = 20 + Math.floor(offsetIdx / 3) * (h + 16);
+    const newZone = {
+      id: `zone-${Date.now()}`, type, name: meta.label, area_m2: 50,
+      expected_capacity: 20, color: meta.color,
+      x, y, w, h,
+    };
     setProject(prev => ({ ...prev, zones: [...prev.zones, newZone] }));
   };
 
@@ -119,6 +141,63 @@ export function FecWizard({ onBack, userTier }) {
 
   const removeZone = (zoneId) => {
     setProject(prev => ({ ...prev, zones: prev.zones.filter(z => z.id !== zoneId) }));
+    if (selectedZone === zoneId) setSelectedZone(null);
+  };
+
+  // ============ DRAG LOGIC ============
+  const handleZoneMouseDown = useCallback((e, zone) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = canvasRef.current.getBoundingClientRect();
+    setDragState({ zoneId: zone.id, offsetX: e.clientX - rect.left - zone.x, offsetY: e.clientY - rect.top - zone.y });
+    setSelectedZone(zone.id);
+  }, []);
+
+  useEffect(() => {
+    if (!dragState) return;
+    const handleMove = (e) => {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const zone = project.zones.find(z => z.id === dragState.zoneId);
+      if (!zone) return;
+      const newX = Math.max(0, Math.min(CANVAS_W - zone.w, e.clientX - rect.left - dragState.offsetX));
+      const newY = Math.max(0, Math.min(CANVAS_H - zone.h, e.clientY - rect.top - dragState.offsetY));
+      setProject(prev => ({ ...prev, zones: prev.zones.map(z => z.id === dragState.zoneId ? { ...z, x: Math.round(newX), y: Math.round(newY) } : z) }));
+    };
+    const handleUp = () => setDragState(null);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    return () => { document.removeEventListener('mousemove', handleMove); document.removeEventListener('mouseup', handleUp); };
+  }, [dragState, CANVAS_W, CANVAS_H, project.zones]);
+
+  // ============ RESIZE LOGIC ============
+  const handleResizeMouseDown = useCallback((e, zone) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setResizeState({ zoneId: zone.id, startX: e.clientX, startY: e.clientY, startW: zone.w, startH: zone.h });
+    setSelectedZone(zone.id);
+  }, []);
+
+  useEffect(() => {
+    if (!resizeState) return;
+    const handleMove = (e) => {
+      const dx = e.clientX - resizeState.startX;
+      const dy = e.clientY - resizeState.startY;
+      const newW = Math.max(60, resizeState.startW + dx);
+      const newH = Math.max(40, resizeState.startH + dy);
+      const newM2 = pxToM2(newW, newH);
+      setProject(prev => ({ ...prev, zones: prev.zones.map(z =>
+        z.id === resizeState.zoneId ? { ...z, w: Math.round(newW), h: Math.round(newH), area_m2: Math.max(5, newM2) } : z
+      ) }));
+    };
+    const handleUp = () => setResizeState(null);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    return () => { document.removeEventListener('mousemove', handleMove); document.removeEventListener('mouseup', handleUp); };
+  }, [resizeState]);
+
+  // Deselect on canvas click
+  const handleCanvasClick = (e) => {
+    if (e.target === canvasRef.current) setSelectedZone(null);
   };
 
   const filteredProducts = selectedCategory === 'all' ? fecProducts : fecProducts.filter(p => p.category === selectedCategory);
@@ -243,13 +322,14 @@ export function FecWizard({ onBack, userTier }) {
                     {project.zones.map((zone) => {
                       const meta = ZONE_META[zone.type];
                       const Icon = meta?.icon || Package;
+                      const isSelected = selectedZone === zone.id;
                       return (
-                        <div key={zone.id} className="p-2.5 rounded-lg border bg-white" style={{ borderColor: zone.color + '40' }} data-testid={`zone-item-${zone.id}`}>
+                        <div key={zone.id} className={`p-2.5 rounded-lg border bg-white transition-all ${isSelected ? 'ring-2 ring-offset-1' : ''}`} style={{ borderColor: zone.color + '40', '--tw-ring-color': zone.color }} data-testid={`zone-item-${zone.id}`}>
                           <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
+                            <button className="flex items-center gap-2" onClick={() => setSelectedZone(isSelected ? null : zone.id)}>
                               <Icon size={14} style={{ color: zone.color }} />
                               <span className="text-xs font-medium text-[#333]">{zone.name}</span>
-                            </div>
+                            </button>
                             <Button variant="ghost" size="icon" className="h-6 w-6 text-[#777] hover:text-red-500" onClick={() => removeZone(zone.id)}>
                               <X size={12} />
                             </Button>
@@ -257,7 +337,11 @@ export function FecWizard({ onBack, userTier }) {
                           <div className="flex gap-2">
                             <div className="flex-1">
                               <Label className="text-[10px] text-[#777]">m²</Label>
-                              <Input type="number" value={zone.area_m2} onChange={(e) => updateZone(zone.id, { area_m2: parseInt(e.target.value) || 10 })}
+                              <Input type="number" value={zone.area_m2} onChange={(e) => {
+                                const newM2 = parseInt(e.target.value) || 10;
+                                const { w, h } = m2ToPx(newM2);
+                                updateZone(zone.id, { area_m2: newM2, w, h });
+                              }}
                                 className="h-7 text-xs bg-white border-[#e5e2d9]" />
                             </div>
                             <div className="flex-1">
@@ -272,11 +356,13 @@ export function FecWizard({ onBack, userTier }) {
                   </div>
                 )}
 
-                {/* Zone visualization bar */}
+                {/* Zone area bar */}
                 {project.zones.length > 0 && (
                   <div className="rounded-lg overflow-hidden h-6 flex" data-testid="zone-bar">
                     {project.zones.map(z => (
-                      <div key={z.id} style={{ width: `${Math.max(2, (z.area_m2 / project.total_area_m2) * 100)}%`, backgroundColor: z.color }} className="h-full flex items-center justify-center">
+                      <div key={z.id} style={{ width: `${Math.max(2, (z.area_m2 / project.total_area_m2) * 100)}%`, backgroundColor: z.color }}
+                        className={`h-full flex items-center justify-center cursor-pointer transition-opacity ${selectedZone && selectedZone !== z.id ? 'opacity-40' : ''}`}
+                        onClick={() => setSelectedZone(selectedZone === z.id ? null : z.id)}>
                         <span className="text-[8px] text-white font-bold truncate px-1">{z.area_m2}m²</span>
                       </div>
                     ))}
@@ -481,55 +567,97 @@ export function FecWizard({ onBack, userTier }) {
           </div>
         </div>
 
-        {/* Main Canvas - FEC Floor Plan */}
+        {/* Main Canvas - FEC Floor Plan (Interactive Drag & Resize) */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="h-12 bg-white border-b border-[#e5e2d9] flex items-center justify-between px-4">
-            <span className="text-sm text-[#777]">FEC Layout — {project.total_area_m2}m² / {project.ceiling_height_m}m hoog</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-[#777]">FEC Layout — {project.total_area_m2}m² / {project.ceiling_height_m}m hoog</span>
+              {selectedZone && (
+                <span className="text-xs text-[#f59e0b] bg-[#f59e0b]/10 px-2 py-0.5 rounded-full">
+                  Zone geselecteerd — versleep of resize
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-3 text-xs text-[#777]">
-              <span>Benut: {totalFootprint}m²</span>
-              <span className={remainingM2 < 0 ? 'text-red-500 font-bold' : ''}>Vrij: {Math.round(remainingM2)}m²</span>
+              <span>Zones: {zoneArea}m²</span>
+              <span className={remainingM2 < 0 ? 'text-red-500 font-bold' : ''}>Vrij: {Math.max(0, Math.round(remainingM2))}m²</span>
             </div>
           </div>
 
           <div className="flex-1 overflow-auto bg-[#FDF9ED] p-4">
-            <div ref={canvasRef} className="relative bg-white rounded-xl shadow-lg mx-auto border-2 border-[#e5e2d9]"
-              style={{ width: Math.max(600, Math.sqrt(project.total_area_m2) * 20), height: Math.max(400, Math.sqrt(project.total_area_m2) * 14), minWidth: 600 }}
+            <div ref={canvasRef}
+              className="relative bg-white rounded-xl shadow-lg mx-auto border-2 border-[#e5e2d9] select-none"
+              style={{
+                width: CANVAS_W, height: CANVAS_H, minWidth: 600,
+                backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.02) 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+              onClick={handleCanvasClick}
               data-testid="fec-canvas"
             >
-              {/* Zone visualization on canvas */}
-              {project.zones.length > 0 ? (
-                <div className="absolute inset-4 flex flex-wrap gap-2 content-start">
-                  {project.zones.map((zone) => {
-                    const meta = ZONE_META[zone.type];
-                    const Icon = meta?.icon || Package;
-                    const totalArea = project.total_area_m2;
-                    const widthPct = Math.max(15, Math.min(95, (zone.area_m2 / totalArea) * 100));
-                    return (
-                      <div key={zone.id}
-                        className="rounded-xl border-2 flex flex-col items-center justify-center p-3 transition-all"
-                        style={{ width: `${widthPct}%`, minHeight: 80, backgroundColor: `${zone.color}15`, borderColor: `${zone.color}60` }}
-                        data-testid={`fec-canvas-zone-${zone.id}`}
+              {/* Interactive zones */}
+              {project.zones.map((zone) => {
+                const meta = ZONE_META[zone.type];
+                const Icon = meta?.icon || Package;
+                const isSelected = selectedZone === zone.id;
+                const isDragging = dragState?.zoneId === zone.id;
+                const isResizing = resizeState?.zoneId === zone.id;
+
+                return (
+                  <div key={zone.id}
+                    className={`absolute rounded-xl border-2 flex flex-col items-center justify-center select-none transition-shadow ${isDragging ? 'cursor-grabbing shadow-2xl z-20 opacity-90' : isResizing ? 'z-20' : isSelected ? 'cursor-grab shadow-lg z-10 ring-2 ring-offset-2' : 'cursor-grab hover:shadow-md z-0'}`}
+                    style={{
+                      left: zone.x, top: zone.y, width: zone.w, height: zone.h,
+                      backgroundColor: `${zone.color}18`, borderColor: `${zone.color}${isSelected ? 'cc' : '60'}`,
+                      '--tw-ring-color': zone.color,
+                    }}
+                    onMouseDown={(e) => handleZoneMouseDown(e, zone)}
+                    data-testid={`fec-canvas-zone-${zone.id}`}
+                  >
+                    <Icon size={Math.min(zone.w, zone.h) * 0.25} style={{ color: zone.color }} className="pointer-events-none" />
+                    <span className="text-xs font-bold mt-1 pointer-events-none" style={{ color: zone.color }}>{zone.name}</span>
+                    <span className="text-[10px] text-[#777] pointer-events-none">{zone.area_m2}m²</span>
+
+                    {/* Resize handle (bottom-right corner) */}
+                    <div
+                      className={`absolute bottom-0 right-0 w-5 h-5 cursor-se-resize rounded-tl-lg rounded-br-xl transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                      style={{ backgroundColor: zone.color }}
+                      onMouseDown={(e) => handleResizeMouseDown(e, zone)}
+                      data-testid={`fec-resize-${zone.id}`}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 12 12" className="absolute bottom-0.5 right-0.5 text-white">
+                        <path d="M10 2L2 10M10 6L6 10M10 10L10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+
+                    {/* Delete button (top-right) */}
+                    {isSelected && (
+                      <button
+                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 z-30"
+                        onClick={(e) => { e.stopPropagation(); removeZone(zone.id); }}
+                        data-testid={`fec-delete-zone-${zone.id}`}
                       >
-                        <Icon size={24} style={{ color: zone.color }} />
-                        <span className="text-xs font-bold mt-1" style={{ color: zone.color }}>{zone.name}</span>
-                        <span className="text-[10px] text-[#777]">{zone.area_m2}m²</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
+                        <X size={10} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Empty state */}
+              {project.zones.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center max-w-sm p-8">
                     <LayoutGrid size={32} className="mx-auto mb-2 text-[#e5e2d9]" />
                     <h3 className="font-semibold text-[#333] mb-2">Bouw uw FEC layout</h3>
-                    <p className="text-sm text-[#777]">Voeg zones toe in Stap 2 om uw ruimte in te delen.</p>
+                    <p className="text-sm text-[#777]">Voeg zones toe in Stap 2 en versleep ze op het canvas.</p>
                   </div>
                 </div>
               )}
 
-              {/* Revenue hotspots on canvas */}
+              {/* Revenue hotspots */}
               {revenueReport && revenueReport.top_performers.length > 0 && (
-                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 border border-[#e5e2d9] shadow-sm">
+                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 border border-[#e5e2d9] shadow-sm pointer-events-none">
                   <div className="text-[10px] font-bold text-[#333] mb-1 flex items-center gap-1">
                     <DollarSign size={10} className="text-[#f59e0b]" /> Hotspots
                   </div>
