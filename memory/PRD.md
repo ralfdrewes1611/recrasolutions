@@ -20,12 +20,12 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 - Denken in ruimte + omzet
 - Focus: € per m² / m³
 - 4-stappen wizard: Locatie > Zones > Attracties > Revenue Dashboard
-- Eigen product catalog, leveranciers, revenue engine
+- **Interactive canvas**: drag & resize zones, m² auto-berekening
 
 ## Implemented Features
 
 ### Core Platform
-- Flow Selector met 3 flows + RECRA logo
+- Flow Selector met 3 flows + RECRA logo (wit/donker PNG)
 - Paywall (Free/Pro/Enterprise) met upgrade modal
 - RECRA branding: #244628 header, #FDF9ED achtergrond, #70C26C accenten
 
@@ -34,35 +34,28 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 - Custom pointer-based drag & click-to-place 2D canvas
 - Haversine leveranciersmatching met reiskosten per categorie
 - Rule-based AI advisor (8 regels)
-- Functionele energie stap (zonnepanelen, accu's, warmtepomp, etc.)
-- PDF offerte export
+- Functionele energie stap (zonnepanelen, accu's, warmtepomp, terugverdientijd)
+- PDF offerte export met reiskosten
 
-### FEC Revenue Engine (NIEUW)
-- **14 FEC producten** over 5 categorieën:
-  - Arcade & Games: Shuffleboard, Arcade Wall, Air Hockey
-  - Karting: Elektrische Kartbaan (8 karts), Mini Kart Track
-  - Interactive: X-Wall Klimwand, Escape Room, VR Experience
-  - Indoor Play: Mega Speeltoestel, Toddler Zone, Trampoline Park
-  - Food & Beverage: Snackbar, Drinks Station, Premium Restaurant
-- **5 FEC leveranciers**: X-Wall, Shuffly, Heemskerk Play, Pro Karting, Time Mission
-- **Revenue Engine**: daily_revenue, monthly_revenue, ROI, break-even per product
-- **Top 5 Geldverdieners**: gesorteerd op €/m²/maand
-- **Zone-based layout**: Entree, Arcade, Karting, Interactive, Indoor Play, Horeca, Routing
-- **FEC AI Rules** (8 regels):
-  - Geen horeca → +30% omzet advies
-  - Karting → high revenue flag
-  - Lage capaciteit → high turnover suggestie
-  - Geen interactive → verblijftijd advies
-  - Plafondhoogte check
-  - Onbenutte ruimte signalering
-  - Entree zone advies
-  - Cross-sell naar Recreatie/Chalet bij grote locaties
-- **Canvas**: zone-gebaseerd met kleuren, hotspot indicators (€/m²)
-- **Business Case sidebar**: live investering, omzet/mnd, break-even
+### FEC Revenue Engine
+- 14 FEC producten over 5 categorieën (Arcade, Karting, Interactive, Indoor Play, F&B)
+- 5 FEC leveranciers (X-Wall, Shuffly, Heemskerk Play, Pro Karting, Time Mission)
+- Revenue Engine: daily/monthly revenue, ROI, break-even per product
+- Top 5 Geldverdieners gesorteerd op €/m²/maand
+- **Interactive Canvas** (NIEUW):
+  - Zone drag: versleep zones naar gewenste positie
+  - Zone resize: sleep rechtsonder hoek om formaat aan te passen
+  - m² auto-sync: pixel afmetingen ↔ vierkante meters bidirectioneel
+  - Zone selectie met ring, delete knop, resize handle
+  - Canvas boundaries check (zones blijven binnen canvas)
+- Zone-types: Entree, Arcade, Karting, Interactive, Indoor Play, Horeca, Routing
+- FEC AI Rules (8 regels): horeca advies, karting flag, capaciteit check, etc.
+- Business Case sidebar met live investering, omzet/mnd, break-even
+- Cross-sell naar Recreatie/Chalet
 
-### Codebase
-- App.js: ~870 regels (was 1885)
-- FecWizard.jsx: ~390 regels
+### Codebase (goed gestructureerd)
+- App.js: ~880 regels
+- FecWizard.jsx: ~670 regels
 - fec_engine.py: ~340 regels
 - 5 step-componenten + FlowSelector + SupplierPanel
 
@@ -70,13 +63,14 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 
 ### P1 - High
 - [ ] Auth systeem (login/registratie voor paywall persistentie)
-- [ ] FEC zone drag/resize op canvas (interactieve indeling)
+- [ ] FEC PDF export met business case
 
 ### P2 - Medium
 - [ ] Partner portal: leveranciers uploaden productcatalogus
 - [ ] Deel configuratie via URL
 - [ ] 3D canvas weergave
-- [ ] FEC PDF export met business case
+- [ ] Geocoding (adres → lat/lng automatisch)
 
 ### P3 - Future
 - [ ] AR preview, CRM integratie, Grenke lease, White-label
+- [ ] Benchmark Mode (vergelijk met branche-gemiddelden)
