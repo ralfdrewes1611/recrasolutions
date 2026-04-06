@@ -13,29 +13,23 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 
 ### Core Platform
 - 5-stappen wizard: Project > Terrein > Producten > Energie > Offerte
-- **3 Configuratie Flows**: Recreatie Infra, Chalet & Stay, FEC & Experience
+- **3 Configuratie Flows**: Recreatie Infra (27 prod), Chalet & Stay (24 prod), FEC & Experience (21 prod)
 - Flow-specifieke productfiltering per branche
 - Canvas met zones, dekking toggle, snap-to-grid (24px)
 - Click-to-place + custom pointer drag + selectie + verplaatsing
 - Icoon | 2D toggle (op-schaal rechthoeken)
-- Project CRUD, PDF offerte export, RECRA branding
+- Project CRUD, PDF offerte export
+- **RECRA Logo** geïntegreerd (wit/donker PNG versies)
+- RECRA branding: #244628 header, #FDF9ED achtergrond, #70C26C accenten
 
 ### Producten (27 stuks, echte producten)
-- **Sanitair** (3): Compact 3x6m, Medium 6x8m, Premium 8x12m
-- **Slagboom** (3): Nice M5BAR, Nice M5BAR + Kentekenherkenning, Premium Toegangspoort
-- **Camera** (6): UniFi G5 Bullet, Dome Ultra, Pro, Turret Ultra, AI LPR, **UNVR Pro** (NEW)
-- **Toegangscontrole** (4): UniFi Access Hub, UA-Lite, UA-Pro, Starter Kit
-- **WiFi** (4): UniFi AP Indoor/Outdoor, Mesh, **USW-Lite-8-PoE** (NEW)
-- **Verlichting** (2): Solar LED Pad, Slimme Lichtmast
-- **Betaalsystemen** (2): Adyen Betaalterminal, Self-Service Kiosk
-- **Douchelezers** (3): Basis, Pro, Enterprise
+- Sanitair (3), Slagboom (3), Camera (6 incl. UNVR Pro), Toegangscontrole (4), WiFi (4 incl. USW-Lite-8-PoE), Verlichting (2), Betaalsystemen (2), Douchelezers (3)
 
 ### Leveranciers & Logistiek
-- 5 leveranciers met GPS-coördinaten (Nice Benelux, UI.com, Sanitec, Adyen, Van Loon)
+- 5 leveranciers met GPS-coördinaten
 - Haversine afstandsberekening (hemelsbreed * 1.3 = wegafstand)
-- Reiskosten: startfee + km-prijs * afstand * 2 (heen+terug) + uurtarief * reistijd * 2
-- Partner matching gesorteerd op verified status + afstand
-- Reiskosten per categorie in offerte (dichtstbijzijnde leverancier per productcategorie)
+- Reiskosten: startfee + km-prijs * afstand * 2 + uurtarief * reistijd * 2
+- Per-categorie reiskosten in offerte (dichtstbijzijnde leverancier)
 
 ### Paywall (Free / Pro / Enterprise)
 - **Free**: Configurator, AI aanbevelingen, projecten opslaan
@@ -43,42 +37,36 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 - **Enterprise**: + Partner matching, Leveranciers dashboard
 - Upgrade modal met plan-selectie
 
+### Energie Stap (Functioneel)
+- 3 modi: Netaansluiting, Hybrid, Off-Grid
+- **Zonnepanelen**: 450Wp/stuk, €320/panel, 3.5 zonuren NL, dekking %, aanbevolen panelen
+- **Accu-opslag**: LiFePO4 5kWh/unit, €2800/unit, autonomie-uren, aanbevolen units
+- **Warmtepomp**: COP 3.5, €8500, jaarlijkse besparing kWh
+- **Zonneboiler**: 300L, €3200
+- **Wateropvang & hergebruik**: €12000
+- **Windturbine**: 3kW micro, €6500
+- Investering overzicht met terugverdientijd en jaarlijkse besparing
+- Energie-investering geïntegreerd in offerte totaal
+
 ### AI & Automatisering
-- **Rule-based AI Advisor** (lichtgewicht, geen GPT-calls):
-  - Sanitair: 1 unit per 20 standplaatsen
-  - WiFi: 1 AP per 30 standplaatsen
-  - Camera: minimaal bij toegangswegen
-  - Slagboom: bij > 10 standplaatsen
-  - Verlichting: altijd adviseren
-  - Betaalsysteem: bij sanitair zonder douchelezer
-  - Kentekenherkenning: bij slagboom + camera
-  - Mesh WiFi: bij > 50 standplaatsen
+- **Rule-based AI Advisor** (8 regels, geen GPT-calls): sanitair, wifi, camera, slagboom, verlichting, betaalsysteem, kentekenherkenning, mesh wifi
 - Excel/CSV import met AI kolom-matching (GPT-5.2)
-- Website scraper met AI productextractie (GPT-5.2)
 - Smart plattegrond analyse (Vision, GPT-5.2)
 - AI offertetekst generatie (GPT-5.2)
 
-### Codebase Refactoring
-- App.js: 1885 → 852 regels (-55%)
-- 5 losse step-componenten: Step1ProjectDetails, Step2Terrain, Step3Products, Step4Energy, Step5Quote
-- Gedeelde constanten (categoryIcons, categoryColors) geëxporteerd vanuit Step3Products
-
-### Labels & Terminologie
-- "Investering" (geen CAPEX), "Operational Lease" (geen OPEX)
-- "60 maanden incl. SLA" zichtbaar als tekst
-- Adyen-only (geen muntautomaten)
+### Codebase
+- App.js: 1885 → ~870 regels (-54%)
+- 5 step-componenten + FlowSelector + SupplierPanel
 
 ## Backlog
 
 ### P1 - High
-- [ ] Energie stap: hybrid/offgrid berekening (zonnepanelen, accu's, warmtepomp) - functioneel maken
-- [ ] RECRA Logo (PNG/SVG nodig van gebruiker)
-- [ ] Product scraper: 2D/3D afbeelding generatie per product
+- [ ] Auth systeem (login/registratie voor paywall persistentie)
+- [ ] Deel configuratie via URL
 
 ### P2 - Medium
 - [ ] Partner portal: leveranciers uploaden productcatalogus
-- [ ] Auth systeem (echte login/registratie voor paywall persistentie)
-- [ ] Deel configuratie via URL
+- [ ] Product scraper: 2D afbeeldingen per product
 - [ ] 3D canvas weergave
 
 ### P3 - Future
