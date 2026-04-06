@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://recra-quote-wizard.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://flow-coordinator-1.preview.emergentagent.com').rstrip('/')
 
 class TestProductsAPI:
     """Product catalog API tests"""

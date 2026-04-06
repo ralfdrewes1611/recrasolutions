@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { ProductImportPanel } from './ProductImportPanel';
 import { AIQuoteText } from './AIQuoteText';
+import { FlowSelector } from './FlowSelector';
+import { SupplierPanel } from './SupplierPanel';
 import { 
   ChevronRight, ChevronLeft, Upload, Grid3X3, Package, 
   Sparkles, FileText, Download, Plus, Trash2, Bath, Camera, 
@@ -111,6 +113,9 @@ const ENERGY_MODES = [
 ];
 
 function App() {
+  // Flow state
+  const [activeFlow, setActiveFlow] = useState(null); // null = show flow selector
+
   // Core state
   const [currentStep, setCurrentStep] = useState(1);
   const [products, setProducts] = useState([]);
@@ -119,6 +124,10 @@ function App() {
     id: null,
     name: 'Nieuw Project',
     project_type: 'camping',
+    project_flow: 'recreatie',
+    address: '',
+    lat: 52.0,
+    lng: 5.0,
     floor_plan_base64: null,
     scale_meters_per_pixel: 0.1,
     canvas_width: 1000,
@@ -782,16 +791,28 @@ function App() {
     setShowProjectList(false);
   };
 
+  // Show flow selector if no flow selected
+  if (!activeFlow) {
+    return (
+      <FlowSelector onSelect={(flow) => {
+        setActiveFlow(flow);
+        setProject(prev => ({ ...prev, project_flow: flow }));
+      }} />
+    );
+  }
+
   return (
     <TooltipProvider>
       <div className="h-screen w-full flex flex-col overflow-hidden bg-[#FDF9ED]">
         {/* Header */}
         <header className="h-16 bg-[#244628] flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-center">
+            <button onClick={() => setActiveFlow(null)} className="flex flex-col items-center hover:opacity-80 transition-opacity">
               <span className="text-white font-medium text-xl tracking-[0.3em]">RECRA</span>
               <span className="text-white/70 text-[10px] tracking-[0.15em]">— SOLUTIONS —</span>
-            </div>
+            </button>
+            <span className="text-white/40 text-sm">|</span>
+            <span className="text-[#70C26C] text-sm font-medium capitalize">{activeFlow === 'fec' ? 'FEC & Experience' : activeFlow === 'chalet' ? 'Chalet & Stay' : 'Recreatie Infra'}</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -926,6 +947,37 @@ function App() {
                       placeholder="Bijv. Camping De Zonnehoek"
                       data-testid="project-name-input"
                     />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-[#333333]">Projectlocatie</Label>
+                    <Input
+                      value={project.address}
+                      onChange={(e) => setProject(prev => ({ ...prev, address: e.target.value }))}
+                      className="mt-1.5 bg-white border-[#e5e2d9]"
+                      placeholder="Adres of plaatsnaam"
+                      data-testid="project-address-input"
+                    />
+                    <div className="grid grid-cols-2 gap-2 mt-1.5">
+                      <Input
+                        type="number"
+                        step="0.001"
+                        value={project.lat}
+                        onChange={(e) => setProject(prev => ({ ...prev, lat: parseFloat(e.target.value) || 52 }))}
+                        className="bg-white border-[#e5e2d9] text-sm"
+                        placeholder="Latitude"
+                        data-testid="project-lat-input"
+                      />
+                      <Input
+                        type="number"
+                        step="0.001"
+                        value={project.lng}
+                        onChange={(e) => setProject(prev => ({ ...prev, lng: parseFloat(e.target.value) || 5 }))}
+                        className="bg-white border-[#e5e2d9] text-sm"
+                        placeholder="Longitude"
+                        data-testid="project-lng-input"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -1682,10 +1734,13 @@ function App() {
           <div className="w-72 flex-shrink-0 border-l border-[#e5e2d9] bg-[#FFFEF8] flex flex-col">
             <Tabs value={sidebarTab} onValueChange={setSidebarTab} className="flex flex-col h-full">
               <TabsList className="w-full p-1 bg-[#FDF9ED] rounded-none border-b border-[#e5e2d9] h-auto">
-                <TabsTrigger value="products" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C]">
+                <TabsTrigger value="products" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs">
                   Offerte
                 </TabsTrigger>
-                <TabsTrigger value="ai" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C]">
+                <TabsTrigger value="suppliers" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs">
+                  Leveranciers
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-[#70C26C] text-xs">
                   AI Advies
                 </TabsTrigger>
               </TabsList>
@@ -1751,6 +1806,11 @@ function App() {
                     </div>
                   </div>
                 </div>
+              </TabsContent>
+
+
+              <TabsContent value="suppliers" className="flex-1 m-0 overflow-y-auto p-4">
+                <SupplierPanel projectLat={project.lat} projectLng={project.lng} />
               </TabsContent>
 
               <TabsContent value="ai" className="flex-1 m-0 overflow-y-auto p-4">

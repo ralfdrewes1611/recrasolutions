@@ -18,6 +18,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 from ai_services import ai_router
+from supplier_module import supplier_router, seed_suppliers
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -42,16 +43,19 @@ logger = logging.getLogger(__name__)
 class ProductBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
     name: str
-    category: str  # sanitair, slagboom, camera, wifi, verlichting, betaalsysteem, toegangscontrole
+    category: str
+    subcategory: str = ""
     description: str
     price_purchase: float
     price_lease_monthly: float
     installation_cost: float
     maintenance_yearly: float
     dimensions: Dict[str, float] = Field(default_factory=lambda: {"width": 1, "height": 1})
-    coverage_radius: Optional[float] = None  # For WiFi, cameras
+    coverage_radius: Optional[float] = None
     icon: str = "box"
     color: str = "#0ea5e9"
+    tier: str = "midrange"  # budget | midrange | premium
+    supplier_id: Optional[str] = None
 
 class Product(ProductBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -78,7 +82,11 @@ class Zone(BaseModel):
 class ProjectBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
     name: str
-    project_type: str  # camperplaats, camping, resort, tijdelijke_housing
+    project_type: str  # recreatie | chalet | fec
+    project_flow: str = "recreatie"  # recreatie | chalet | fec
+    address: str = ""
+    lat: float = 52.0
+    lng: float = 5.0
     floor_plan_base64: Optional[str] = None
     scale_meters_per_pixel: float = 0.1
     canvas_width: int = 800
@@ -98,6 +106,10 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     project_type: Optional[str] = None
+    project_flow: Optional[str] = None
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     floor_plan_base64: Optional[str] = None
     scale_meters_per_pixel: Optional[float] = None
     placed_products: Optional[List[PlacedProduct]] = None
@@ -110,6 +122,9 @@ class QuoteResponse(BaseModel):
     opex_yearly: float
     installation_total: float
     maintenance_yearly: float
+    travel_costs: List[Dict[str, Any]] = []
+    travel_total: float = 0
+    project_total: float = 0  # capex + install + travel
     items: List[Dict[str, Any]]
 
 class AIRecommendation(BaseModel):
@@ -477,6 +492,18 @@ async def create_product(product_data: ProductCreate):
     doc['created_at'] = doc['created_at'].isoformat()
     await db.products.insert_one(doc)
     return product
+
+@api_router.get("/products/compare/{category}")
+async def compare_products(category: str):
+    """Vergelijk producten per tier (budget/midrange/premium) binnen een categorie."""
+    products = await db.products.find({"category": category}, {"_id": 0}).to_list(100)
+    result = {"budget": [], "midrange": [], "premium": []}
+    for p in products:
+        tier = p.get("tier", "midrange")
+        if tier in result:
+            result[tier].append(p)
+    return result
+
 
 # Projects endpoints
 @api_router.get("/projects", response_model=List[Project])
@@ -931,6 +958,7 @@ async def seed_products():
 # Include routers
 app.include_router(api_router)
 app.include_router(ai_router)
+app.include_router(supplier_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -950,21 +978,38 @@ async def startup_event():
         "RFID Lezer", "Mobile Key Systeem", "Biometrisch Toegangssysteem"
     ]}})
     
-    # Update sanitair dimensions to realistic sizes
-    await db.products.update_one(
-        {"name": "Compact Sanitair Unit"},
-        {"$set": {"dimensions": {"width": 3, "height": 6}, "description": "2 toiletten, 2 douches, geschikt voor 15-20 standplaatsen. Afmeting 3x6m"}}
-    )
-    await db.products.update_one(
-        {"name": "Medium Sanitair Unit"},
-        {"$set": {"dimensions": {"width": 6, "height": 8}, "description": "4 toiletten, 4 douches, geschikt voor 30-40 standplaatsen. Afmeting 6x8m"}}
-    )
-    await db.products.update_one(
-        {"name": "Premium Sanitair Blok"},
-        {"$set": {"dimensions": {"width": 8, "height": 12}, "description": "6 toiletten, 6 douches, familiecabines, geschikt voor 50+ standplaatsen. Afmeting 8x12m"}}
-    )
+    # Update sanitair dimensions + tiers
+    tier_mapping = {
+        "Compact Sanitair Unit": {"tier": "budget", "dimensions": {"width": 3, "height": 6}},
+        "Medium Sanitair Unit": {"tier": "midrange", "dimensions": {"width": 6, "height": 8}},
+        "Premium Sanitair Blok": {"tier": "premium", "dimensions": {"width": 8, "height": 12}},
+        "Nice M5BAR": {"tier": "budget"},
+        "Nice M5BAR + Kentekenherkenning": {"tier": "midrange"},
+        "Premium Toegangspoort": {"tier": "premium"},
+        "UniFi G5 Bullet": {"tier": "budget"},
+        "UniFi G5 Dome Ultra": {"tier": "budget"},
+        "UniFi G5 Turret Ultra": {"tier": "midrange"},
+        "UniFi G5 Pro": {"tier": "premium"},
+        "UniFi AI LPR Camera": {"tier": "premium"},
+        "UniFi Access Reader Lite (UA-Lite)": {"tier": "budget"},
+        "UniFi Access Hub": {"tier": "budget"},
+        "UniFi Access Reader Pro (UA-Pro)": {"tier": "midrange"},
+        "UniFi Access Starter Kit": {"tier": "premium"},
+        "WiFi Access Point Indoor": {"tier": "budget"},
+        "WiFi Access Point Outdoor": {"tier": "midrange"},
+        "Solar LED Padverlichting": {"tier": "budget"},
+        "Slimme Lichtmast": {"tier": "premium"},
+        "Adyen Betaalterminal": {"tier": "budget"},
+        "Adyen + Reserveringssysteem": {"tier": "premium"},
+        "Douchelezer Basis": {"tier": "budget"},
+        "Douchelezer Pro": {"tier": "midrange"},
+        "Douchelezer Enterprise": {"tier": "premium"},
+    }
     
-    # Ensure all new products exist (upsert by name)
+    for name, updates in tier_mapping.items():
+        await db.products.update_one({"name": name}, {"$set": updates})
+    
+    # Ensure all products exist (upsert by name)
     for product_data in SEED_PRODUCTS:
         existing = await db.products.find_one({"name": product_data["name"]})
         if not existing:
@@ -976,6 +1021,9 @@ async def startup_event():
     
     existing = await db.products.count_documents({})
     logger.info(f"Database contains {existing} products")
+    
+    # Seed suppliers
+    await seed_suppliers(db)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
