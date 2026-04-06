@@ -14,7 +14,7 @@ export { SANITAIR_EXTRAS };
 
 export function Step5Quote({
   project, products, quickQuote, sanitairConfigs, setSanitairConfigs,
-  matchedSuppliers, exportPDF, loading, userTier = 'free', onUpgrade,
+  matchedSuppliers, exportPDF, loading, userTier = 'free', onUpgrade, energyInvestment = 0,
 }) {
   const getProductById = (pid) => products.find(p => p.id === pid);
 
@@ -117,10 +117,16 @@ export function Step5Quote({
               <span className="text-[#333333]">€ {Math.round(travelTotal).toLocaleString()}</span>
             </div>
           )}
+          {energyInvestment > 0 && (
+            <div className="flex justify-between">
+              <span className="text-[#777777] flex items-center gap-1">Energie-installatie</span>
+              <span className="text-[#333333]">€ {energyInvestment.toLocaleString()}</span>
+            </div>
+          )}
           <div className="h-px bg-[#e5e2d9]" />
           <div className="flex justify-between">
             <span className="font-semibold text-[#333333]">Totaal investering</span>
-            <span className="text-lg font-bold text-[#70C26C]">€ {(quickQuote.capex + quickQuote.install + Math.round(travelTotal)).toLocaleString()}</span>
+            <span className="text-lg font-bold text-[#70C26C]">€ {(quickQuote.capex + quickQuote.install + Math.round(travelTotal) + energyInvestment).toLocaleString()}</span>
           </div>
         </div>
       </div>

@@ -388,6 +388,20 @@ function App() {
     return acc;
   }, { capex: sanitairExtrasTotal.capex, opex: sanitairExtrasTotal.lease, install: 0, maintenance: 0 });
 
+  // Energy investment calculation
+  const energyInvestment = (() => {
+    const ec = project.energy_config || {};
+    if (project.energy_mode === 'grid') return 0;
+    let total = 0;
+    total += (ec.solar_panels || 0) * 320;    // € per panel
+    total += (ec.batteries || 0) * 2800;      // € per battery
+    if (ec.heat_pump) total += 8500;
+    if (ec.solar_boiler) total += 3200;
+    if (ec.water_recycling) total += 12000;
+    if (ec.wind_turbine) total += 6500;
+    return total;
+  })();
+
   const newProject = () => {
     setProject({
       id: null, name: 'Nieuw Project', project_type: 'camping', project_flow: activeFlow || 'recreatie',
@@ -413,9 +427,8 @@ function App() {
         {/* Header */}
         <header className="h-16 bg-[#244628] flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-4">
-            <button onClick={() => setActiveFlow(null)} className="flex flex-col items-center hover:opacity-80 transition-opacity" data-testid="header-logo">
-              <span className="text-white font-medium text-xl tracking-[0.3em]">RECRA</span>
-              <span className="text-white/70 text-[10px] tracking-[0.15em]">— SOLUTIONS —</span>
+            <button onClick={() => setActiveFlow(null)} className="flex items-center gap-2 hover:opacity-80 transition-opacity" data-testid="header-logo">
+              <img src="/recra-logo-white.png" alt="RECRA Solutions" className="h-8" />
             </button>
             <span className="text-white/40 text-sm">|</span>
             <span className="text-[#70C26C] text-sm font-medium capitalize" data-testid="active-flow-label">
@@ -530,6 +543,7 @@ function App() {
                   sanitairConfigs={sanitairConfigs} setSanitairConfigs={setSanitairConfigs}
                   matchedSuppliers={matchedSuppliers} exportPDF={exportPDF} loading={loading}
                   userTier={userTier} onUpgrade={() => setShowUpgradeModal(true)}
+                  energyInvestment={energyInvestment}
                 />
               )}
             </div>
@@ -746,12 +760,18 @@ function App() {
                   <div className="p-3 rounded-xl bg-[#244628] text-white">
                     <div className="flex justify-between mb-1">
                       <span className="text-white/80 text-sm">Totaal</span>
-                      <span className="font-bold" data-testid="quote-total">€ {(quickQuote.capex + quickQuote.install).toLocaleString()}</span>
+                      <span className="font-bold" data-testid="quote-total">€ {(quickQuote.capex + quickQuote.install + energyInvestment).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-xs text-white/60">
                       <span>Incl. installatie</span>
                       <span>€ {quickQuote.install.toLocaleString()}</span>
                     </div>
+                    {energyInvestment > 0 && (
+                      <div className="flex justify-between text-xs text-[#70C26C] mt-0.5">
+                        <span>Incl. energie</span>
+                        <span>€ {energyInvestment.toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>

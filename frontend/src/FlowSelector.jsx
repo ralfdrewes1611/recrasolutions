@@ -34,8 +34,7 @@ export function FlowSelector({ onSelect }) {
       {/* Header */}
       <header className="bg-[#244628] text-white px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#70C26C] rounded-lg flex items-center justify-center font-bold text-sm">R</div>
-          <span className="font-bold text-lg tracking-tight">RECRA Solutions</span>
+          <img src="/recra-logo-white.png" alt="RECRA Solutions" className="h-8" />
         </div>
       </header>
 
