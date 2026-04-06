@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { FlowSelector } from './FlowSelector';
+import { FecWizard } from './FecWizard';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -418,6 +419,16 @@ function App() {
         setActiveFlow(flow);
         setProject(prev => ({ ...prev, project_flow: flow }));
       }} />
+    );
+  }
+
+  // FEC gets its own dedicated wizard (revenue-driven, not asset-driven)
+  if (activeFlow === 'fec') {
+    return (
+      <>
+        <FecWizard onBack={() => setActiveFlow(null)} userTier={userTier} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
     );
   }
 

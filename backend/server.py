@@ -19,6 +19,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 from ai_services import ai_router
 from supplier_module import supplier_router, seed_suppliers, calculate_travel_cost
+from fec_engine import fec_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -1022,6 +1023,7 @@ async def seed_products():
 app.include_router(api_router)
 app.include_router(ai_router)
 app.include_router(supplier_router)
+app.include_router(fec_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
