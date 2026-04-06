@@ -40,6 +40,7 @@ class FecProductRevenue(BaseModel):
     supplier: str
     footprint_m2: float
     investment: float
+    lease_monthly: float
     revenue_per_hour: float
     capacity_per_hour: int
     daily_revenue: float
@@ -49,6 +50,7 @@ class FecProductRevenue(BaseModel):
 
 class FecRevenueReport(BaseModel):
     total_investment: float
+    total_lease_monthly: float
     total_monthly_revenue: float
     total_daily_revenue: float
     break_even_months: float
@@ -80,7 +82,7 @@ FEC_SUPPLIERS = [
         "lat": 52.0907,
         "lng": 5.1214,
         "categories": ["interactive"],
-        "specialization": "Interactieve klim- en spelwanden",
+        "specialization": "Interactieve battle arena's & multiplayer games",
         "price_per_km": 1.80,
         "start_fee": 250,
         "hourly_rate_travel": 75,
@@ -147,6 +149,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 8,
         "min_height_m": 2.5,
         "price_purchase": 4500,
+        "price_lease_monthly": 135,
         "revenue_per_hour": 25,
         "capacity_per_hour": 8,
         "installation_cost": 500,
@@ -160,6 +163,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 12,
         "min_height_m": 2.5,
         "price_purchase": 18000,
+        "price_lease_monthly": 480,
         "revenue_per_hour": 60,
         "capacity_per_hour": 18,
         "installation_cost": 1500,
@@ -173,6 +177,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 4,
         "min_height_m": 2.5,
         "price_purchase": 3200,
+        "price_lease_monthly": 96,
         "revenue_per_hour": 20,
         "capacity_per_hour": 4,
         "installation_cost": 300,
@@ -187,6 +192,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 200,
         "min_height_m": 3.5,
         "price_purchase": 95000,
+        "price_lease_monthly": 2280,
         "revenue_per_hour": 240,
         "capacity_per_hour": 16,
         "installation_cost": 15000,
@@ -200,6 +206,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 120,
         "min_height_m": 3.0,
         "price_purchase": 45000,
+        "price_lease_monthly": 1125,
         "revenue_per_hour": 120,
         "capacity_per_hour": 12,
         "installation_cost": 8000,
@@ -207,16 +214,17 @@ FEC_PRODUCTS = [
     },
     # === INTERACTIVE EXPERIENCES ===
     {
-        "name": "X-Wall Interactieve Klimwand",
+        "name": "X-Wall Battle Arena",
         "category": "interactive",
         "supplier": "X-Wall",
-        "description": "AR-geprojecteerde klimmuur met 6 games, 3m hoog, auto-belay",
-        "footprint_m2": 15,
-        "min_height_m": 4.0,
-        "price_purchase": 35000,
-        "revenue_per_hour": 80,
-        "capacity_per_hour": 12,
-        "installation_cost": 5000,
+        "description": "Interactieve battle arena met projectie, sensoren en multiplayer games, 2-12 spelers tegelijk",
+        "footprint_m2": 25,
+        "min_height_m": 3.5,
+        "price_purchase": 42000,
+        "price_lease_monthly": 1050,
+        "revenue_per_hour": 95,
+        "capacity_per_hour": 16,
+        "installation_cost": 6000,
         "tier": "premium",
     },
     {
@@ -227,6 +235,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 20,
         "min_height_m": 2.8,
         "price_purchase": 28000,
+        "price_lease_monthly": 720,
         "revenue_per_hour": 65,
         "capacity_per_hour": 6,
         "installation_cost": 4000,
@@ -240,6 +249,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 16,
         "min_height_m": 3.0,
         "price_purchase": 22000,
+        "price_lease_monthly": 580,
         "revenue_per_hour": 55,
         "capacity_per_hour": 8,
         "installation_cost": 2000,
@@ -254,6 +264,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 100,
         "min_height_m": 5.0,
         "price_purchase": 65000,
+        "price_lease_monthly": 1560,
         "revenue_per_hour": 100,
         "capacity_per_hour": 40,
         "installation_cost": 12000,
@@ -267,6 +278,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 30,
         "min_height_m": 2.5,
         "price_purchase": 15000,
+        "price_lease_monthly": 390,
         "revenue_per_hour": 25,
         "capacity_per_hour": 15,
         "installation_cost": 3000,
@@ -280,6 +292,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 80,
         "min_height_m": 5.0,
         "price_purchase": 48000,
+        "price_lease_monthly": 1200,
         "revenue_per_hour": 90,
         "capacity_per_hour": 24,
         "installation_cost": 8000,
@@ -294,6 +307,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 15,
         "min_height_m": 2.5,
         "price_purchase": 22000,
+        "price_lease_monthly": 575,
         "revenue_per_hour": 80,
         "capacity_per_hour": 30,
         "installation_cost": 5000,
@@ -307,6 +321,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 3,
         "min_height_m": 2.5,
         "price_purchase": 8500,
+        "price_lease_monthly": 225,
         "revenue_per_hour": 35,
         "capacity_per_hour": 40,
         "installation_cost": 1500,
@@ -320,6 +335,7 @@ FEC_PRODUCTS = [
         "footprint_m2": 60,
         "min_height_m": 3.0,
         "price_purchase": 85000,
+        "price_lease_monthly": 2040,
         "revenue_per_hour": 200,
         "capacity_per_hour": 60,
         "installation_cost": 15000,
@@ -338,6 +354,7 @@ def calculate_fec_revenue(
     """Core revenue engine: calculates ROI per product and overall."""
     all_products = []
     total_investment = 0
+    total_lease_monthly = 0
     total_monthly_revenue = 0
     total_daily_revenue = 0
 
@@ -346,6 +363,7 @@ def calculate_fec_revenue(
         quantity = sel.get("quantity", 1)
 
         investment = (product["price_purchase"] + product["installation_cost"]) * quantity
+        lease = product.get("price_lease_monthly", 0) * quantity
         daily_rev = product["revenue_per_hour"] * operating_hours * quantity
         monthly_rev = daily_rev * operating_days
         roi_months = round(investment / monthly_rev, 1) if monthly_rev > 0 else 999
@@ -359,6 +377,7 @@ def calculate_fec_revenue(
             supplier=product.get("supplier", ""),
             footprint_m2=footprint,
             investment=investment,
+            lease_monthly=lease,
             revenue_per_hour=product["revenue_per_hour"] * quantity,
             capacity_per_hour=product["capacity_per_hour"] * quantity,
             daily_revenue=daily_rev,
@@ -368,10 +387,10 @@ def calculate_fec_revenue(
         )
         all_products.append(entry)
         total_investment += investment
+        total_lease_monthly += lease
         total_monthly_revenue += monthly_rev
         total_daily_revenue += daily_rev
 
-    # Sort by monthly revenue descending
     top_performers = sorted(all_products, key=lambda x: -x.monthly_revenue)[:5]
     break_even = round(total_investment / total_monthly_revenue, 1) if total_monthly_revenue > 0 else 0
     total_footprint = sum(p.footprint_m2 for p in all_products)
@@ -379,6 +398,7 @@ def calculate_fec_revenue(
 
     return FecRevenueReport(
         total_investment=total_investment,
+        total_lease_monthly=total_lease_monthly,
         total_monthly_revenue=total_monthly_revenue,
         total_daily_revenue=total_daily_revenue,
         break_even_months=break_even,
@@ -501,15 +521,17 @@ def generate_fec_recommendations(project_data: dict, products_selected: list) ->
 
 @fec_router.get("/products")
 async def get_fec_products():
-    """Return all FEC products with revenue data."""
+    """Return all FEC products with revenue and lease data."""
     products = []
     for i, p in enumerate(FEC_PRODUCTS):
+        monthly_rev = p["revenue_per_hour"] * 10 * 30
+        investment = p["price_purchase"] + p["installation_cost"]
         products.append({
             "id": f"fec-{i}",
             **p,
             "daily_revenue_10h": p["revenue_per_hour"] * 10,
-            "monthly_revenue": p["revenue_per_hour"] * 10 * 30,
-            "roi_months": round((p["price_purchase"] + p["installation_cost"]) / (p["revenue_per_hour"] * 10 * 30), 1) if p["revenue_per_hour"] > 0 else 999,
+            "monthly_revenue": monthly_rev,
+            "roi_months": round(investment / monthly_rev, 1) if monthly_rev > 0 else 999,
         })
     return products
 

@@ -438,6 +438,7 @@ export function FecWizard({ onBack, userTier }) {
                             <div className="flex items-center gap-3 mt-1">
                               <span className="text-xs font-bold text-[#f59e0b]">€{product.revenue_per_hour}/uur</span>
                               <span className="text-[10px] text-[#777]">ROI {product.roi_months} mnd</span>
+                              <span className="text-[10px] text-[#777]">Lease €{product.price_lease_monthly}/mnd</span>
                             </div>
                           </div>
                         </div>
@@ -492,6 +493,22 @@ export function FecWizard({ onBack, userTier }) {
                       </div>
                     </div>
 
+                    {/* Lease option */}
+                    {revenueReport.total_lease_monthly > 0 && (
+                      <div className="p-3 rounded-xl bg-white border border-[#e5e2d9]">
+                        <div className="text-xs font-bold text-[#333] mb-1.5">Operational Lease</div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-[#777]">Totaal lease/maand</span>
+                          <span className="font-bold text-[#f59e0b]" data-testid="fec-lease-monthly">€ {revenueReport.total_lease_monthly.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-[#777]">
+                          <span>Netto winst/mnd (omzet - lease)</span>
+                          <span className="font-bold text-[#10b981]">€ {(revenueReport.total_monthly_revenue - revenueReport.total_lease_monthly).toLocaleString()}</span>
+                        </div>
+                        <p className="text-[10px] text-[#777] mt-1.5">60 maanden incl. SLA onderhoudscontract</p>
+                      </div>
+                    )}
+
                     {/* Top performers */}
                     <div className="p-3 rounded-xl bg-white border border-[#e5e2d9]">
                       <div className="flex items-center gap-2 mb-2">
@@ -504,6 +521,7 @@ export function FecWizard({ onBack, userTier }) {
                             <div>
                               <div className="text-xs font-medium text-[#333]">{p.product_name}</div>
                               <div className="text-[10px] text-[#777]">{p.category} — ROI {p.roi_months} mnd</div>
+                              {p.lease_monthly > 0 && <div className="text-[10px] text-[#f59e0b]">Lease €{p.lease_monthly}/mnd</div>}
                             </div>
                             <div className="text-right">
                               <div className="text-xs font-bold text-[#10b981]">€{p.monthly_revenue.toLocaleString()}/mnd</div>
@@ -700,7 +718,7 @@ export function FecWizard({ onBack, userTier }) {
                             </div>
                             <div>
                               <div className="text-[10px] font-medium text-[#333] truncate max-w-[120px]">{p.name}</div>
-                              <div className="text-[9px] text-[#777]">{sp.quantity}x — €{(p.price_purchase * sp.quantity).toLocaleString()}</div>
+                              <div className="text-[9px] text-[#777]">{sp.quantity}x — €{(p.price_purchase * sp.quantity).toLocaleString()} | Lease €{((p.price_lease_monthly || 0) * sp.quantity).toLocaleString()}/mnd</div>
                             </div>
                           </div>
                           <div className="text-right">
@@ -721,6 +739,12 @@ export function FecWizard({ onBack, userTier }) {
                         <span className="text-white/80 text-xs">Omzet/mnd</span>
                         <span className="font-bold text-sm text-[#70C26C]">€{revenueReport.total_monthly_revenue.toLocaleString()}</span>
                       </div>
+                      {revenueReport.total_lease_monthly > 0 && (
+                        <div className="flex justify-between mb-1">
+                          <span className="text-white/80 text-xs">Lease/mnd</span>
+                          <span className="text-sm text-[#f59e0b]">€{revenueReport.total_lease_monthly.toLocaleString()}</span>
+                        </div>
+                      )}
                       <div className="h-px bg-white/20 my-1.5" />
                       <div className="flex justify-between">
                         <span className="text-white/80 text-xs">Break-even</span>
