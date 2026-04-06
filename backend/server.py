@@ -18,7 +18,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 from ai_services import ai_router
-from supplier_module import supplier_router, seed_suppliers
+from supplier_module import supplier_router, seed_suppliers, calculate_travel_cost
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -468,9 +468,18 @@ async def root():
     return {"message": "RECRA Solutions Configurator API"}
 
 # Products endpoints
+FLOW_CATEGORIES = {
+    "recreatie": ["sanitair", "slagboom", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer"],
+    "chalet": ["sanitair", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer"],
+    "fec": ["camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "slagboom"],
+}
+
 @api_router.get("/products", response_model=List[Product])
-async def get_products():
-    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+async def get_products(flow: Optional[str] = None):
+    query = {}
+    if flow and flow in FLOW_CATEGORIES:
+        query["category"] = {"$in": FLOW_CATEGORIES[flow]}
+    products = await db.products.find(query, {"_id": 0}).to_list(1000)
     return products
 
 @api_router.get("/products/category/{category}", response_model=List[Product])
@@ -582,6 +591,9 @@ async def calculate_quote(project_id: str):
         qty = pp.get('quantity', 1)
         product_counts[pid] = product_counts.get(pid, 0) + qty
     
+    # Collect categories used for travel cost calculation
+    categories_used = set()
+    
     for pid, qty in product_counts.items():
         product = await db.products.find_one({"id": pid}, {"_id": 0})
         if product:
@@ -605,6 +617,31 @@ async def calculate_quote(project_id: str):
             opex_monthly += item_opex
             installation_total += item_install
             maintenance_yearly += item_maint
+            categories_used.add(product['category'])
+    
+    # Calculate travel costs per category (nearest supplier)
+    travel_costs = []
+    travel_total = 0.0
+    project_lat = project.get('lat', 52.0)
+    project_lng = project.get('lng', 5.0)
+    
+    for category in categories_used:
+        suppliers = await db.suppliers.find({"categories": category}, {"_id": 0}).to_list(100)
+        if suppliers:
+            best = None
+            for sup in suppliers:
+                tc = calculate_travel_cost(sup, project_lat, project_lng)
+                if best is None or tc.total_travel_cost < best.total_travel_cost:
+                    best = tc
+            if best:
+                travel_costs.append({
+                    "category": category,
+                    "supplier_name": best.supplier_name,
+                    "distance_km": best.distance_km,
+                    "travel_time_hours": best.travel_time_hours,
+                    "total_travel_cost": best.total_travel_cost,
+                })
+                travel_total += best.total_travel_cost
     
     return QuoteResponse(
         capex_total=capex_total,
@@ -612,6 +649,9 @@ async def calculate_quote(project_id: str):
         opex_yearly=opex_monthly * 12,
         installation_total=installation_total,
         maintenance_yearly=maintenance_yearly,
+        travel_costs=travel_costs,
+        travel_total=round(travel_total, 2),
+        project_total=round(capex_total + installation_total + travel_total, 2),
         items=items
     )
 
@@ -901,9 +941,13 @@ async def generate_quote_pdf(project_id: str):
                     <td><strong>Installatiekosten</strong></td>
                     <td class="price" style="text-align: right;">€ {quote_response.installation_total:,.2f}</td>
                 </tr>
+                <tr>
+                    <td><strong>Reiskosten leveranciers</strong></td>
+                    <td class="price" style="text-align: right;">€ {quote_response.travel_total:,.2f}</td>
+                </tr>
                 <tr class="total-row">
                     <td><strong>Totaal investering</strong></td>
-                    <td class="price" style="text-align: right;">€ {(quote_response.capex_total + quote_response.installation_total):,.2f}</td>
+                    <td class="price" style="text-align: right;">€ {quote_response.project_total:,.2f}</td>
                 </tr>
             </table>
             
