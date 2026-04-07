@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Eye, EyeOff, X, Bath, Camera, Wifi, Lightbulb, CreditCard, Key, ArrowRight, Droplets, BatteryCharging } from 'lucide-react';
+import { Package, Eye, EyeOff, X, Bath, Camera, Wifi, Lightbulb, CreditCard, Key, ArrowRight, Droplets, BatteryCharging, Monitor } from 'lucide-react';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip';
@@ -8,19 +8,20 @@ import { ProductImportPanel } from '../ProductImportPanel';
 const categoryIcons = {
   sanitair: Bath, slagboom: ArrowRight, camera: Camera, wifi: Wifi,
   verlichting: Lightbulb, betaalsysteem: CreditCard, toegangscontrole: Key,
-  douchelezer: Droplets, energie: BatteryCharging,
+  douchelezer: Droplets, energie: BatteryCharging, informatiezuil: Monitor,
 };
 
 const categoryColors = {
   sanitair: '#70C26C', slagboom: '#d97706', camera: '#dc2626', wifi: '#2563eb',
   verlichting: '#ca8a04', betaalsysteem: '#7c3aed', toegangscontrole: '#db2777',
-  douchelezer: '#0891b2', energie: '#059669',
+  douchelezer: '#0891b2', energie: '#059669', informatiezuil: '#0891b2',
 };
 
 const categoryLabels = {
   sanitair: 'Sanitair Units', slagboom: 'Slagbomen', camera: "Camera's",
   wifi: 'WiFi Systemen', verlichting: 'Verlichting', betaalsysteem: 'Betaalsystemen',
   toegangscontrole: 'Toegangscontrole', douchelezer: 'Douchelezers', energie: 'Energie & Off-Grid',
+  informatiezuil: 'Informatiezuilen & Kiosken',
 };
 
 export { categoryIcons, categoryColors, categoryLabels };

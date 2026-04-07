@@ -487,6 +487,112 @@ SEED_PRODUCTS = [
         "color": "#ef4444",
         "tier": "premium"
     },
+    # IK Display Solutions - Outdoor Kiosken & Displays
+    {
+        "name": "IK 21.5\" Outdoor Portrait Kiosk",
+        "category": "informatiezuil",
+        "description": "21.5\" outdoor kiosk, 1500 nits, IP55, capacitive touch, QR scanner, camera, NFC kaartlezer. Ref: KIO-005",
+        "price_purchase": 4800,
+        "price_lease_monthly": 144,
+        "installation_cost": 800,
+        "maintenance_yearly": 300,
+        "dimensions": {"width": 0.5, "height": 0.5},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "midrange"
+    },
+    {
+        "name": "IK 21.5\" Outdoor Display Unit (wall)",
+        "category": "informatiezuil",
+        "description": "21.5\" outdoor wandmontage display, 1500 nits, IP55, touch, QR scanner, camera. Ref: AIO-009",
+        "price_purchase": 3750,
+        "price_lease_monthly": 113,
+        "installation_cost": 600,
+        "maintenance_yearly": 250,
+        "dimensions": {"width": 0.4, "height": 0.4},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "budget"
+    },
+    {
+        "name": "IK 55\" Outdoor Landscape Kiosk",
+        "category": "informatiezuil",
+        "description": "55\" outdoor landscape kiosk, 2500 nits, IP55, capacitive touch, QR scanner, speakers. Ref: KIO-015",
+        "price_purchase": 5250,
+        "price_lease_monthly": 158,
+        "installation_cost": 1200,
+        "maintenance_yearly": 400,
+        "dimensions": {"width": 1.4, "height": 0.8},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "premium"
+    },
+    {
+        "name": "IK 55\" Outdoor Portrait Kiosk",
+        "category": "informatiezuil",
+        "description": "55\" outdoor portrait kiosk, 2500 nits, IP55, capacitive touch, camera, speakers. Ref: KIO-017",
+        "price_purchase": 4950,
+        "price_lease_monthly": 149,
+        "installation_cost": 1100,
+        "maintenance_yearly": 380,
+        "dimensions": {"width": 0.8, "height": 1.4},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "premium"
+    },
+    {
+        "name": "IK 55\" Outdoor Display Unit",
+        "category": "informatiezuil",
+        "description": "55\" outdoor display, 2500 nits, IP65, no-touch, Android. Ref: AIO-008/NT",
+        "price_purchase": 4750,
+        "price_lease_monthly": 143,
+        "installation_cost": 900,
+        "maintenance_yearly": 350,
+        "dimensions": {"width": 1.3, "height": 0.8},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "midrange"
+    },
+    # IK Display Solutions - Indoor Kiosken
+    {
+        "name": "IK 21.5\" Indoor Portrait Kiosk (tilted)",
+        "category": "informatiezuil",
+        "description": "21.5\" indoor kiosk schuin, 350 nits, IP21, capacitive touch, camera, speakers. Ref: KIO-002",
+        "price_purchase": 3500,
+        "price_lease_monthly": 105,
+        "installation_cost": 500,
+        "maintenance_yearly": 200,
+        "dimensions": {"width": 0.4, "height": 0.5},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "budget"
+    },
+    {
+        "name": "IK 43\" Indoor Landscape Kiosk (tilted)",
+        "category": "informatiezuil",
+        "description": "43\" indoor landscape kiosk schuin, 350 nits, IP21, capacitive touch, speakers. Ref: KIO-013",
+        "price_purchase": 2500,
+        "price_lease_monthly": 75,
+        "installation_cost": 400,
+        "maintenance_yearly": 150,
+        "dimensions": {"width": 1.0, "height": 0.6},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "budget"
+    },
+    {
+        "name": "IK 55\" Indoor Portrait Kiosk",
+        "category": "informatiezuil",
+        "description": "55\" indoor portrait kiosk, 350 nits, IP21, capacitive touch, speakers. Ref: KIO-014",
+        "price_purchase": 2650,
+        "price_lease_monthly": 80,
+        "installation_cost": 500,
+        "maintenance_yearly": 180,
+        "dimensions": {"width": 0.8, "height": 1.4},
+        "icon": "monitor",
+        "color": "#0891b2",
+        "tier": "midrange"
+    },
 ]
 
 # ==================== ROUTES ====================
@@ -497,9 +603,9 @@ async def root():
 
 # Products endpoints
 FLOW_CATEGORIES = {
-    "recreatie": ["sanitair", "slagboom", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer"],
-    "chalet": ["sanitair", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer"],
-    "fec": ["camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "slagboom"],
+    "recreatie": ["sanitair", "slagboom", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer", "informatiezuil"],
+    "chalet": ["sanitair", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer", "informatiezuil"],
+    "fec": ["camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "slagboom", "informatiezuil"],
 }
 
 @api_router.get("/products", response_model=List[Product])
@@ -1069,6 +1175,14 @@ async def startup_event():
         "Douchelezer Basis": {"tier": "budget"},
         "Douchelezer Pro": {"tier": "midrange"},
         "Douchelezer Enterprise": {"tier": "premium"},
+        "IK 21.5\" Outdoor Portrait Kiosk": {"tier": "midrange"},
+        "IK 21.5\" Outdoor Display Unit (wall)": {"tier": "budget"},
+        "IK 55\" Outdoor Landscape Kiosk": {"tier": "premium"},
+        "IK 55\" Outdoor Portrait Kiosk": {"tier": "premium"},
+        "IK 55\" Outdoor Display Unit": {"tier": "midrange"},
+        "IK 21.5\" Indoor Portrait Kiosk (tilted)": {"tier": "budget"},
+        "IK 43\" Indoor Landscape Kiosk (tilted)": {"tier": "budget"},
+        "IK 55\" Indoor Portrait Kiosk": {"tier": "midrange"},
     }
     
     for name, updates in tier_mapping.items():
