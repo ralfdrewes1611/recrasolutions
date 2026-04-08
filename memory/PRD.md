@@ -6,7 +6,7 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 ## Architecture
 - **Frontend**: React 19 + Tailwind CSS + Shadcn UI
 - **Backend**: FastAPI (Python) — server.py + ai_services.py + supplier_module.py + fec_engine.py + chalet_engine.py
-- **Database**: MongoDB (35 recreatie producten incl. 8 IK informatiezuilen, 5 recreatie leveranciers + 17 FEC producten incl. 3 IK kiosken, 6 FEC leveranciers + 10 chalet modellen, 2 chalet leveranciers)
+- **Database**: MongoDB (35 recreatie producten incl. 8 IK informatiezuilen, 5 recreatie leveranciers + 17 FEC producten incl. 3 IK kiosken, 6 FEC leveranciers + 26 chalet/glamping modellen, 4 chalet leveranciers)
 - **AI**: OpenAI GPT-5.2 via Emergent Integrations (quote text & floorplan); Rule-based AI for recommendations
 
 ## Fundamental Architecture Split
@@ -31,13 +31,17 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 ## Implemented Features
 
 ### Chalet & Stay Configurator (NEW — 08 apr 2026)
-- 10 chalet modellen: Plat 12/18, Zadel 12/18, L-Plat 16, Lessenaars 14, Mansarde 20, Schilddak 15, T-Vorm 22, Dubbel 24
-- 2 leveranciers: Kunert Group, Arcabo
-- Filters: bestemming (recreatie/pre-mantelzorg), oppervlakte (30-120 m²), model vorm (rechthoek/L-vorm/T-vorm/dubbel), dak vorm (platdak/zadeldak/lessenaars/mansarde/schilddak)
+- 26 modellen van 4 echte leveranciers:
+  - **Kunert Group** (8 chalets): Plat 12/18, Reina Lazy Juliana, Haven, O'Hara Premium, IRM Habitat, Mansarde 20, T-Vorm 22
+  - **Arcabo** (6 chalets): Zadel 12/18, Charleston, New Bay, Ocala, Dubbel 24
+  - **BBS Systeembouw** (3 vakantiewoningen): Compact, Comfort, Premium
+  - **Campsolutions** (9 glamping): Wood Lodge Jr/Cozy/Midi/Full, Panorama Dome, Glamping Lodge, Safari Lodge, Giant Hat, Arcade
+- Filters: Categorie (Alles/Chalets/Glamping), Leverancier, Bestemming (Recreatie/Pre-Mantelzorg), Oppervlakte slider (5-120m²), Model Vorm (5 opties), Dak Vorm (6 opties)
 - Stijlen per model: Modern, Luxe, Landelijk (niet alle stijlen beschikbaar per model)
 - Pricing engine: basisprijs + BTW 21% + operational lease (1.8% factor, 60 maanden)
-- Geselecteerd samenvatting: model, m², leverancier, stijl, slk/bdk
-- Tabs: Plattegrond (carrousel + plattegrond), Specificatie (specs grid), Samenstellen (opties keuken/badkamer/terras/interieur/klimaat/duurzaamheid)
+- Leverancier-specifieke stockfoto's per stijl
+- Samenstellen tab: andere opties voor glamping (sanitair/inrichting/vlonder) vs chalets (keuken/badkamer/terras/interieur/klimaat/duurzaamheid)
+- Geselecteerd samenvatting: model, m², leverancier, stijl, slk/bdk, max personen, vorm + dak
 
 ### FEC Revenue Engine
 - 17 FEC producten met lease pricing (price_lease_monthly) over 6 categorieën
