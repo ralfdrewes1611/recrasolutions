@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { FlowSelector } from './FlowSelector';
 import { FecWizard } from './FecWizard';
+import { ChaletWizard } from './ChaletWizard';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -427,6 +428,16 @@ function App() {
     return (
       <>
         <FecWizard onBack={() => setActiveFlow(null)} userTier={userTier} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
+  // Chalet gets its own dedicated configurator
+  if (activeFlow === 'chalet') {
+    return (
+      <>
+        <ChaletWizard onBack={() => setActiveFlow(null)} />
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </>
     );
