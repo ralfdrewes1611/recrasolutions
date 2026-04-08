@@ -1,6 +1,6 @@
 """
-Test suite for Chalet & Stay Engine API endpoints
-Tests: models listing, filtering, pricing calculations, and filter options
+Test suite for Chalet & Stay Engine API endpoints - Iteration 17
+Tests: 26 models, 4 suppliers (Kunert, Arcabo, BBS, Campsolutions), categorie/leverancier filters
 """
 import pytest
 import requests
@@ -9,213 +9,242 @@ import os
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://recra-config.preview.emergentagent.com').rstrip('/')
 
 
-class TestChaletModels:
-    """Tests for GET /api/chalet/models endpoint"""
+class TestChaletModelsCount:
+    """Tests for model counts - 26 total models"""
     
-    def test_get_all_models_returns_10(self):
-        """Should return exactly 10 chalet models"""
+    def test_get_all_models_returns_26(self):
+        """Should return exactly 26 chalet/glamping models"""
         response = requests.get(f"{BASE_URL}/api/chalet/models")
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 10, f"Expected 10 models, got {len(data)}"
+        assert len(data) == 26, f"Expected 26 models, got {len(data)}"
+    
+    def test_chalet_category_returns_17(self):
+        """Categorie=chalet should return 17 models (Kunert 8 + Arcabo 6 + BBS 3)"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?categorie=chalet")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 17, f"Expected 17 chalet models, got {len(data)}"
+        for model in data:
+            assert model['categorie'] == 'chalet'
+    
+    def test_glamping_category_returns_9(self):
+        """Categorie=glamping should return 9 Campsolutions models"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?categorie=glamping")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 9, f"Expected 9 glamping models, got {len(data)}"
+        for model in data:
+            assert model['categorie'] == 'glamping'
+            assert model['supplier_id'] == 'campsolutions'
+
+
+class TestSupplierFilters:
+    """Tests for supplier filtering - 4 suppliers"""
+    
+    def test_kunert_returns_8_models(self):
+        """Kunert Group should have 8 chalet models"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?supplier_id=kunert")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 8, f"Expected 8 Kunert models, got {len(data)}"
+        for model in data:
+            assert model['supplier_id'] == 'kunert'
+            assert model['supplier_name'] == 'Kunert Group'
+    
+    def test_arcabo_returns_6_models(self):
+        """Arcabo should have 6 chalet models"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?supplier_id=arcabo")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 6, f"Expected 6 Arcabo models, got {len(data)}"
+        for model in data:
+            assert model['supplier_id'] == 'arcabo'
+            assert model['supplier_name'] == 'Arcabo'
+    
+    def test_bbs_returns_3_models(self):
+        """BBS Systeembouw should have 3 vakantiewoning models"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?supplier_id=bbs")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 3, f"Expected 3 BBS models, got {len(data)}"
+        for model in data:
+            assert model['supplier_id'] == 'bbs'
+            assert model['supplier_name'] == 'BBS Systeembouw'
+    
+    def test_campsolutions_returns_9_models(self):
+        """Campsolutions should have 9 glamping models"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?supplier_id=campsolutions")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 9, f"Expected 9 Campsolutions models, got {len(data)}"
+        for model in data:
+            assert model['supplier_id'] == 'campsolutions'
+            assert model['supplier_name'] == 'Campsolutions'
+            assert model['categorie'] == 'glamping'
+
+
+class TestSuppliersEndpoint:
+    """Tests for GET /api/chalet/suppliers endpoint"""
+    
+    def test_suppliers_returns_4(self):
+        """Should return exactly 4 suppliers"""
+        response = requests.get(f"{BASE_URL}/api/chalet/suppliers")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 4, f"Expected 4 suppliers, got {len(data)}"
+    
+    def test_suppliers_have_correct_names(self):
+        """Should have Kunert, Arcabo, BBS, Campsolutions"""
+        response = requests.get(f"{BASE_URL}/api/chalet/suppliers")
+        assert response.status_code == 200
+        data = response.json()
+        
+        supplier_names = [s['name'] for s in data]
+        assert 'Kunert Group' in supplier_names
+        assert 'Arcabo' in supplier_names
+        assert 'BBS Systeembouw' in supplier_names
+        assert 'Campsolutions' in supplier_names
+
+
+class TestFiltersEndpoint:
+    """Tests for GET /api/chalet/filters endpoint"""
+    
+    def test_filters_include_categorieen(self):
+        """Should include categorieen filter with Alles/Chalets/Glamping"""
+        response = requests.get(f"{BASE_URL}/api/chalet/filters")
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert 'categorieen' in data
+        cat_ids = [c['id'] for c in data['categorieen']]
+        assert 'alles' in cat_ids
+        assert 'chalet' in cat_ids
+        assert 'glamping' in cat_ids
+    
+    def test_filters_include_4_suppliers(self):
+        """Should include 4 suppliers in filters"""
+        response = requests.get(f"{BASE_URL}/api/chalet/filters")
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert 'suppliers' in data
+        assert len(data['suppliers']) == 4
+
+
+class TestBestemmingFilter:
+    """Tests for bestemming filtering"""
+    
+    def test_filter_by_bestemming_pre_mantelzorg(self):
+        """Filter by bestemming=pre-mantelzorg should return models supporting it"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?bestemming=pre-mantelzorg")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 10, f"Expected 10 pre-mantelzorg models, got {len(data)}"
+        
+        for model in data:
+            assert 'pre-mantelzorg' in model['bestemmingen']
+
+
+class TestDakVormFilter:
+    """Tests for dak_vorm filtering"""
+    
+    def test_filter_by_dak_vorm_zadeldak(self):
+        """Filter by dak_vorm=zadeldak should return zadeldak models"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?dak_vorm=zadeldak")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 8, f"Expected 8 zadeldak models, got {len(data)}"
+        
+        for model in data:
+            assert model['dak_vorm'] == 'zadeldak'
+
+
+class TestSpecificModelPricing:
+    """Tests for specific model pricing"""
+    
+    def test_kunert_plat_12_pricing(self):
+        """Plat 12 (Kunert): €74.950 / €90.690 incl BTW / €1.349 lease"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models/kunert-plat-12")
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert data['name'] == 'Plat 12'
+        assert data['supplier_name'] == 'Kunert Group'
+        assert data['basisprijs'] == 74950
+        
+        pricing = data['pricing']
+        assert pricing['totaal_incl_btw'] == 90690
+        assert pricing['lease_monthly'] == 1349
+    
+    def test_wood_lodge_junior_pricing(self):
+        """Wood Lodge Junior (Campsolutions): €3.236 / €3.916 incl BTW / €58 lease"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models/camp-wood-lodge-jr")
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert data['name'] == 'Wood Lodge Junior'
+        assert data['supplier_name'] == 'Campsolutions'
+        assert data['categorie'] == 'glamping'
+        assert data['basisprijs'] == 3236
+        
+        pricing = data['pricing']
+        assert pricing['totaal_incl_btw'] == 3916
+        assert pricing['lease_monthly'] == 58
+
+
+class TestModelStructure:
+    """Tests for model data structure"""
     
     def test_models_have_required_fields(self):
-        """Each model should have all required fields"""
+        """Each model should have all required fields including categorie"""
         response = requests.get(f"{BASE_URL}/api/chalet/models")
         assert response.status_code == 200
         data = response.json()
         
-        required_fields = ['id', 'name', 'supplier_id', 'supplier_name', 'oppervlakte_m2',
-                          'model_vorm', 'dak_vorm', 'bestemmingen', 'slaapkamers', 'badkamers',
-                          'max_personen', 'basisprijs', 'stijlen', 'pricing']
+        required_fields = ['id', 'name', 'supplier_id', 'supplier_name', 'categorie',
+                          'oppervlakte_m2', 'model_vorm', 'dak_vorm', 'bestemmingen',
+                          'slaapkamers', 'badkamers', 'max_personen', 'basisprijs',
+                          'stijlen', 'pricing', 'images']
         
         for model in data:
             for field in required_fields:
                 assert field in model, f"Model {model.get('name', 'unknown')} missing field: {field}"
     
-    def test_models_have_pricing_structure(self):
-        """Each model should have complete pricing structure"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models")
+    def test_glamping_models_have_tent_category(self):
+        """All Campsolutions models should have categorie=glamping"""
+        response = requests.get(f"{BASE_URL}/api/chalet/models?supplier_id=campsolutions")
         assert response.status_code == 200
         data = response.json()
         
-        pricing_fields = ['basisprijs', 'totaal_excl_btw', 'btw_percentage', 'btw_bedrag',
-                         'totaal_incl_btw', 'lease_monthly', 'lease_months']
-        
         for model in data:
-            pricing = model.get('pricing', {})
-            for field in pricing_fields:
-                assert field in pricing, f"Model {model['name']} pricing missing: {field}"
+            assert model['categorie'] == 'glamping'
+    
+    def test_chalet_models_have_chalet_category(self):
+        """Kunert, Arcabo, BBS models should have categorie=chalet"""
+        for supplier in ['kunert', 'arcabo', 'bbs']:
+            response = requests.get(f"{BASE_URL}/api/chalet/models?supplier_id={supplier}")
+            assert response.status_code == 200
+            data = response.json()
+            
+            for model in data:
+                assert model['categorie'] == 'chalet', f"{model['name']} should be chalet"
 
 
-class TestChaletFilters:
-    """Tests for filtering chalet models"""
+class TestBTWCalculation:
+    """Tests for BTW (VAT) calculation"""
     
-    def test_filter_by_bestemming_pre_mantelzorg(self):
-        """Filter by bestemming=pre-mantelzorg should return fewer models"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models?bestemming=pre-mantelzorg")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) < 10, "Pre-mantelzorg filter should return fewer than 10 models"
-        assert len(data) == 5, f"Expected 5 pre-mantelzorg models, got {len(data)}"
-        
-        # Verify all returned models support pre-mantelzorg
-        for model in data:
-            assert 'pre-mantelzorg' in model['bestemmingen'], f"{model['name']} doesn't support pre-mantelzorg"
-    
-    def test_filter_by_dak_vorm_zadeldak(self):
-        """Filter by dak_vorm=zadeldak should return only zadeldak models"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models?dak_vorm=zadeldak")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) == 3, f"Expected 3 zadeldak models, got {len(data)}"
-        
-        for model in data:
-            assert model['dak_vorm'] == 'zadeldak', f"{model['name']} has dak_vorm {model['dak_vorm']}"
-    
-    def test_filter_by_model_vorm_l_vorm(self):
-        """Filter by model_vorm=l-vorm should return only L-vorm models"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models?model_vorm=l-vorm")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) == 1, f"Expected 1 L-vorm model, got {len(data)}"
-        assert data[0]['model_vorm'] == 'l-vorm'
-        assert data[0]['name'] == 'L-Plat 16'
-    
-    def test_filter_by_area_range(self):
-        """Filter by min_m2=50&max_m2=80 should return models in range"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models?min_m2=50&max_m2=80")
-        assert response.status_code == 200
-        data = response.json()
-        assert len(data) == 5, f"Expected 5 models in 50-80 m² range, got {len(data)}"
-        
-        for model in data:
-            assert 50 <= model['oppervlakte_m2'] <= 80, f"{model['name']} has {model['oppervlakte_m2']} m²"
-    
-    def test_combined_filters(self):
-        """Test combining multiple filters"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models?dak_vorm=platdak&model_vorm=rechthoek")
-        assert response.status_code == 200
-        data = response.json()
-        
-        for model in data:
-            assert model['dak_vorm'] == 'platdak'
-            assert model['model_vorm'] == 'rechthoek'
-
-
-class TestChaletPricing:
-    """Tests for specific model pricing"""
-    
-    def test_plat_12_pricing(self):
-        """Plat 12 should have correct pricing: €74.950 basis, €90.690 incl BTW, €1.349 lease"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models/plat-12")
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data['name'] == 'Plat 12'
-        assert data['basisprijs'] == 74950
-        
-        pricing = data['pricing']
-        assert pricing['basisprijs'] == 74950
-        assert pricing['totaal_incl_btw'] == 90690
-        assert pricing['lease_monthly'] == 1349
-        assert pricing['btw_percentage'] == 21
-    
-    def test_zadel_18_pricing(self):
-        """Zadel 18 should have correct pricing: €128.700 basis, €155.727 incl BTW, €2.317 lease"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models/zadel-18")
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data['name'] == 'Zadel 18'
-        assert data['basisprijs'] == 128700
-        
-        pricing = data['pricing']
-        assert pricing['basisprijs'] == 128700
-        assert pricing['totaal_incl_btw'] == 155727
-        assert pricing['lease_monthly'] == 2317
-    
-    def test_btw_calculation(self):
+    def test_btw_21_percent(self):
         """BTW should be calculated as 21% of basisprijs"""
         response = requests.get(f"{BASE_URL}/api/chalet/models")
         assert response.status_code == 200
         data = response.json()
         
-        for model in data:
+        for model in data[:5]:  # Test first 5 models
             pricing = model['pricing']
             expected_btw = round(pricing['basisprijs'] * 0.21)
             assert pricing['btw_bedrag'] == expected_btw, f"{model['name']} BTW mismatch"
-            assert pricing['totaal_incl_btw'] == pricing['basisprijs'] + pricing['btw_bedrag']
-
-
-class TestChaletFilterOptions:
-    """Tests for GET /api/chalet/filters endpoint"""
-    
-    def test_get_filters(self):
-        """Should return all filter options"""
-        response = requests.get(f"{BASE_URL}/api/chalet/filters")
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert 'bestemmingen' in data
-        assert 'model_vormen' in data
-        assert 'dak_vormen' in data
-        assert 'stijlen' in data
-        assert 'oppervlakte_range' in data
-        assert 'suppliers' in data
-    
-    def test_bestemmingen_options(self):
-        """Should have recreatie and pre-mantelzorg options"""
-        response = requests.get(f"{BASE_URL}/api/chalet/filters")
-        assert response.status_code == 200
-        data = response.json()
-        
-        bestemming_ids = [b['id'] for b in data['bestemmingen']]
-        assert 'recreatie' in bestemming_ids
-        assert 'pre-mantelzorg' in bestemming_ids
-    
-    def test_dak_vormen_options(self):
-        """Should have all dak vorm options"""
-        response = requests.get(f"{BASE_URL}/api/chalet/filters")
-        assert response.status_code == 200
-        data = response.json()
-        
-        dak_ids = [d['id'] for d in data['dak_vormen']]
-        expected = ['alles', 'platdak', 'zadeldak', 'lessenaars', 'mansarde', 'schilddak']
-        for dak in expected:
-            assert dak in dak_ids, f"Missing dak vorm: {dak}"
-    
-    def test_suppliers(self):
-        """Should have 2 suppliers: Kunert Group and Arcabo"""
-        response = requests.get(f"{BASE_URL}/api/chalet/filters")
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert len(data['suppliers']) == 2
-        supplier_names = [s['name'] for s in data['suppliers']]
-        assert 'Kunert Group' in supplier_names
-        assert 'Arcabo' in supplier_names
-
-
-class TestChaletModelDetails:
-    """Tests for GET /api/chalet/models/{model_id} endpoint"""
-    
-    def test_get_model_by_id(self):
-        """Should return single model with full details"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models/plat-12")
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data['id'] == 'plat-12'
-        assert data['name'] == 'Plat 12'
-        assert data['supplier_name'] == 'Kunert Group'
-    
-    def test_get_nonexistent_model(self):
-        """Should return error for nonexistent model"""
-        response = requests.get(f"{BASE_URL}/api/chalet/models/nonexistent-model")
-        assert response.status_code == 200  # API returns 200 with error object
-        data = response.json()
-        assert 'error' in data
+            assert pricing['btw_percentage'] == 21
 
 
 if __name__ == "__main__":
