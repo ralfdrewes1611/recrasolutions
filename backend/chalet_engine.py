@@ -12,81 +12,222 @@ chalet_router = APIRouter(prefix="/chalet", tags=["Chalet Engine"])
 # ==================== SUPPLIERS ====================
 
 CHALET_SUPPLIERS = [
-    {"id": "kunert", "name": "Kunert Group", "color": "#244628", "website": "chaletskunert.nl", "types": ["chalet"]},
-    {"id": "arcabo", "name": "Arcabo", "color": "#8B6914", "website": "arcabo.nl", "types": ["chalet"]},
-    {"id": "bbs", "name": "BBS Systeembouw", "color": "#4A6741", "website": "bbssysteembouw.nl", "types": ["chalet"]},
-    {"id": "campsolutions", "name": "Campsolutions", "color": "#2D6A4F", "website": "campsolutions.com", "types": ["glamping"]},
+    {"id": "kunert", "name": "Kunert Group", "color": "#244628", "website": "chaletskunert.nl", "types": ["chalet"], "pleisureworld_partner": True},
+    {"id": "arcabo", "name": "Arcabo", "color": "#8B6914", "website": "arcabo.nl", "types": ["chalet"], "pleisureworld_partner": True},
+    {"id": "bbs", "name": "BBS Systeembouw", "color": "#4A6741", "website": "bbssysteembouw.nl", "types": ["chalet"], "pleisureworld_partner": True},
+    {"id": "campsolutions", "name": "Campsolutions", "color": "#2D6A4F", "website": "campsolutions.com", "types": ["glamping"], "pleisureworld_partner": True},
 ]
 
 # ==================== IMAGES PER SUPPLIER + STIJL ====================
 
+# ==================== REAL PRODUCT IMAGES PER MODEL ====================
+# Images sourced from actual supplier websites
+
+MODEL_IMAGES = {
+    # Kunert Group
+    "kunert-plat-12": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/9bb15a9fd5ca8225826fd1bd0d3c2b44/w2.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/21360c1d25e0b79e2241df7736a66610/11-scaled-2.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/a6f3180fbc02492d899cbc5b02b63e8e/12-scaled-1.webp",
+    ],
+    "kunert-plat-18": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/a7d32cf654945640a6ba12c117e735de/13-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/68da8ee0d54984a681705d89a909e163/14-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/9bb15a9fd5ca8225826fd1bd0d3c2b44/w2.webp",
+    ],
+    "kunert-lazy-juliana": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/fde7c3b8d28232241bc5367a7d3e6e2b/mobilehome-2.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/b4efa0dfce7392c71bf98c30e4107108/invierno_s1-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/3abd295cfedd4e21a7876c278eb86862/invierno_s3-scaled-1.webp",
+    ],
+    "kunert-haven": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/596c295a46e6a41280859315325ba1bc/Image1.png",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/fa91b9a5ebe6455d93e1d3737316adc9/2-_2_.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/fb9cde0d5c961a3f5af88637408b062c/4-_2_.webp",
+    ],
+    "kunert-ohara-premium": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/cce715b7f00f81ed3d7f51722398606e/invierno_m1-scaled-2.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/a52277a64cc3fbcf8cd5bd985f5f3ef3/invierno_l1-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/fde7c3b8d28232241bc5367a7d3e6e2b/mobilehome-2.webp",
+    ],
+    "kunert-irm-habitat": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/b4efa0dfce7392c71bf98c30e4107108/invierno_s1-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/cce715b7f00f81ed3d7f51722398606e/invierno_m1-scaled-2.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/3abd295cfedd4e21a7876c278eb86862/invierno_s3-scaled-1.webp",
+    ],
+    "kunert-mansarde-20": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/68da8ee0d54984a681705d89a909e163/14-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/a7d32cf654945640a6ba12c117e735de/13-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/21360c1d25e0b79e2241df7736a66610/11-scaled-2.webp",
+    ],
+    "kunert-t-vorm-22": [
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/9bb15a9fd5ca8225826fd1bd0d3c2b44/w2.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/a6f3180fbc02492d899cbc5b02b63e8e/12-scaled-1.webp",
+        "https://chaletskunert.nl/wp-content/uploads/slider/cache/68da8ee0d54984a681705d89a909e163/14-scaled-1.webp",
+    ],
+    # Arcabo
+    "arcabo-zadel-12": [
+        "https://arcabo.nl/wp-content/uploads/Lodge-3D-9-2023-buitenzijde-klein-2023-uitgelicht.png",
+        "https://arcabo.nl/wp-content/uploads/1-Buitenzijde-Long-Beach-A-klein-2023-uitgelicht.png",
+        "https://arcabo.nl/wp-content/uploads/Ocala-website-groot-1.png",
+    ],
+    "arcabo-zadel-18": [
+        "https://arcabo.nl/wp-content/uploads/1-New-Bay-A-buitenzijde-2024-uitgelicht.png",
+        "https://arcabo.nl/wp-content/uploads/2-New-Bay-A-woonkamer-1-2-klein-2023.png",
+        "https://arcabo.nl/wp-content/uploads/4-New-Bay-A-keuken-3-klein-2023.png",
+    ],
+    "arcabo-charleston": [
+        "https://arcabo.nl/wp-content/uploads/1-Charleston-buitenzijde-met-opmaak-1-uitgelicht-klein-2024.png",
+        "https://arcabo.nl/wp-content/uploads/3-Charleston-C-woonkamer-2-klein-2024.png",
+        "https://arcabo.nl/wp-content/uploads/4-Charleston-C-keuken-klein-2024.png",
+    ],
+    "arcabo-new-bay": [
+        "https://arcabo.nl/wp-content/uploads/1-New-Bay-A-buitenzijde-2024.png",
+        "https://arcabo.nl/wp-content/uploads/2-New-Bay-A-woonkamer-1-2-klein-2023.png",
+        "https://arcabo.nl/wp-content/uploads/5-New-Bay-A-slaapkamer-2-klein-2023.png",
+    ],
+    "arcabo-ocala": [
+        "https://arcabo.nl/wp-content/uploads/Ocala-website-groot-1.png",
+        "https://arcabo.nl/wp-content/uploads/Ocala-woonkamer-website-1.png",
+        "https://arcabo.nl/wp-content/uploads/Ocala-keuken-website-1.png",
+    ],
+    "arcabo-dubbel-24": [
+        "https://arcabo.nl/wp-content/uploads/1-carlington-70m2-buitenzijde2-uitgelicht.png",
+        "https://arcabo.nl/wp-content/uploads/1-Miami-L-buitenzijde3-klein-2023-uitgelicht.png",
+        "https://arcabo.nl/wp-content/uploads/1-New-Port-B-buitenzijde1-uitgelicht-klein-2024.png",
+    ],
+    # BBS Systeembouw
+    "bbs-compact": [
+        "https://ucarecdn.com/76932055-baf1-402d-bedb-68e5b903160e/-/format/auto/-/resize/800x500/",
+        "https://ucarecdn.com/3b93939b-90ac-4bf0-8bd7-f492cf4fd253/-/format/auto/-/resize/800x500/",
+        "https://ucarecdn.com/51e8be1e-9c5c-4e0c-b9af-eab7b2f66652/-/format/auto/-/resize/800x500/",
+    ],
+    "bbs-comfort": [
+        "https://ucarecdn.com/16fbc617-c09f-4a02-a022-03d455ad438a/-/format/auto/-/resize/800x500/",
+        "https://ucarecdn.com/2502c7b1-a3be-46ee-b8ac-0c8e367a1473/-/format/auto/-/resize/800x500/",
+        "https://ucarecdn.com/76932055-baf1-402d-bedb-68e5b903160e/-/format/auto/-/resize/800x500/",
+    ],
+    "bbs-premium": [
+        "https://ucarecdn.com/17ae1b5b-9eb9-4c0a-9507-b46fe3a05c33/-/format/auto/-/resize/800x500/",
+        "https://ucarecdn.com/16fbc617-c09f-4a02-a022-03d455ad438a/-/format/auto/-/resize/800x500/",
+        "https://ucarecdn.com/2502c7b1-a3be-46ee-b8ac-0c8e367a1473/-/format/auto/-/resize/800x500/",
+    ],
+    # Campsolutions Glamping
+    "camp-wood-lodge-jr": [
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-16.16.00-min-400x284.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.52.21-min-e1765205821482.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-wood-lodge-cozy": [
+        "https://campsolutions.com/wp-content/uploads/2025/04/20250512-DickRuumpolFotografie-Campsolutions-LR-014-e1749747535515-400x284.jpg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.52.21-min-e1765205821482.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-wood-lodge-midi": [
+        "https://campsolutions.com/wp-content/uploads/2022/01/Scherm%C2%ADafbeelding-2025-12-08-om-12.23.56-min-e1765379989312-400x284.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.52.21-min-e1765205821482.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.51.57-min-e1765205971348.png",
+    ],
+    "camp-wood-lodge": [
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.52.21-min-e1765205821482.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.51.57-min-e1765205971348.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-panorama-dome": [
+        "https://campsolutions.com/wp-content/uploads/2021/12/dof-panorama-uitgelicht-400x284.jpeg",
+        "https://campsolutions.com/wp-content/uploads/2021/12/dof-panorama-uitgelicht.jpeg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-glamping-lodge": [
+        "https://campsolutions.com/wp-content/uploads/2022/01/CS-GL-Featured-img-400x284.jpg",
+        "https://campsolutions.com/wp-content/uploads/2022/01/CS-GL-Featured-img.jpg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-safari-lodge": [
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.35.00-min-400x284.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.35.00-min.png",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-giant-hat": [
+        "https://campsolutions.com/wp-content/uploads/2020/12/Giant-Hat_Triple_CampSolutions-400x284.jpg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Giant-Hat_Triple_CampSolutions.jpg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+    "camp-arcade": [
+        "https://campsolutions.com/wp-content/uploads/2020/12/BDP57623-GOC-Hoenderloo-Bas-Driessen-Photography-1024x683-1-400x284.jpg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/BDP57623-GOC-Hoenderloo-Bas-Driessen-Photography-1024x683-1.jpg",
+        "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+    ],
+}
+
+# Fallback supplier-level images (used when model-specific images not available)
 SUPPLIER_IMAGES = {
     "kunert": {
         "modern": [
-            "https://images.unsplash.com/photo-1712899227535-e076a4489322?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1645132971658-3ffd441ac6fa?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1594886887939-2d2188b08706?w=800&h=500&fit=crop",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/9bb15a9fd5ca8225826fd1bd0d3c2b44/w2.webp",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/21360c1d25e0b79e2241df7736a66610/11-scaled-2.webp",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/a6f3180fbc02492d899cbc5b02b63e8e/12-scaled-1.webp",
         ],
         "luxe": [
-            "https://images.unsplash.com/photo-1610054102966-fc6f9a0a0616?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1762782778316-80b05d151915?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1758745018916-627ad7196524?w=800&h=500&fit=crop",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/a7d32cf654945640a6ba12c117e735de/13-scaled-1.webp",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/68da8ee0d54984a681705d89a909e163/14-scaled-1.webp",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/9bb15a9fd5ca8225826fd1bd0d3c2b44/w2.webp",
         ],
         "landelijk": [
-            "https://images.unsplash.com/photo-1742130754462-f83b21dcc54f?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1598416596014-5626a98dcaad?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1522071500372-f0fd8c452178?w=800&h=500&fit=crop",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/fde7c3b8d28232241bc5367a7d3e6e2b/mobilehome-2.webp",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/b4efa0dfce7392c71bf98c30e4107108/invierno_s1-scaled-1.webp",
+            "https://chaletskunert.nl/wp-content/uploads/slider/cache/3abd295cfedd4e21a7876c278eb86862/invierno_s3-scaled-1.webp",
         ],
     },
     "arcabo": {
         "modern": [
-            "https://images.unsplash.com/photo-1594886887939-2d2188b08706?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1712899227535-e076a4489322?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1645132971658-3ffd441ac6fa?w=800&h=500&fit=crop",
+            "https://arcabo.nl/wp-content/uploads/1-New-Bay-A-buitenzijde-2024-uitgelicht.png",
+            "https://arcabo.nl/wp-content/uploads/1-Charleston-buitenzijde-met-opmaak-1-uitgelicht-klein-2024.png",
+            "https://arcabo.nl/wp-content/uploads/Ocala-website-groot-1.png",
         ],
         "luxe": [
-            "https://images.unsplash.com/photo-1762782778316-80b05d151915?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1610054102966-fc6f9a0a0616?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1758745018916-627ad7196524?w=800&h=500&fit=crop",
+            "https://arcabo.nl/wp-content/uploads/1-New-Bay-A-buitenzijde-2024.png",
+            "https://arcabo.nl/wp-content/uploads/3-Charleston-C-woonkamer-2-klein-2024.png",
+            "https://arcabo.nl/wp-content/uploads/2-New-Bay-A-woonkamer-1-2-klein-2023.png",
         ],
         "landelijk": [
-            "https://images.unsplash.com/photo-1598416596014-5626a98dcaad?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1742130754462-f83b21dcc54f?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1522071500372-f0fd8c452178?w=800&h=500&fit=crop",
+            "https://arcabo.nl/wp-content/uploads/Lodge-3D-9-2023-buitenzijde-klein-2023-uitgelicht.png",
+            "https://arcabo.nl/wp-content/uploads/1-Buitenzijde-Long-Beach-A-klein-2023-uitgelicht.png",
+            "https://arcabo.nl/wp-content/uploads/1-carlington-70m2-buitenzijde2-uitgelicht.png",
         ],
     },
     "bbs": {
         "modern": [
-            "https://images.unsplash.com/photo-1645132971658-3ffd441ac6fa?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1594886887939-2d2188b08706?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1712899227535-e076a4489322?w=800&h=500&fit=crop",
+            "https://ucarecdn.com/76932055-baf1-402d-bedb-68e5b903160e/-/format/auto/-/resize/800x500/",
+            "https://ucarecdn.com/3b93939b-90ac-4bf0-8bd7-f492cf4fd253/-/format/auto/-/resize/800x500/",
+            "https://ucarecdn.com/16fbc617-c09f-4a02-a022-03d455ad438a/-/format/auto/-/resize/800x500/",
         ],
         "luxe": [
-            "https://images.unsplash.com/photo-1758745018916-627ad7196524?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1762782778316-80b05d151915?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1610054102966-fc6f9a0a0616?w=800&h=500&fit=crop",
+            "https://ucarecdn.com/17ae1b5b-9eb9-4c0a-9507-b46fe3a05c33/-/format/auto/-/resize/800x500/",
+            "https://ucarecdn.com/2502c7b1-a3be-46ee-b8ac-0c8e367a1473/-/format/auto/-/resize/800x500/",
+            "https://ucarecdn.com/51e8be1e-9c5c-4e0c-b9af-eab7b2f66652/-/format/auto/-/resize/800x500/",
         ],
         "landelijk": [
-            "https://images.unsplash.com/photo-1742130754462-f83b21dcc54f?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1598416596014-5626a98dcaad?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1522071500372-f0fd8c452178?w=800&h=500&fit=crop",
+            "https://ucarecdn.com/16fbc617-c09f-4a02-a022-03d455ad438a/-/format/auto/-/resize/800x500/",
+            "https://ucarecdn.com/76932055-baf1-402d-bedb-68e5b903160e/-/format/auto/-/resize/800x500/",
+            "https://ucarecdn.com/3b93939b-90ac-4bf0-8bd7-f492cf4fd253/-/format/auto/-/resize/800x500/",
         ],
     },
     "campsolutions": {
         "modern": [
-            "https://images.unsplash.com/photo-1721093288938-f4b597de3283?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1763883420965-63130e7ed221?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1762255097010-49e99eadd616?w=800&h=500&fit=crop",
+            "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.52.21-min-e1765205821482.png",
+            "https://campsolutions.com/wp-content/uploads/2022/01/CS-GL-Featured-img.jpg",
+            "https://campsolutions.com/wp-content/uploads/2020/12/BDP57623-GOC-Hoenderloo-Bas-Driessen-Photography-1024x683-1.jpg",
         ],
         "luxe": [
-            "https://images.unsplash.com/photo-1763883420965-63130e7ed221?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1721093288938-f4b597de3283?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1774013710036-982f187dfe38?w=800&h=500&fit=crop",
+            "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.35.00-min.png",
+            "https://campsolutions.com/wp-content/uploads/2021/12/dof-panorama-uitgelicht.jpeg",
+            "https://campsolutions.com/wp-content/uploads/2020/12/Giant-Hat_Triple_CampSolutions.jpg",
         ],
         "landelijk": [
-            "https://images.unsplash.com/photo-1762255097010-49e99eadd616?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1774013710036-982f187dfe38?w=800&h=500&fit=crop",
-            "https://images.unsplash.com/photo-1762254799629-b8542e611aa7?w=800&h=500&fit=crop",
+            "https://campsolutions.com/wp-content/uploads/2020/12/Naamloos-1.png",
+            "https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.51.57-min-e1765205971348.png",
+            "https://campsolutions.com/wp-content/uploads/2025/04/20250512-DickRuumpolFotografie-Campsolutions-LR-014-e1749747535515-400x284.jpg",
         ],
     },
 }
@@ -604,25 +745,157 @@ STIJLEN = [
     {"id": "landelijk", "name": "Landelijk"},
 ]
 
+# ==================== UPGRADE OPTIONS ====================
+
+UPGRADE_OPTIONS = {
+    "chalet": {
+        "keuken": [
+            {"id": "keuken-basis", "name": "Basis Keuken", "description": "2-pits kookplaat, mini koelkast, gootsteen", "price": 0},
+            {"id": "keuken-compleet", "name": "Complete Keuken", "description": "4-pits, vaatwasser, combi oven, grote koelkast", "price": 3500},
+            {"id": "keuken-luxe", "name": "Luxe Keuken", "description": "Inductie, Miele apparatuur, granieten blad, wijnkoeler", "price": 8500},
+        ],
+        "badkamer": [
+            {"id": "bad-basis", "name": "Basis Badkamer", "description": "Douche, toilet, wastafel", "price": 0},
+            {"id": "bad-compleet", "name": "Complete Badkamer", "description": "Regendouche, dubbele wastafel, vloerverwarming", "price": 2800},
+            {"id": "bad-wellness", "name": "Wellness Badkamer", "description": "Vrijstaand bad, regendouche, sauna", "price": 7500},
+        ],
+        "terras": [
+            {"id": "terras-geen", "name": "Geen Terras", "description": "Alleen deur naar buiten", "price": 0},
+            {"id": "terras-klein", "name": "Klein Terras 6m²", "description": "Overdekt terras, tuinmeubilair", "price": 3200},
+            {"id": "terras-groot", "name": "Groot Terras 15m²", "description": "Wraparound terras, loungeset, buitenkeuken", "price": 8000},
+        ],
+        "interieur": [
+            {"id": "int-basis", "name": "Basis Interieur", "description": "Functioneel meubilair, eenvoudige afwerking", "price": 0},
+            {"id": "int-comfort", "name": "Comfort Interieur", "description": "Houten meubelen, sfeerverlichting, textiel", "price": 4500},
+            {"id": "int-luxe", "name": "Luxe Interieur", "description": "Design meubelen, smart home, custom styling", "price": 12000},
+        ],
+        "klimaat": [
+            {"id": "klim-geen", "name": "Geen", "description": "Geen verwarming of airco", "price": 0},
+            {"id": "klim-cv", "name": "CV Verwarming", "description": "Gasverwarming, radiatoren", "price": 2200},
+            {"id": "klim-wp", "name": "Warmtepomp + Airco", "description": "Lucht-lucht warmtepomp, koelt en verwarmt", "price": 4800},
+        ],
+        "duurzaamheid": [
+            {"id": "duur-geen", "name": "Standaard", "description": "Aansluiting op netwerk", "price": 0},
+            {"id": "duur-solar", "name": "Zonnepanelen", "description": "4 panelen, 1.6 kWp, deels zelfvoorzienend", "price": 3200},
+            {"id": "duur-offgrid", "name": "Off-Grid Pakket", "description": "8 panelen, thuisbatterij, waterrecycling", "price": 14000},
+        ],
+    },
+    "glamping": {
+        "sanitair": [
+            {"id": "san-geen", "name": "Geen Sanitair", "description": "Gebruik centraal sanitairblok", "price": 0},
+            {"id": "san-basis", "name": "Basis Sanitair", "description": "Chemisch toilet, wasbak", "price": 1800},
+            {"id": "san-compleet", "name": "Compleet Sanitair", "description": "Douche, toilet, wastafel, warm water", "price": 4500},
+        ],
+        "inrichting": [
+            {"id": "inr-kaal", "name": "Kale Tent", "description": "Leeg, eigen inrichting", "price": 0},
+            {"id": "inr-basis", "name": "Basis Inrichting", "description": "Bedden, tafel, stoelen, verlichting", "price": 2500},
+            {"id": "inr-luxe", "name": "Luxe Inrichting", "description": "Boxsprings, design meubelen, sfeerverlichting", "price": 6000},
+        ],
+        "vlonder": [
+            {"id": "vl-geen", "name": "Geen", "description": "Direct op de grond", "price": 0},
+            {"id": "vl-hout", "name": "Houten Vlonder", "description": "Duurzaam hardhout, verhoogd", "price": 1500},
+            {"id": "vl-beton", "name": "Betonnen Fundament", "description": "Permanente fundering", "price": 3200},
+        ],
+        "verlichting": [
+            {"id": "verl-basis", "name": "Basis", "description": "Enkele lamp, stopcontact", "price": 0},
+            {"id": "verl-sfeer", "name": "Sfeerverlichting", "description": "LED strips, lantaarns, dimbaar", "price": 800},
+            {"id": "verl-smart", "name": "Smart Lighting", "description": "App-gestuurd, kleurwisseling, timer", "price": 2500},
+        ],
+    },
+}
+
+# ==================== INSPIRATIE PAKKETTEN ====================
+
+INSPIRATIE_PAKKETTEN = [
+    {
+        "id": "glamping-tour-populair",
+        "name": "Populair Glamping Pakket",
+        "subtitle": "Na de inspiratie reis van de Glamping Tour 30-31 maart",
+        "description": "Dit pakket is samengesteld na de Glamping Tour inspiratiereis van 30-31 maart. De meest populaire configuratie onder parkondernemers: een mix van Wood Lodges en een Safari Lodge als blikvanger.",
+        "badge": "Glamping Tour 2025",
+        "badge_color": "#2D6A4F",
+        "flow_type": "chalet",
+        "categorie": "glamping",
+        "models": [
+            {"model_id": "camp-wood-lodge-midi", "quantity": 4, "upgrades": {"sanitair": "san-compleet", "inrichting": "inr-luxe", "vlonder": "vl-hout", "verlichting": "verl-sfeer"}},
+            {"model_id": "camp-wood-lodge", "quantity": 2, "upgrades": {"sanitair": "san-compleet", "inrichting": "inr-luxe", "vlonder": "vl-hout", "verlichting": "verl-sfeer"}},
+            {"model_id": "camp-safari-lodge", "quantity": 1, "upgrades": {"sanitair": "san-compleet", "inrichting": "inr-luxe", "vlonder": "vl-hout", "verlichting": "verl-sfeer"}},
+        ],
+        "total_units": 7,
+        "estimated_investment": 112000,
+        "highlights": ["7 glamping units", "Mix van formaten", "Compleet sanitair + luxe inrichting", "Sfeerverlichting + houten vlonders"],
+    },
+    {
+        "id": "luxe-chalet-park",
+        "name": "Luxe Chaletpark Setup",
+        "subtitle": "Premium vakantiepark met hoge nachtprijs",
+        "description": "Bewezen concept voor vakantieparken die mikken op het premium segment. Arcabo zadeldak chalets met luxe keuken, wellness badkamer en groot terras. Gemiddelde nachtprijs €180+.",
+        "badge": "Premium Concept",
+        "badge_color": "#8B6914",
+        "flow_type": "chalet",
+        "categorie": "chalet",
+        "models": [
+            {"model_id": "arcabo-zadel-18", "quantity": 5, "upgrades": {"keuken": "keuken-luxe", "badkamer": "bad-wellness", "terras": "terras-groot", "interieur": "int-luxe", "klimaat": "klim-wp", "duurzaamheid": "duur-solar"}},
+            {"model_id": "arcabo-charleston", "quantity": 2, "upgrades": {"keuken": "keuken-luxe", "badkamer": "bad-wellness", "terras": "terras-groot", "interieur": "int-luxe", "klimaat": "klim-wp", "duurzaamheid": "duur-solar"}},
+        ],
+        "total_units": 7,
+        "estimated_investment": 1120000,
+        "highlights": ["7 premium chalets", "Wellness badkamers + jacuzzi", "Zonnepanelen + warmtepomp", "Groot terras met buitenkeuken"],
+    },
+    {
+        "id": "budget-starter-park",
+        "name": "Starter Park — Budget",
+        "subtitle": "Snel rendabel, laag instapniveau",
+        "description": "Ideaal voor ondernemers die willen starten met recreatieverhuur. Mix van BBS vakantiewoningen en Kunert chalets met basis upgrades. Laagste investering per bed.",
+        "badge": "Starter Concept",
+        "badge_color": "#244628",
+        "flow_type": "chalet",
+        "categorie": "chalet",
+        "models": [
+            {"model_id": "bbs-compact", "quantity": 3, "upgrades": {"keuken": "keuken-compleet", "badkamer": "bad-basis", "terras": "terras-klein", "interieur": "int-comfort", "klimaat": "klim-cv", "duurzaamheid": "duur-geen"}},
+            {"model_id": "kunert-haven", "quantity": 4, "upgrades": {"keuken": "keuken-compleet", "badkamer": "bad-basis", "terras": "terras-klein", "interieur": "int-comfort", "klimaat": "klim-cv", "duurzaamheid": "duur-geen"}},
+        ],
+        "total_units": 7,
+        "estimated_investment": 480000,
+        "highlights": ["7 betaalbare units", "Complete keuken + CV", "Klein terras + comfort interieur", "Snelle terugverdientijd"],
+    },
+]
+
 # ==================== PRICING ====================
 
 BTW_PERCENTAGE = 21
 LEASE_MONTHS = 60
 LEASE_FACTOR = 0.018  # ~1.8% of price per month for 60 months
 
-def calculate_pricing(basisprijs: float) -> dict:
-    btw = round(basisprijs * BTW_PERCENTAGE / 100)
-    totaal_incl = basisprijs + btw
-    lease_monthly = round(basisprijs * LEASE_FACTOR)
+def calculate_pricing(basisprijs: float, upgrades_total: float = 0) -> dict:
+    total_excl = basisprijs + upgrades_total
+    btw = round(total_excl * BTW_PERCENTAGE / 100)
+    totaal_incl = total_excl + btw
+    lease_monthly = round(total_excl * LEASE_FACTOR)
     return {
         "basisprijs": basisprijs,
-        "totaal_excl_btw": basisprijs,
+        "upgrades_total": upgrades_total,
+        "totaal_excl_btw": total_excl,
         "btw_percentage": BTW_PERCENTAGE,
         "btw_bedrag": btw,
         "totaal_incl_btw": totaal_incl,
         "lease_monthly": lease_monthly,
         "lease_months": LEASE_MONTHS,
     }
+
+
+def calculate_upgrades_total(categorie: str, selections: dict) -> tuple:
+    """Calculate total upgrade cost and details."""
+    options = UPGRADE_OPTIONS.get(categorie, {})
+    total = 0
+    details = []
+    for cat_key, option_id in selections.items():
+        cat_options = options.get(cat_key, [])
+        option = next((o for o in cat_options if o["id"] == option_id), None)
+        if option and option["price"] > 0:
+            total += option["price"]
+            details.append({"category": cat_key, "name": option["name"], "price": option["price"]})
+    return total, details
 
 # ==================== API ROUTES ====================
 
@@ -660,11 +933,15 @@ async def get_chalet_models(
     if supplier_id and supplier_id != "alles":
         filtered = [m for m in filtered if m["supplier_id"] == supplier_id]
 
-    # Add pricing + images
+    # Add pricing + images (model-specific product photos take priority)
     result = []
     for m in filtered:
         pricing = calculate_pricing(m["basisprijs"])
-        images = SUPPLIER_IMAGES.get(m["supplier_id"], {})
+        model_imgs = MODEL_IMAGES.get(m["id"])
+        if model_imgs:
+            images = {"modern": model_imgs, "luxe": model_imgs, "landelijk": model_imgs}
+        else:
+            images = SUPPLIER_IMAGES.get(m["supplier_id"], {})
         result.append({**m, "pricing": pricing, "images": images})
 
     return result
@@ -676,7 +953,11 @@ async def get_model_detail(model_id: str):
     if not model:
         return {"error": "Model niet gevonden"}
     pricing = calculate_pricing(model["basisprijs"])
-    images = SUPPLIER_IMAGES.get(model["supplier_id"], {})
+    model_imgs = MODEL_IMAGES.get(model["id"])
+    if model_imgs:
+        images = {"modern": model_imgs, "luxe": model_imgs, "landelijk": model_imgs}
+    else:
+        images = SUPPLIER_IMAGES.get(model["supplier_id"], {})
     return {**model, "pricing": pricing, "images": images}
 
 
@@ -696,3 +977,77 @@ async def get_filters():
 @chalet_router.get("/suppliers")
 async def get_chalet_suppliers():
     return CHALET_SUPPLIERS
+
+
+@chalet_router.get("/upgrade-options/{categorie}")
+async def get_upgrade_options(categorie: str):
+    """Return upgrade options for chalet or glamping."""
+    return UPGRADE_OPTIONS.get(categorie, UPGRADE_OPTIONS.get("chalet", {}))
+
+
+@chalet_router.post("/calculate-with-upgrades")
+async def calculate_with_upgrades(data: dict):
+    """Calculate pricing including selected upgrades."""
+    model_id = data.get("model_id")
+    selections = data.get("upgrades", {})
+
+    model = next((m for m in CHALET_MODELS if m["id"] == model_id), None)
+    if not model:
+        return {"error": "Model niet gevonden"}
+
+    upgrades_total, upgrade_details = calculate_upgrades_total(model["categorie"], selections)
+    pricing = calculate_pricing(model["basisprijs"], upgrades_total)
+
+    return {
+        "model_id": model_id,
+        "model_name": model["name"],
+        "pricing": pricing,
+        "upgrade_details": upgrade_details,
+    }
+
+
+@chalet_router.get("/inspiratie")
+async def get_inspiratie_pakketten():
+    """Return all inspiration packages."""
+    return INSPIRATIE_PAKKETTEN
+
+
+@chalet_router.get("/inspiratie/{pakket_id}")
+async def get_inspiratie_detail(pakket_id: str):
+    """Return a single inspiration package with full model details."""
+    pakket = next((p for p in INSPIRATIE_PAKKETTEN if p["id"] == pakket_id), None)
+    if not pakket:
+        return {"error": "Pakket niet gevonden"}
+
+    # Enrich with model details
+    enriched_models = []
+    for item in pakket["models"]:
+        model = next((m for m in CHALET_MODELS if m["id"] == item["model_id"]), None)
+        if model:
+            upgrades_total, upgrade_details = calculate_upgrades_total(model["categorie"], item.get("upgrades", {}))
+            unit_pricing = calculate_pricing(model["basisprijs"], upgrades_total)
+            enriched_models.append({
+                "model": model,
+                "quantity": item["quantity"],
+                "upgrades": item.get("upgrades", {}),
+                "upgrade_details": upgrade_details,
+                "unit_pricing": unit_pricing,
+                "line_total": unit_pricing["totaal_incl_btw"] * item["quantity"],
+                "line_lease": unit_pricing["lease_monthly"] * item["quantity"],
+            })
+
+    # Calculate totals
+    total_investment = sum(m["line_total"] for m in enriched_models)
+    total_lease = sum(m["line_lease"] for m in enriched_models)
+    total_units = sum(m["quantity"] for m in enriched_models)
+
+    return {
+        **pakket,
+        "enriched_models": enriched_models,
+        "totals": {
+            "total_investment_incl_btw": total_investment,
+            "total_lease_monthly": total_lease,
+            "total_units": total_units,
+        },
+    }
+

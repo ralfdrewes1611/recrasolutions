@@ -5,7 +5,7 @@ import {
   ArrowLeft, Layers, Square, CornerDownRight, GitMerge, Columns2,
   Minus, Triangle, TrendingUp, Home, Hexagon, ChevronLeft, ChevronRight,
   Bed, Bath, Users, Ruler, Building2, Check, Eye, Settings, FileText,
-  Tent, Factory,
+  Tent, Factory, Sparkles, Package, Award,
 } from 'lucide-react';
 import { Slider } from './components/ui/slider';
 
@@ -21,9 +21,9 @@ const DAK_ICONS = {
 };
 
 const FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1712899227535-e076a4489322?w=800&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1645132971658-3ffd441ac6fa?w=800&h=500&fit=crop',
-  'https://images.unsplash.com/photo-1522071500372-f0fd8c452178?w=800&h=500&fit=crop',
+  'https://arcabo.nl/wp-content/uploads/1-New-Bay-A-buitenzijde-2024-uitgelicht.png',
+  'https://campsolutions.com/wp-content/uploads/2020/12/Scherm%C2%ADafbeelding-2025-12-08-om-15.52.21-min-e1765205821482.png',
+  'https://ucarecdn.com/76932055-baf1-402d-bedb-68e5b903160e/-/format/auto/-/resize/800x500/',
 ];
 
 export function ChaletWizard({ onBack }) {
@@ -33,6 +33,8 @@ export function ChaletWizard({ onBack }) {
   const [activeTab, setActiveTab] = useState('plattegrond');
   const [selectedStijl, setSelectedStijl] = useState('modern');
   const [imageIndex, setImageIndex] = useState(0);
+  const [upgradeSelections, setUpgradeSelections] = useState({});
+  const [upgradePricing, setUpgradePricing] = useState(null);
 
   // Filters
   const [bestemming, setBestemming] = useState('recreatie');
@@ -41,6 +43,7 @@ export function ChaletWizard({ onBack }) {
   const [dakVorm, setDakVorm] = useState('alles');
   const [categorie, setCategorie] = useState('alles');
   const [supplierId, setSupplierId] = useState('alles');
+  const [viewMode, setViewMode] = useState('configurator'); // 'configurator' or 'inspiratie'
 
   // Fetch suppliers once
   useEffect(() => {
@@ -75,6 +78,24 @@ export function ChaletWizard({ onBack }) {
 
   useEffect(() => { setImageIndex(0); }, [selectedModel, selectedStijl]);
 
+  // Reset upgrades when model changes
+  useEffect(() => {
+    setUpgradeSelections({});
+    setUpgradePricing(null);
+  }, [selectedModel?.id]);
+
+  // Recalculate pricing when upgrades change
+  useEffect(() => {
+    if (!selectedModel || Object.keys(upgradeSelections).length === 0) {
+      setUpgradePricing(null);
+      return;
+    }
+    axios.post(`${API}/chalet/calculate-with-upgrades`, {
+      model_id: selectedModel.id,
+      upgrades: upgradeSelections,
+    }).then(res => setUpgradePricing(res.data)).catch(() => {});
+  }, [upgradeSelections, selectedModel?.id]);
+
   const images = useMemo(() => {
     if (!selectedModel?.images) return FALLBACK_IMAGES;
     return selectedModel.images[selectedStijl] || selectedModel.images.modern || FALLBACK_IMAGES;
@@ -83,7 +104,7 @@ export function ChaletWizard({ onBack }) {
   const availableStijlen = selectedModel?.stijlen || ['modern'];
   const prevImage = () => setImageIndex(i => (i - 1 + images.length) % images.length);
   const nextImage = () => setImageIndex(i => (i + 1) % images.length);
-  const pricing = selectedModel?.pricing || {};
+  const pricing = upgradePricing?.pricing || selectedModel?.pricing || {};
 
   // Count per category
   const chaletCount = models.filter(m => m.categorie === 'chalet').length;
@@ -101,12 +122,27 @@ export function ChaletWizard({ onBack }) {
           <span className="text-white/40">|</span>
           <span className="text-[#70C26C] text-sm font-semibold">Chalet & Stay Configurator</span>
         </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setViewMode('configurator')}
+            className={`text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${viewMode === 'configurator' ? 'bg-[#70C26C] text-[#244628] font-bold' : 'text-white/70 hover:text-white'}`}
+            data-testid="mode-configurator">
+            <Settings size={13} /> Configurator
+          </button>
+          <button onClick={() => setViewMode('inspiratie')}
+            className={`text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${viewMode === 'inspiratie' ? 'bg-[#70C26C] text-[#244628] font-bold' : 'text-white/70 hover:text-white'}`}
+            data-testid="mode-inspiratie">
+            <Sparkles size={13} /> Inspiratie Pakketten
+          </button>
+        </div>
         <button onClick={onBack} className="text-white/70 hover:text-white text-sm flex items-center gap-1" data-testid="back-to-flows">
           <ArrowLeft size={16} /> Terug naar flows
         </button>
       </header>
 
-      {/* Main 3-column layout */}
+      {/* Main content */}
+      {viewMode === 'inspiratie' ? (
+        <InspiratieView onSelectModel={(model) => { setSelectedModel(model); setViewMode('configurator'); setActiveTab('plattegrond'); }} />
+      ) : (
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT SIDEBAR — Filters */}
         <div className="w-[270px] flex-shrink-0 border-r border-[#e5e2d9] bg-[#FFFEF8] overflow-y-auto" data-testid="chalet-filters">
@@ -141,9 +177,12 @@ export function ChaletWizard({ onBack }) {
                 >Alle</button>
                 {suppliers.map(s => (
                   <button key={s.id} onClick={() => setSupplierId(s.id)}
-                    className={`text-xs px-2.5 py-1.5 rounded-md border transition-all ${supplierId === s.id ? 'bg-[#244628] text-white border-[#244628]' : 'bg-white text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
+                    className={`text-xs px-2.5 py-1.5 rounded-md border transition-all flex items-center gap-1 ${supplierId === s.id ? 'bg-[#244628] text-white border-[#244628]' : 'bg-white text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
                     data-testid={`supplier-${s.id}`}
-                  >{s.name}</button>
+                  >
+                    {s.pleisureworld_partner && <Award size={10} className={supplierId === s.id ? 'text-[#70C26C]' : 'text-[#8B6914]'} />}
+                    {s.name}
+                  </button>
                 ))}
               </div>
             </div>
@@ -307,7 +346,7 @@ export function ChaletWizard({ onBack }) {
                     selectedStijl={selectedStijl} setSelectedStijl={setSelectedStijl} availableStijlen={availableStijlen} />
                 )}
                 {activeTab === 'specificatie' && <SpecificatieTab model={selectedModel} />}
-                {activeTab === 'samenstellen' && <SamenstellenTab model={selectedModel} />}
+                {activeTab === 'samenstellen' && <SamenstellenTab model={selectedModel} selections={upgradeSelections} onSelect={setUpgradeSelections} />}
               </>
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -333,6 +372,12 @@ export function ChaletWizard({ onBack }) {
                     <span className="text-[#777]">Basisprijs</span>
                     <span className="font-semibold text-[#333]">€ {pricing.basisprijs?.toLocaleString('nl-NL')}</span>
                   </div>
+                  {pricing.upgrades_total > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[#70C26C]">Upgrades</span>
+                      <span className="font-semibold text-[#70C26C]">+ € {pricing.upgrades_total?.toLocaleString('nl-NL')}</span>
+                    </div>
+                  )}
                   <div className="border-t border-[#e5e2d9] pt-2">
                     <div className="flex justify-between text-sm">
                       <span className="font-semibold text-[#333]">Totaal excl. BTW</span>
@@ -394,6 +439,136 @@ export function ChaletWizard({ onBack }) {
             </div>
           </div>
         )}
+      </div>
+      )}
+    </div>
+  );
+}
+
+// ==================== INSPIRATIE VIEW ====================
+
+function InspiratieView({ onSelectModel }) {
+  const [pakketten, setPakketten] = useState([]);
+  const [selectedPakket, setSelectedPakket] = useState(null);
+  const [pakketDetail, setPakketDetail] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/chalet/inspiratie`).then(r => setPakketten(r.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (selectedPakket) {
+      axios.get(`${API}/chalet/inspiratie/${selectedPakket}`).then(r => setPakketDetail(r.data)).catch(() => {});
+    } else {
+      setPakketDetail(null);
+    }
+  }, [selectedPakket]);
+
+  if (pakketDetail) {
+    return (
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <button onClick={() => setSelectedPakket(null)} className="text-sm text-[#777] hover:text-[#333] flex items-center gap-1" data-testid="back-to-pakketten">
+            <ArrowLeft size={14} /> Terug naar pakketten
+          </button>
+
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs px-2 py-0.5 rounded-full text-white font-medium" style={{ backgroundColor: pakketDetail.badge_color }}>
+                  {pakketDetail.badge}
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold text-[#244628]">{pakketDetail.name}</h1>
+              <p className="text-sm text-[#777] mt-1">{pakketDetail.subtitle}</p>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-[#999]">Totaal incl. BTW</div>
+              <div className="text-2xl font-bold text-[#70C26C]">€ {pakketDetail.totals?.total_investment_incl_btw?.toLocaleString('nl-NL')}</div>
+              <div className="text-xs text-[#777]">Lease: € {pakketDetail.totals?.total_lease_monthly?.toLocaleString('nl-NL')}/mnd</div>
+            </div>
+          </div>
+
+          <p className="text-sm text-[#555] bg-white border border-[#e5e2d9] rounded-xl p-4">{pakketDetail.description}</p>
+
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-[#333] uppercase tracking-wider">Modellen in dit pakket ({pakketDetail.totals?.total_units} units)</h3>
+            {pakketDetail.enriched_models?.map((item, i) => (
+              <div key={i} className="bg-white border border-[#e5e2d9] rounded-xl p-4 flex items-center justify-between hover:shadow-sm transition-shadow">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-[#244628]/10 flex items-center justify-center">
+                    {item.model.categorie === 'glamping' ? <Tent size={20} className="text-[#2D6A4F]" /> : <Building2 size={20} className="text-[#8B6914]" />}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-[#333]">{item.quantity}x {item.model.name}</div>
+                    <div className="text-xs text-[#999]">{item.model.supplier_name} · {item.model.oppervlakte_m2} m² · {item.model.slaapkamers} slk</div>
+                    {item.upgrade_details?.length > 0 && (
+                      <div className="flex gap-1 mt-1 flex-wrap">
+                        {item.upgrade_details.map((u, j) => (
+                          <span key={j} className="text-[9px] px-1.5 py-0.5 rounded bg-[#70C26C]/10 text-[#2D6A4F]">{u.name}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-[#333]">€ {item.line_total?.toLocaleString('nl-NL')}</div>
+                  <div className="text-xs text-[#999]">€ {item.line_lease?.toLocaleString('nl-NL')}/mnd</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-[#244628] rounded-xl p-5 text-white">
+            <h3 className="text-sm font-bold mb-3 flex items-center gap-2"><Award size={16} className="text-[#70C26C]" /> Highlights</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {pakketDetail.highlights?.map((h, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-white/90">
+                  <Check size={14} className="text-[#70C26C]" /> {h}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#244628]">Inspiratie Pakketten</h1>
+          <p className="text-sm text-[#777] mt-1">
+            Samen met leveranciers samengestelde concepten — direct doorrekenen in de configurator.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {pakketten.map(p => (
+            <button key={p.id} onClick={() => setSelectedPakket(p.id)}
+              className="bg-white border border-[#e5e2d9] rounded-xl p-5 text-left hover:shadow-md transition-all group"
+              data-testid={`pakket-${p.id}`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] px-2 py-0.5 rounded-full text-white font-medium" style={{ backgroundColor: p.badge_color }}>
+                  {p.badge}
+                </span>
+                <Package size={16} className="text-[#ccc] group-hover:text-[#70C26C] transition-colors" />
+              </div>
+              <h3 className="text-base font-bold text-[#333] mb-1">{p.name}</h3>
+              <p className="text-xs text-[#777] mb-3">{p.subtitle}</p>
+              <div className="flex items-center justify-between pt-3 border-t border-[#f0ede6]">
+                <span className="text-xs text-[#999]">{p.total_units} units</span>
+                <span className="text-sm font-bold text-[#244628]">~ € {p.estimated_investment?.toLocaleString('nl-NL')}</span>
+              </div>
+              <div className="mt-2 flex gap-1 flex-wrap">
+                {p.highlights?.slice(0, 2).map((h, i) => (
+                  <span key={i} className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#FDF9ED] text-[#777] border border-[#e5e2d9]">{h}</span>
+                ))}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -656,40 +831,56 @@ function SpecificatieTab({ model }) {
   );
 }
 
-function SamenstellenTab({ model }) {
-  const isGlamping = model.categorie === 'glamping';
-  const groups = isGlamping ? [
-    { cat: 'Sanitair', options: ['Geen sanitair (incl.)', 'Basis sanitair (+€1.800)', 'Compleet sanitair (+€4.500)'] },
-    { cat: 'Inrichting', options: ['Kale tent (incl.)', 'Basis inrichting (+€2.500)', 'Luxe inrichting (+€6.000)'] },
-    { cat: 'Vlonder/Fundament', options: ['Geen (incl.)', 'Houten vlonder (+€1.500)', 'Betonnen fundament (+€3.200)'] },
-    { cat: 'Verlichting', options: ['Basis (incl.)', 'Sfeerverlichting (+€800)', 'Smart lighting (+€2.500)'] },
-  ] : [
-    { cat: 'Keuken', options: ['Basis Keuken (incl.)', 'Complete Keuken (+€3.500)', 'Luxe Keuken (+€8.500)'] },
-    { cat: 'Badkamer', options: ['Basis Badkamer (incl.)', 'Complete Badkamer (+€2.800)', 'Wellness Badkamer (+€7.500)'] },
-    { cat: 'Terras', options: ['Geen Terras', 'Klein Terras 6m² (+€3.200)', 'Groot Terras 15m² (+€8.000)'] },
-    { cat: 'Interieur', options: ['Basis Interieur (incl.)', 'Comfort Interieur (+€4.500)', 'Luxe Interieur (+€12.000)'] },
-    { cat: 'Klimaat', options: ['Geen', 'CV Verwarming (+€2.200)', 'Warmtepomp + Airco (+€4.800)'] },
-    { cat: 'Duurzaamheid', options: ['Standaard', 'Zonnepanelen (+€3.200)', 'Off-Grid Pakket (+€14.000)'] },
-  ];
+function SamenstellenTab({ model, selections, onSelect }) {
+  const [options, setOptions] = useState({});
+
+  useEffect(() => {
+    axios.get(`${API}/chalet/upgrade-options/${model.categorie}`).then(res => setOptions(res.data)).catch(() => {});
+  }, [model.categorie]);
+
+  const handleSelect = (catKey, optionId) => {
+    onSelect(prev => ({ ...prev, [catKey]: optionId }));
+  };
+
+  const categoryLabels = {
+    keuken: 'Keuken', badkamer: 'Badkamer', terras: 'Terras', interieur: 'Interieur',
+    klimaat: 'Klimaat', duurzaamheid: 'Duurzaamheid', sanitair: 'Sanitair',
+    inrichting: 'Inrichting', vlonder: 'Vlonder / Fundament', verlichting: 'Verlichting',
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <h2 className="text-lg font-bold text-[#333]">Samenstellen — {model.name}</h2>
       <p className="text-sm text-[#777]">
-        {isGlamping ? 'Configureer uw glamping tent naar wens.' : 'Configureer uw chalet naar wens. Selecteer opties per categorie.'}
+        Selecteer upgrades per categorie. De prijs wordt direct bijgewerkt in het overzicht rechts.
       </p>
-      {groups.map(group => (
-        <div key={group.cat} className="bg-white border border-[#e5e2d9] rounded-xl p-4">
-          <h3 className="text-sm font-bold text-[#333] mb-2">{group.cat}</h3>
-          <div className="grid grid-cols-3 gap-2">
-            {group.options.map((opt, i) => (
-              <button key={i}
-                className={`text-xs p-2.5 rounded-lg border text-left transition-all ${i === 0 ? 'bg-[#244628] text-white border-[#244628]' : 'bg-[#FDF9ED] text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
-              >{opt}</button>
-            ))}
+      {Object.entries(options).map(([catKey, catOptions]) => {
+        const selected = selections[catKey] || catOptions[0]?.id;
+        return (
+          <div key={catKey} className="bg-white border border-[#e5e2d9] rounded-xl p-4" data-testid={`upgrade-${catKey}`}>
+            <h3 className="text-sm font-bold text-[#333] mb-2">{categoryLabels[catKey] || catKey}</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {catOptions.map(opt => {
+                const isActive = selected === opt.id;
+                return (
+                  <button key={opt.id} onClick={() => handleSelect(catKey, opt.id)}
+                    className={`text-left p-2.5 rounded-lg border transition-all ${isActive ? 'bg-[#244628] text-white border-[#244628]' : 'bg-[#FDF9ED] text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
+                    data-testid={`opt-${opt.id}`}
+                  >
+                    <div className="text-xs font-semibold">{opt.name}</div>
+                    <div className={`text-[10px] mt-0.5 ${isActive ? 'text-white/70' : 'text-[#999]'}`}>{opt.description}</div>
+                    {opt.price > 0 && (
+                      <div className={`text-xs font-bold mt-1 ${isActive ? 'text-[#70C26C]' : 'text-[#70C26C]'}`}>
+                        + € {opt.price.toLocaleString('nl-NL')}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
