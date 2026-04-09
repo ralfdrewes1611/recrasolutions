@@ -21,6 +21,7 @@ from ai_services import ai_router
 from supplier_module import supplier_router, seed_suppliers, calculate_travel_cost
 from fec_engine import fec_router
 from chalet_engine import chalet_router
+from supabase_module import supabase_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -1132,6 +1133,7 @@ app.include_router(ai_router)
 app.include_router(supplier_router)
 app.include_router(fec_router, prefix="/api")
 app.include_router(chalet_router, prefix="/api")
+app.include_router(supabase_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
