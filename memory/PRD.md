@@ -17,7 +17,7 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 ### Chalet & Stay = Accommodation Configurator (dedicated ChaletWizard)
 - 3-kolom layout: Filters (links) > Fotocarrousel + Plattegrond (midden) > Prijsoverzicht (rechts)
 - 26 modellen van 4 leveranciers: Kunert Group (8), Arcabo (6), BBS Systeembouw (3), Campsolutions (9 glamping)
-- Filters: Categorie, Leverancier, Bestemming, Oppervlakte, Model Vorm, Dak Vorm
+- Filters: Categorie, Leverancier, Bestemming (alleen Recreatie), Oppervlakte, Model Vorm, Dak Vorm
 - Stijlen: Modern / Luxe / Landelijk
 - Pricing: Basisprijs + BTW 21% + Operational Lease (60 mnd)
 - Aparte plattegronden: SVG tent voor glamping (open ruimte), kamer-indeling voor chalets
@@ -34,7 +34,6 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 - **Trends & Benchmark**: KPIs, meest gekozen modellen/leveranciers, gem. investering
 - **Lead Scoring**: Funnel (orientatie/vergelijking/concreet), lead details, budget, fase
 - **Scenario Vergelijking**: Basis/Luxe/Max Bezetting met ROI, cashflow, investering
-- Data via Supabase PostgreSQL (5 tabellen)
 
 ## Supabase Integration (08 apr 2026)
 - URL: https://ehhmmysmxbbrdvceyicw.supabase.co
@@ -50,6 +49,8 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 - [x] Pleisureworld Partner badges (09 apr 2026)
 - [x] Supabase Platform Dashboard
 - [x] Glamping SVG plattegronden (tent/dome outlines)
+- [x] Pre-Mantelzorg bestemming verwijderd (09 apr 2026)
+- [x] Made with Emergent badge verborgen + titel aangepast (09 apr 2026)
 
 ## Backlog
 

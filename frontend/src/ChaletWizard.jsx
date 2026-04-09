@@ -191,14 +191,12 @@ export function ChaletWizard({ onBack }) {
             <div>
               <h3 className="text-[11px] font-bold text-[#333] uppercase tracking-wider mb-2">Bestemming</h3>
               <div className="flex gap-2">
-                {['recreatie', 'pre-mantelzorg'].map(b => (
-                  <button key={b} onClick={() => setBestemming(b)}
-                    className={`text-xs px-3 py-1.5 rounded-md border transition-all ${bestemming === b ? 'bg-[#244628] text-white border-[#244628]' : 'bg-white text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
-                    data-testid={`bestemming-${b}`}
-                  >
-                    {b === 'recreatie' ? 'Recreatie' : 'Pre-Mantelzorg'}
-                  </button>
-                ))}
+                <button
+                  className="text-xs px-3 py-1.5 rounded-md border bg-[#244628] text-white border-[#244628]"
+                  data-testid="bestemming-recreatie"
+                >
+                  Recreatie
+                </button>
               </div>
             </div>
 
