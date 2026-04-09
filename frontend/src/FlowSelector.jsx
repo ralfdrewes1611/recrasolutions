@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tent, Home, Gamepad2, ArrowRight } from 'lucide-react';
+import { Tent, Home, Gamepad2, ArrowRight, BarChart3 } from 'lucide-react';
 
 const flows = [
   {
@@ -26,6 +26,14 @@ const flows = [
     color: '#f59e0b',
     bgColor: '#f59e0b10',
   },
+  {
+    id: 'dashboard',
+    label: 'Platform Dashboard',
+    description: 'Trends, benchmarks, lead scoring — marktdata uit de configurator',
+    icon: BarChart3,
+    color: '#8B6914',
+    bgColor: '#8B691410',
+  },
 ];
 
 export function FlowSelector({ onSelect }) {
@@ -50,7 +58,7 @@ export function FlowSelector({ onSelect }) {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {flows.map((flow) => {
               const Icon = flow.icon;
               return (

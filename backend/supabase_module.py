@@ -256,6 +256,17 @@ async def save_scenario(data: dict):
         return {"ok": False, "error": str(e)}
 
 
+@supabase_router.get("/scenarios")
+async def get_all_scenarios():
+    """Get all scenarios."""
+    sb = get_supabase()
+    try:
+        result = sb.table("scenarios").select("*").order("created_at", desc=True).limit(50).execute()
+        return result.data or []
+    except Exception as e:
+        return []
+
+
 @supabase_router.get("/scenarios/{session_id}")
 async def get_scenarios(session_id: str):
     """Get all scenarios for a session."""

@@ -4,6 +4,7 @@ import { Toaster, toast } from 'sonner';
 import { FlowSelector } from './FlowSelector';
 import { FecWizard } from './FecWizard';
 import { ChaletWizard } from './ChaletWizard';
+import { PlatformDashboard } from './PlatformDashboard';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -438,6 +439,16 @@ function App() {
     return (
       <>
         <ChaletWizard onBack={() => setActiveFlow(null)} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
+  // Platform Dashboard
+  if (activeFlow === 'dashboard') {
+    return (
+      <>
+        <PlatformDashboard onBack={() => setActiveFlow(null)} />
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </>
     );
