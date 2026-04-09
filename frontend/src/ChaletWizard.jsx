@@ -406,6 +406,129 @@ function DakIcon({ dakVorm, size = 16, className = '' }) {
   return <Icon size={size} className={className} />;
 }
 
+/* Glamping tent floor plan — open ruimte, canvas vorm, geen harde kamers */
+function GlampingFloorPlan({ model }) {
+  const w = model.dimensions?.width || 8;
+  const h = model.dimensions?.height || 5;
+  const isDome = model.name.toLowerCase().includes('dome');
+  const isHat = model.name.toLowerCase().includes('hat');
+  const hasWC = model.badkamers > 0;
+  const slk = model.slaapkamers;
+
+  // SVG based layout for glamping
+  const svgW = 400;
+  const svgH = Math.round(svgW * (h / w));
+  const pad = 15;
+  const innerW = svgW - pad * 2;
+  const innerH = svgH - pad * 2;
+
+  return (
+    <div className="flex items-center justify-center" style={{ maxWidth: 480, margin: '0 auto' }}>
+      <svg viewBox={`0 0 ${svgW} ${svgH + 30}`} className="w-full" style={{ maxHeight: 320 }}>
+        {/* Canvas/tent outline */}
+        {isDome ? (
+          <ellipse cx={svgW / 2} cy={svgH / 2} rx={innerW / 2} ry={innerH / 2}
+            fill="#f0ede6" stroke="#2D6A4F" strokeWidth="2.5" strokeDasharray="8 4" />
+        ) : isHat ? (
+          <>
+            <polygon points={`${svgW/2},${pad - 5} ${svgW - pad},${svgH - pad} ${pad},${svgH - pad}`}
+              fill="#f0ede6" stroke="#2D6A4F" strokeWidth="2.5" strokeDasharray="8 4" />
+          </>
+        ) : (
+          <rect x={pad} y={pad} width={innerW} height={innerH} rx="8"
+            fill="#f0ede6" stroke="#2D6A4F" strokeWidth="2.5" strokeDasharray="8 4" />
+        )}
+
+        {/* Open leefruimte label */}
+        <text x={svgW / 2} y={svgH * 0.35} textAnchor="middle" fill="#2D6A4F" fontSize="13" fontWeight="600">
+          Leefruimte
+        </text>
+        <text x={svgW / 2} y={svgH * 0.35 + 16} textAnchor="middle" fill="#2D6A4F" fontSize="10" opacity="0.6">
+          open ruimte
+        </text>
+
+        {/* Slaapruimtes — als gestippelde zones aan de zijkant */}
+        {slk > 0 && Array.from({ length: slk }).map((_, i) => {
+          const zoneW = innerW * 0.22;
+          const zoneH = innerH * 0.35;
+          const x = isDome
+            ? svgW / 2 - (slk * zoneW * 0.6) / 2 + i * zoneW * 1.1
+            : pad + 12 + i * (zoneW + 8);
+          const y = isDome ? svgH * 0.55 : svgH - pad - zoneH - 8;
+          return (
+            <g key={i}>
+              <rect x={x} y={y} width={zoneW} height={zoneH} rx="4"
+                fill="rgba(139,105,20,0.08)" stroke="#8B6914" strokeWidth="1.5" strokeDasharray="4 3" />
+              <text x={x + zoneW / 2} y={y + zoneH / 2 - 4} textAnchor="middle" fill="#8B6914" fontSize="9" fontWeight="600">
+                Slaapruimte {slk > 1 ? i + 1 : ''}
+              </text>
+              {/* Bed icon */}
+              <rect x={x + zoneW / 2 - 10} y={y + zoneH / 2 + 4} width="20" height="8" rx="2"
+                fill="none" stroke="#8B6914" strokeWidth="1" opacity="0.5" />
+            </g>
+          );
+        })}
+
+        {/* Sanitair zone — alleen als badkamers > 0 */}
+        {hasWC && (
+          <g>
+            <rect x={svgW - pad - innerW * 0.18 - 8} y={svgH - pad - innerH * 0.3 - 8}
+              width={innerW * 0.18} height={innerH * 0.3} rx="4"
+              fill="rgba(8,145,178,0.08)" stroke="#0891b2" strokeWidth="1.5" strokeDasharray="4 3" />
+            <text x={svgW - pad - innerW * 0.09 - 8} y={svgH - pad - innerH * 0.15 - 4}
+              textAnchor="middle" fill="#0891b2" fontSize="9" fontWeight="600">Sanitair</text>
+          </g>
+        )}
+
+        {/* Terras/ingang indicatie */}
+        {!isDome && !isHat && (
+          <g>
+            <line x1={svgW / 2 - 25} y1={pad} x2={svgW / 2 + 25} y2={pad}
+              stroke="#70C26C" strokeWidth="4" strokeLinecap="round" />
+            <text x={svgW / 2} y={pad - 5} textAnchor="middle" fill="#70C26C" fontSize="8">INGANG</text>
+          </g>
+        )}
+
+        {/* Afmetingen */}
+        <text x={svgW / 2} y={svgH + 20} textAnchor="middle" fill="#aaa" fontSize="10">
+          {model.oppervlakte_m2} m² — {w}x{h}m
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/* Chalet floor plan — traditionele kamer-indeling */
+function ChaletFloorPlan({ model }) {
+  const w = model.dimensions?.width || 12;
+  const h = model.dimensions?.height || 4;
+
+  return (
+    <div className="flex items-center justify-center" style={{ width: '100%', maxWidth: 500, margin: '0 auto', aspectRatio: `${w} / ${h}` }}>
+      <div className="w-full h-full border-2 border-[#244628] rounded-lg relative bg-[#FDF9ED]" style={{ minHeight: 100 }}>
+        <div className="absolute inset-2 flex gap-1">
+          <div className="flex-1 border border-dashed border-[#70C26C] rounded flex items-center justify-center">
+            <span className="text-[10px] text-[#70C26C] font-medium">Woonkamer</span>
+          </div>
+          {Array.from({ length: model.slaapkamers }).map((_, i) => (
+            <div key={i} className="w-1/5 border border-dashed border-[#8B6914] rounded flex items-center justify-center">
+              <span className="text-[9px] text-[#8B6914] font-medium">Slk {i + 1}</span>
+            </div>
+          ))}
+          {model.badkamers > 0 && Array.from({ length: model.badkamers }).map((_, i) => (
+            <div key={`b${i}`} className="w-[12%] border border-dashed border-[#0891b2] rounded flex items-center justify-center">
+              <span className="text-[8px] text-[#0891b2] font-medium">Bad</span>
+            </div>
+          ))}
+        </div>
+        <div className="absolute bottom-1 right-2 text-[9px] text-[#aaa]">
+          {model.oppervlakte_m2} m² — {w}x{h}m
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PlattegrondTab({ model, images, imageIndex, prevImage, nextImage, setImageIndex, selectedStijl, setSelectedStijl, availableStijlen }) {
   return (
     <div className="max-w-3xl mx-auto space-y-5">
@@ -468,28 +591,11 @@ function PlattegrondTab({ model, images, imageIndex, prevImage, nextImage, setIm
       <div>
         <h3 className="text-sm font-bold text-[#333] mb-2">Plattegrond</h3>
         <div className="bg-white border border-[#e5e2d9] rounded-xl p-6">
-          <div className="flex items-center justify-center" style={{ width: '100%', maxWidth: 500, margin: '0 auto', aspectRatio: `${model.dimensions?.width || 12} / ${model.dimensions?.height || 4}` }}>
-            <div className="w-full h-full border-2 border-[#244628] rounded-lg relative bg-[#FDF9ED]" style={{ minHeight: 100 }}>
-              <div className="absolute inset-2 flex gap-1">
-                <div className="flex-1 border border-dashed border-[#70C26C] rounded flex items-center justify-center">
-                  <span className="text-[10px] text-[#70C26C] font-medium">Woonkamer</span>
-                </div>
-                {Array.from({ length: model.slaapkamers }).map((_, i) => (
-                  <div key={i} className="w-1/5 border border-dashed border-[#8B6914] rounded flex items-center justify-center">
-                    <span className="text-[9px] text-[#8B6914] font-medium">Slk {i + 1}</span>
-                  </div>
-                ))}
-                {model.badkamers > 0 && Array.from({ length: model.badkamers }).map((_, i) => (
-                  <div key={`b${i}`} className="w-[12%] border border-dashed border-[#0891b2] rounded flex items-center justify-center">
-                    <span className="text-[8px] text-[#0891b2] font-medium">Bad</span>
-                  </div>
-                ))}
-              </div>
-              <div className="absolute bottom-1 right-2 text-[9px] text-[#aaa]">
-                {model.oppervlakte_m2} m² — {model.dimensions?.width}x{model.dimensions?.height}m
-              </div>
-            </div>
-          </div>
+          {model.categorie === 'glamping' ? (
+            <GlampingFloorPlan model={model} />
+          ) : (
+            <ChaletFloorPlan model={model} />
+          )}
         </div>
       </div>
 
