@@ -21,39 +21,49 @@ AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken
 - Stijlen: Modern / Luxe / Landelijk
 - Pricing: Basisprijs + BTW 21% + Operational Lease (60 mnd)
 - Aparte plattegronden: SVG tent voor glamping (open ruimte), kamer-indeling voor chalets
+- **Echte productfoto's** per model vanuit leverancier-websites (chaletskunert.nl, arcabo.nl, campsolutions.com, bbssysteembouw.nl)
+- **Samenstellen tab**: Upgrade categorien per type (chalet: 6 categorien, glamping: 4 categorien) met dynamische prijsberekening
+- **Inspiratie Pakketten**: 3 vooraf geconfigureerde concepten (Glamping Tour, Luxe Chaletpark, Starter Budget)
+- **Pleisureworld Partner badges**: Award icoon bij preferred suppliers
 
-### FEC = Revenue Engineering (binnen, m²/m³, omzet gestuurd)
+### FEC = Revenue Engineering (binnen, m2/m3, omzet gestuurd)
 - 4-stappen wizard: Locatie > Zones > Attracties > Revenue Dashboard
 - 17 FEC producten + 6 leveranciers
 
-### Platform Dashboard (NEW — Supabase)
+### Platform Dashboard (Supabase)
 - **Trends & Benchmark**: KPIs, meest gekozen modellen/leveranciers, gem. investering
-- **Lead Scoring**: Funnel (oriëntatie/vergelijking/concreet), lead details, budget, fase
+- **Lead Scoring**: Funnel (orientatie/vergelijking/concreet), lead details, budget, fase
 - **Scenario Vergelijking**: Basis/Luxe/Max Bezetting met ROI, cashflow, investering
-- Data via Supabase PostgreSQL (5 tabellen: sessions, snapshots, benchmarks, scenarios, partner_interactions)
+- Data via Supabase PostgreSQL (5 tabellen)
 
 ## Supabase Integration (08 apr 2026)
 - URL: https://ehhmmysmxbbrdvceyicw.supabase.co
 - 5 tabellen: configurator_sessions, configuration_snapshots, benchmark_entries, scenarios, partner_interactions
-- APIs: /api/platform/sessions, /api/platform/benchmark, /api/platform/scenarios, /api/platform/leads, /api/platform/partners
+
+## Completed Features
+- [x] Recreatie Infra 5-stappen wizard
+- [x] FEC Business Simulator
+- [x] Chalet & Stay Configurator met 26 modellen van 4 leveranciers
+- [x] Echte productfoto's van leverancier-websites (09 apr 2026)
+- [x] Samenstellen tab met dynamische prijsberekening (09 apr 2026)
+- [x] Inspiratie Pakketten (3 presets) (09 apr 2026)
+- [x] Pleisureworld Partner badges (09 apr 2026)
+- [x] Supabase Platform Dashboard
+- [x] Glamping SVG plattegronden (tent/dome outlines)
 
 ## Backlog
 
-### P0
-- [ ] Auth systeem (login/registratie via Supabase Auth)
-- [ ] Samenstellen tab dynamisch (upgrade opties updaten prijs live)
-
 ### P1
-- [ ] Inspiratie → Realisatie funnel (pre-set configuraties vanuit artikelen)
-- [ ] "Van idee naar realisatie" roadmap (ontwerp → vergunning → bouw → exploitatie)
-- [ ] Preferred Partner posities (leveranciers premium zichtbaarheid)
-- [ ] FEC PDF export met business case
+- [ ] Auth systeem (login/registratie via Supabase Auth) — user zei: kan later
+- [ ] White-label modules voor Pleisureworld
+- [ ] Locatie-intelligentie (grondprijzen, regelgeving, afstand doelgroep)
 
 ### P2
-- [ ] White-label modules (Pleisureworld eigen branded versies)
-- [ ] Locatie-intelligentie (grondprijzen, regelgeving, toeristische aantrekkelijkheid)
-- [ ] Geocoding (adres naar lat/lng)
-- [ ] Partner portal
+- [ ] "Idee naar Realisatie" Roadmap mode (ontwerp > vergunning > bouw > exploitatie)
+- [ ] FEC PDF Export met Business Case
+- [ ] Partner portal / Supplier login
 
 ### P3
-- [ ] 3D Canvas / AR Preview / CRM / Benchmark Mode
+- [ ] 3D Canvas / AR Preview
+- [ ] CRM integratie
+- [ ] Benchmark Mode
