@@ -1,74 +1,95 @@
-# RECRA Solutions Configurator Platform - PRD
+# RECRA Solutions — Recreation Project Configurator & Partner Matching Platform
 
-## Original Problem Statement
-AI-gedreven configurator & offerteplatform voor RECRA Solutions: recreatieparken, campings en outdoor hospitality.
+## Origineel Probleem
+SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Chalet & Stay, FEC & Experience), 2D site planner, product database, partner/leverancier matching, paywall tiers, en Pleisureworld strategic data hook.
 
-## Architecture
-- **Frontend**: React 19 + Tailwind CSS + Shadcn UI
-- **Backend**: FastAPI — server.py + chalet_engine.py + fec_engine.py + location_engine.py + partner_profiles.py + supabase_module.py
-- **Database**: MongoDB (producten/projecten) + Supabase PostgreSQL (analytics/leads/scenarios/benchmark)
-- **AI**: OpenAI GPT-5.2 via Emergent Integrations
+## Architectuur
+- **Frontend**: React + Tailwind + Shadcn/UI
+- **Backend**: FastAPI + MongoDB + Supabase (PostgreSQL)
+- **Integraties**: OpenAI GPT-5.2 (Emergent LLM Key), Supabase Analytics
 
-## Core Modules
+## Code Structuur
+### Backend
+- `/app/backend/server.py` — Hoofd FastAPI app, Recreatie flow
+- `/app/backend/chalet_engine.py` — Chalet & Stay configurator
+- `/app/backend/fec_engine.py` — FEC Revenue Engine + PDF Export
+- `/app/backend/location_engine.py` — Locatie-intelligentie (provincies, grondprijzen)
+- `/app/backend/partner_profiles.py` — Verrijkte leveranciersprofielen + Dynamic Top 3
+- `/app/backend/roadmap_engine.py` — "Idee naar Realisatie" fasen-overzicht
+- `/app/backend/whitelabel_engine.py` — White-label configuratie (RECRA + Pleisureworld)
+- `/app/backend/supabase_module.py` — Supabase tracking, benchmarks, leads
 
-### Recreatie Infra (5-stappen wizard)
-- **Locatie-intelligentie**: 12 provincies met grondprijzen, regelgeving, toerisme scores
-- **Wellness — Ticra Outdoor**: 14 producten met echte productfoto's
-- **Klikbare leveranciersnamen** met categorie-labels op productkaarten
+### Frontend
+- `/app/frontend/src/App.js` — Main router, modals, flow state
+- `/app/frontend/src/FlowSelector.jsx` — 5 flow kaarten
+- `/app/frontend/src/ChaletWizard.jsx` — Chalet & Stay wizard
+- `/app/frontend/src/FecWizard.jsx` — FEC Revenue Engine + PDF export
+- `/app/frontend/src/RoadmapView.jsx` — Roadmap: Idee naar Realisatie
+- `/app/frontend/src/SupplierProfile.jsx` — Leveranciersprofiel modal (dynamic top 3)
+- `/app/frontend/src/components/Step3Products.jsx` — Product selectie (Recreatie)
+- `/app/frontend/src/components/Step5Quote.jsx` — Offerte + Roadmap knop
 
-### Chalet & Stay Configurator
-- 26 modellen van 5 leveranciers met echte productfoto's
-- **Samenstellen tab** incl. Wellness (Ticra Outdoor hottubs/sauna's/buitendouches)
-- **Inspiratie Pakketten**: 3 presets
-- **Klikbare leveranciersnamen** in modellen, rechterpaneel, en samenstellen tab
+## Wat is gebouwd (voltooid)
 
-### Partner/Leverancier Profielen
-- **5 leveranciersprofielen**: Ticra Outdoor (rijk voorbeeld), Kunert Group, Arcabo, Campsolutions, BBS Systeembouw
-- **Ticra profiel bevat**: Pleisureworld Preferred Partner badge, Leisure Talk Podcast (#14 met Richard Otten), Trendwatcher quote, Top 3 meest gekozen producten, Evenementen & Deelname, USPs, Website/Blog links
-- **Click tracking**: profile_view, website_click, blog_click, podcast_click via Supabase
+### Basis Platform
+- [x] 3 configuratie-flows: Recreatie, Chalet, FEC
+- [x] 2D Site Planner met drag-and-drop
+- [x] Product database met echte leveranciersproducten (49 producten)
+- [x] 5 leveranciers: Kunert, Arcabo, BBS, Campsolutions, Ticra Outdoor
+- [x] Real product photos (gecrawled van leverancierssites)
+- [x] AI-powered terreinanalyse en offerte tekst (GPT-5.2)
+- [x] Paywall tiers: Free, Pro, Enterprise
+- [x] Platform Dashboard met trends en benchmarks
+- [x] Supabase tracking voor analytics en leads
 
-### FEC Business Simulator
-- 17 FEC producten + 6 leveranciers
+### P0 — Core Features
+- [x] Locatie-intelligentie (12 provincies, grondprijzen, regelgeving)
+- [x] 14 Ticra Outdoor wellness producten (hottubs, saunas, douches)
+- [x] Klikbare leveranciersnamen → SupplierProfile modal
+- [x] Click-tracking via Supabase
 
-### Platform Dashboard (Supabase)
-- Trends & Benchmark, Lead Scoring, Scenario Vergelijking
+### P1 — Verrijkte Leveranciers & Dynamiek (10 april 2026)
+- [x] Verrijkte profielen voor alle 5 leveranciers (podcasts, quotes, events, USPs, top 3)
+- [x] Dynamische "Top 3 meest gekozen" endpoint (valt terug op statisch als er geen live data is)
+- [x] White-label modules: RECRA Solutions + Pleisureworld configuraties
+- [x] "Idee naar Realisatie" Roadmap mode (4 fasen per flow type)
 
-## Leveranciers
-- **Kunert Group** — 8 chalets (Pleisureworld Partner sinds 2023)
-- **Arcabo** — 6 chalets (Pleisureworld Partner sinds 2024)
-- **BBS Systeembouw** — 3 vakantiewoningen
-- **Campsolutions** — 9 glamping
-- **Ticra Outdoor** — 14 wellness (Pleisureworld Preferred Partner sinds 2024)
+### P2 — Business Case & Roadmap (10 april 2026)
+- [x] FEC PDF Export met volledige Business Case (investering, omzet, break-even, lease, AI advies)
+- [x] Roadmap geïntegreerd in Recreatie (Step5Quote), Chalet (pricing sidebar), FEC (header + step 4)
+- [x] FlowSelector uitgebreid naar 5 kaarten (incl. Roadmap)
 
-## Completed Features
-- [x] Recreatie Infra 5-stappen wizard
-- [x] FEC Business Simulator
-- [x] Chalet & Stay Configurator met 26 modellen
-- [x] Echte productfoto's van leverancier-websites
-- [x] Samenstellen tab met dynamische prijsberekening
-- [x] Inspiratie Pakketten (3 presets)
-- [x] Pleisureworld Partner badges
-- [x] Supabase Platform Dashboard
-- [x] Locatie-intelligentie (12 provincies)
-- [x] Ticra Outdoor wellness producten (14 producten)
-- [x] **Partner/Leverancier Profielen** — 5 profielen met klikbare leveranciersnamen (10 apr 2026)
-- [x] **Ticra rijke profielpagina** — Podcast, trendwatcher quote, top 3, evenementen (10 apr 2026)
-- [x] **Click tracking** — profile_view, website, blog, podcast (10 apr 2026)
-- [x] **Categorie-labels** op productkaarten in Recreatie (10 apr 2026)
+## API Endpoints
+- `GET /api/products` — Alle producten
+- `GET /api/location/provinces` — Provincies
+- `GET /api/location/evaluate` — Locatie evaluatie
+- `GET /api/partners/profiles` — Alle leveranciers
+- `GET /api/partners/profiles/{id}` — Leveranciersprofiel
+- `GET /api/partners/profiles/{id}/dynamic-top3` — Dynamische top 3
+- `POST /api/supabase/partners/track` — Click tracking
+- `GET /api/roadmap/phases/{flow_type}` — Roadmap fasen
+- `GET /api/roadmap/summary` — Roadmap overzicht
+- `GET /api/whitelabel/config` — Actieve branding
+- `GET /api/whitelabel/configs` — Alle white-label configs
+- `POST /api/fec/pdf` — FEC Business Case PDF
+- `POST /api/chalet/calculate` — Chalet prijsberekening
+- `GET /api/fec/products` — FEC attracties
+- `GET /api/fec/top5` — Top 5 revenue drivers
 
-## Backlog
+## Prioritized Backlog
 
-### P1
-- [ ] Auth systeem (login/registratie via Supabase Auth)
-- [ ] White-label modules voor Pleisureworld
-- [ ] Leveranciersprofielen verrijken (Kunert, Arcabo, Campsolutions, BBS — zelfde niveau als Ticra)
-
-### P2
-- [ ] "Idee naar Realisatie" Roadmap mode
-- [ ] FEC PDF Export met Business Case
-- [ ] Partner portal / Supplier login
+### P2 (Resterend)
+- [ ] Recreatie PDF export verbeteren (vergelijkbaar met FEC business case niveau)
 
 ### P3
+- [ ] Partner portal / Supplier login
+- [ ] Auth systeem via Supabase Auth
 - [ ] 3D Canvas / AR Preview
 - [ ] CRM integratie
-- [ ] Benchmark Mode
+- [ ] Benchmark Mode (publiek dashboard)
+
+## Test Iteraties
+- Iteratie 19: Real Product Photos & Pricing ✅
+- Iteratie 20: Location Intelligence & Ticra Products ✅
+- Iteratie 21: Supplier Profiles & Click Tracking ✅
+- Iteratie 22: P1/P2 Features (Roadmap, PDF, White-label, Dynamic Top 3) ✅ 100%
