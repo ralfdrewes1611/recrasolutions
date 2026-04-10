@@ -844,7 +844,10 @@ function SamenstellenTab({ model, selections, onSelect }) {
     keuken: 'Keuken', badkamer: 'Badkamer', terras: 'Terras', interieur: 'Interieur',
     klimaat: 'Klimaat', duurzaamheid: 'Duurzaamheid', sanitair: 'Sanitair',
     inrichting: 'Inrichting', vlonder: 'Vlonder / Fundament', verlichting: 'Verlichting',
+    wellness: 'Wellness — Ticra Outdoor',
   };
+
+  const categoryIcons = { wellness: 'droplets' };
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
@@ -854,24 +857,38 @@ function SamenstellenTab({ model, selections, onSelect }) {
       </p>
       {Object.entries(options).map(([catKey, catOptions]) => {
         const selected = selections[catKey] || catOptions[0]?.id;
+        const isWellness = catKey === 'wellness';
         return (
           <div key={catKey} className="bg-white border border-[#e5e2d9] rounded-xl p-4" data-testid={`upgrade-${catKey}`}>
-            <h3 className="text-sm font-bold text-[#333] mb-2">{categoryLabels[catKey] || catKey}</h3>
-            <div className="grid grid-cols-3 gap-2">
+            <h3 className="text-sm font-bold text-[#333] mb-2 flex items-center gap-2">
+              {categoryLabels[catKey] || catKey}
+              {isWellness && <span className="text-[10px] font-normal bg-[#8B5E3C]/10 text-[#8B5E3C] px-2 py-0.5 rounded-full">Ticra Outdoor</span>}
+            </h3>
+            <div className={`grid gap-2 ${isWellness ? 'grid-cols-2' : 'grid-cols-3'}`}>
               {catOptions.map(opt => {
                 const isActive = selected === opt.id;
                 return (
                   <button key={opt.id} onClick={() => handleSelect(catKey, opt.id)}
-                    className={`text-left p-2.5 rounded-lg border transition-all ${isActive ? 'bg-[#244628] text-white border-[#244628]' : 'bg-[#FDF9ED] text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
+                    className={`text-left rounded-lg border transition-all overflow-hidden ${isActive ? 'bg-[#244628] text-white border-[#244628] ring-1 ring-[#70C26C]' : 'bg-[#FDF9ED] text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
                     data-testid={`opt-${opt.id}`}
                   >
-                    <div className="text-xs font-semibold">{opt.name}</div>
-                    <div className={`text-[10px] mt-0.5 ${isActive ? 'text-white/70' : 'text-[#999]'}`}>{opt.description}</div>
-                    {opt.price > 0 && (
-                      <div className={`text-xs font-bold mt-1 ${isActive ? 'text-[#70C26C]' : 'text-[#70C26C]'}`}>
-                        + € {opt.price.toLocaleString('nl-NL')}
+                    {isWellness && opt.image && (
+                      <div className="w-full h-24 bg-[#f0ede6] overflow-hidden">
+                        <img src={opt.image} alt={opt.name} className="w-full h-full object-cover" loading="lazy" />
                       </div>
                     )}
+                    <div className="p-2.5">
+                      <div className="text-xs font-semibold">{opt.name}</div>
+                      <div className={`text-[10px] mt-0.5 ${isActive ? 'text-white/70' : 'text-[#999]'}`}>{opt.description}</div>
+                      {opt.supplier && opt.supplier !== '' && (
+                        <div className={`text-[10px] mt-0.5 italic ${isActive ? 'text-white/50' : 'text-[#bbb]'}`}>{opt.supplier}</div>
+                      )}
+                      {opt.price > 0 && (
+                        <div className={`text-xs font-bold mt-1 ${isActive ? 'text-[#70C26C]' : 'text-[#70C26C]'}`}>
+                          + € {opt.price.toLocaleString('nl-NL')}
+                        </div>
+                      )}
+                    </div>
                   </button>
                 );
               })}

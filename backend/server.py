@@ -22,6 +22,7 @@ from supplier_module import supplier_router, seed_suppliers, calculate_travel_co
 from fec_engine import fec_router
 from chalet_engine import chalet_router
 from supabase_module import supabase_router
+from location_engine import location_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -59,6 +60,8 @@ class ProductBase(BaseModel):
     color: str = "#0ea5e9"
     tier: str = "midrange"  # budget | midrange | premium
     supplier_id: Optional[str] = None
+    supplier: Optional[str] = None
+    image: Optional[str] = None
 
 class Product(ProductBase):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -595,6 +598,234 @@ SEED_PRODUCTS = [
         "color": "#0891b2",
         "tier": "midrange"
     },
+    # ==================== TICRA OUTDOOR - Wellness Producten ====================
+    # Hottubs
+    {
+        "name": "TICRA Hottub Houtgestookt",
+        "category": "wellness",
+        "subcategory": "hottub",
+        "description": "Thermowood hottub met interne houtkachel, tot 6 personen. Gezellig buitenbad voor gasten.",
+        "price_purchase": 2995,
+        "price_lease_monthly": 54,
+        "installation_cost": 350,
+        "maintenance_yearly": 120,
+        "dimensions": {"width": 1.8, "height": 1.8},
+        "icon": "droplets",
+        "color": "#8B5E3C",
+        "tier": "budget",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/133/_thumbs/medium_409_1_ticra_outdoor_hottub_hout_interne_kachel_welltub_160.webp"
+    },
+    {
+        "name": "Skargards Rojal Hottub",
+        "category": "wellness",
+        "subcategory": "hottub",
+        "description": "Zweedse premium hottub met geintegreerde kachel, tot 10 personen. Dualburn technologie.",
+        "price_purchase": 4880,
+        "price_lease_monthly": 88,
+        "installation_cost": 450,
+        "maintenance_yearly": 150,
+        "dimensions": {"width": 2.2, "height": 2.2},
+        "icon": "droplets",
+        "color": "#8B5E3C",
+        "tier": "midrange",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/126/_thumbs/medium_327_1_ticra_outdoor_hot_tub_flevoland_skargards_rojal_190_dualburn_1.webp"
+    },
+    {
+        "name": "Nordic Hottub Classic Serie",
+        "category": "wellness",
+        "subcategory": "hottub",
+        "description": "Elektrische hottub, Red Cedar, massagejets, bubbels, tot 6 personen. Premium wellness.",
+        "price_purchase": 7795,
+        "price_lease_monthly": 140,
+        "installation_cost": 600,
+        "maintenance_yearly": 200,
+        "dimensions": {"width": 2.0, "height": 2.0},
+        "icon": "droplets",
+        "color": "#8B5E3C",
+        "tier": "premium",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/95/_thumbs/medium_204_1_ticra_nordic_hot_tub_classic_series.webp"
+    },
+    {
+        "name": "Nordic Hottub Spa",
+        "category": "wellness",
+        "subcategory": "hottub",
+        "description": "Elektrische spa met 30+ massagejets, Red Cedar, tot 6 personen. Ultieme wellness ervaring.",
+        "price_purchase": 8995,
+        "price_lease_monthly": 162,
+        "installation_cost": 800,
+        "maintenance_yearly": 250,
+        "dimensions": {"width": 2.1, "height": 2.1},
+        "icon": "droplets",
+        "color": "#8B5E3C",
+        "tier": "premium",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/124/_thumbs/medium_308_1_ticra_hot_tub_nordic_spa_encore_ls.webp"
+    },
+    {
+        "name": "TICRA Hottub Warmtepomp 5kW",
+        "category": "wellness",
+        "subcategory": "hottub",
+        "description": "Wifi-gestuurde warmtepomp hottub, Thermowood, tot 6 personen. Energiezuinig.",
+        "price_purchase": 3595,
+        "price_lease_monthly": 65,
+        "installation_cost": 400,
+        "maintenance_yearly": 100,
+        "dimensions": {"width": 1.9, "height": 1.9},
+        "icon": "droplets",
+        "color": "#8B5E3C",
+        "tier": "midrange",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/1710/_thumbs/medium_3643-ticra-hottub-met-wifi-warmtepomp-thermowood-hottub-rand-2.webp"
+    },
+    # Sauna's
+    {
+        "name": "Barrel Sauna Nordic Grenen",
+        "category": "wellness",
+        "subcategory": "sauna",
+        "description": "Barrel sauna, Nordic Grenen hout, houtkachel, max. 6 personen. Traditionele sauna.",
+        "price_purchase": 3295,
+        "price_lease_monthly": 59,
+        "installation_cost": 300,
+        "maintenance_yearly": 100,
+        "dimensions": {"width": 2.0, "height": 2.0},
+        "icon": "flame",
+        "color": "#C7522A",
+        "tier": "budget",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/172/_thumbs/medium_606-barrel-sauna-thermo-hout-ticra-buitensauna-24.webp"
+    },
+    {
+        "name": "Barrel Sauna Thermowood",
+        "category": "wellness",
+        "subcategory": "sauna",
+        "description": "Barrel sauna, Thermowood, max. 6 personen, zonder veranda. Premium houtsoort.",
+        "price_purchase": 5495,
+        "price_lease_monthly": 99,
+        "installation_cost": 350,
+        "maintenance_yearly": 120,
+        "dimensions": {"width": 2.0, "height": 2.0},
+        "icon": "flame",
+        "color": "#C7522A",
+        "tier": "midrange",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/97/_thumbs/medium_25-4-buitensauna-barrel-thermowood-ticra-outdoor.webp"
+    },
+    {
+        "name": "Barrel Sauna met Veranda Red Cedar",
+        "category": "wellness",
+        "subcategory": "sauna",
+        "description": "Luxe barrel sauna met veranda, Red Cedar, max. 6 personen. Overdekt rustgebied.",
+        "price_purchase": 9795,
+        "price_lease_monthly": 176,
+        "installation_cost": 500,
+        "maintenance_yearly": 180,
+        "dimensions": {"width": 2.0, "height": 3.5},
+        "icon": "flame",
+        "color": "#C7522A",
+        "tier": "premium",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/98/_thumbs/medium_3577-knotty-barrel-sauna-4.webp"
+    },
+    {
+        "name": "Pure Cube Buitensauna Red Cedar",
+        "category": "wellness",
+        "subcategory": "sauna",
+        "description": "Moderne buitensauna, Red Cedar, panoramisch uitzicht, max. 6 personen.",
+        "price_purchase": 8995,
+        "price_lease_monthly": 162,
+        "installation_cost": 600,
+        "maintenance_yearly": 200,
+        "dimensions": {"width": 2.3, "height": 2.3},
+        "icon": "flame",
+        "color": "#C7522A",
+        "tier": "premium",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/112/_thumbs/medium_124-2-pure-cube-red-cedar-knotty-buitensauna-panoramisch-uitzicht-tuinsauna-1.webp"
+    },
+    {
+        "name": "Panorama Barrel Sauna Red Cedar",
+        "category": "wellness",
+        "subcategory": "sauna",
+        "description": "Panoramische barrel sauna met veranda, Red Cedar, max. 6 personen. Spectaculair uitzicht.",
+        "price_purchase": 14395,
+        "price_lease_monthly": 259,
+        "installation_cost": 800,
+        "maintenance_yearly": 250,
+        "dimensions": {"width": 2.0, "height": 4.0},
+        "icon": "flame",
+        "color": "#C7522A",
+        "tier": "premium",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/94/_thumbs/medium_1682-leisurecraft-europe-panoramic-sauna-knotty-red-cedar-outdoor-sauna.webp"
+    },
+    # Buitendouches
+    {
+        "name": "Sunlight Buitendouche Red Cedar",
+        "category": "wellness",
+        "subcategory": "buitendouche",
+        "description": "Compacte buitendouche, Knotty Red Cedar. Ideaal bij hottub of sauna.",
+        "price_purchase": 695,
+        "price_lease_monthly": 13,
+        "installation_cost": 150,
+        "maintenance_yearly": 30,
+        "dimensions": {"width": 0.8, "height": 0.8},
+        "icon": "shower-head",
+        "color": "#4A90D9",
+        "tier": "budget",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/141/_thumbs/medium_478_2_buitendouche_red_cedar_sunlightshower_ticra_outdoor_dundalk.webp"
+    },
+    {
+        "name": "Savannah Buitendouche White Cedar",
+        "category": "wellness",
+        "subcategory": "buitendouche",
+        "description": "Buitendouche, White Cedar, natuurlijk design. Duurzaam cederhout.",
+        "price_purchase": 825,
+        "price_lease_monthly": 15,
+        "installation_cost": 150,
+        "maintenance_yearly": 30,
+        "dimensions": {"width": 0.8, "height": 0.8},
+        "icon": "shower-head",
+        "color": "#4A90D9",
+        "tier": "budget",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/147/_thumbs/medium_533_1_savannah_canadees_buitendouche_white_cedar_ticra_outdoor.webp"
+    },
+    {
+        "name": "Cloudburst Buitendouche Red Cedar",
+        "category": "wellness",
+        "subcategory": "buitendouche",
+        "description": "Luxe buitendouche met privacy-scherm, Knotty Red Cedar. Ruime doucheruimte.",
+        "price_purchase": 3316,
+        "price_lease_monthly": 60,
+        "installation_cost": 250,
+        "maintenance_yearly": 50,
+        "dimensions": {"width": 1.2, "height": 1.2},
+        "icon": "shower-head",
+        "color": "#4A90D9",
+        "tier": "midrange",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/155/_thumbs/medium_542_1_buitendouche_shower_cloudburst_canadese_red_cedar_hout.webp"
+    },
+    {
+        "name": "Barrel Buitendouche Red Cedar",
+        "category": "wellness",
+        "subcategory": "buitendouche",
+        "description": "Unieke barrel-vormige buitendouche, Knotty Red Cedar. Eyecatcher op elk terrein.",
+        "price_purchase": 3354,
+        "price_lease_monthly": 60,
+        "installation_cost": 250,
+        "maintenance_yearly": 50,
+        "dimensions": {"width": 1.2, "height": 1.2},
+        "icon": "shower-head",
+        "color": "#4A90D9",
+        "tier": "midrange",
+        "supplier": "Ticra Outdoor",
+        "image": "https://www.ticraoutdoor.com/nl/assets/galleries/156/_thumbs/medium_555_1_barrel_buitendouche_ticra_red_cedar.webp"
+    },
 ]
 
 # ==================== ROUTES ====================
@@ -605,8 +836,8 @@ async def root():
 
 # Products endpoints
 FLOW_CATEGORIES = {
-    "recreatie": ["sanitair", "slagboom", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer", "informatiezuil"],
-    "chalet": ["sanitair", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer", "informatiezuil"],
+    "recreatie": ["sanitair", "slagboom", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer", "informatiezuil", "wellness"],
+    "chalet": ["sanitair", "camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "douchelezer", "informatiezuil", "wellness"],
     "fec": ["camera", "wifi", "verlichting", "betaalsysteem", "toegangscontrole", "slagboom", "informatiezuil"],
 }
 
@@ -1134,6 +1365,7 @@ app.include_router(supplier_router)
 app.include_router(fec_router, prefix="/api")
 app.include_router(chalet_router, prefix="/api")
 app.include_router(supabase_router, prefix="/api")
+app.include_router(location_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

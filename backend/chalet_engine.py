@@ -778,6 +778,16 @@ UPGRADE_OPTIONS = {
             {"id": "duur-solar", "name": "Zonnepanelen", "description": "4 panelen, 1.6 kWp, deels zelfvoorzienend", "price": 3200},
             {"id": "duur-offgrid", "name": "Off-Grid Pakket", "description": "8 panelen, thuisbatterij, waterrecycling", "price": 14000},
         ],
+        "wellness": [
+            {"id": "well-geen", "name": "Geen Wellness", "description": "Geen wellness voorzieningen", "price": 0, "supplier": ""},
+            {"id": "well-hottub-basis", "name": "TICRA Hottub Houtgestookt", "description": "Thermowood hottub met interne kachel, tot 6 personen", "price": 2995, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/133/_thumbs/medium_409_1_ticra_outdoor_hottub_hout_interne_kachel_welltub_160.webp"},
+            {"id": "well-hottub-premium", "name": "Skargards Rojal Hottub", "description": "Zweedse hottub met geintegreerde kachel, tot 10 personen", "price": 4880, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/126/_thumbs/medium_327_1_ticra_outdoor_hot_tub_flevoland_skargards_rojal_190_dualburn_1.webp"},
+            {"id": "well-hottub-spa", "name": "Nordic Hottub Spa", "description": "Elektrische spa, Red Cedar, massagejets, bubbels, tot 6 pers.", "price": 8995, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/124/_thumbs/medium_308_1_ticra_hot_tub_nordic_spa_encore_ls.webp"},
+            {"id": "well-sauna-barrel", "name": "Barrel Sauna Thermowood", "description": "Barrel sauna, max. 6 personen, houtkachel", "price": 5495, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/97/_thumbs/medium_25-4-buitensauna-barrel-thermowood-ticra-outdoor.webp"},
+            {"id": "well-sauna-purecube", "name": "Pure Cube Buitensauna", "description": "Moderne buitensauna, Red Cedar, panoramisch, max. 6 pers.", "price": 8995, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/112/_thumbs/medium_124-2-pure-cube-red-cedar-knotty-buitensauna-panoramisch-uitzicht-tuinsauna-1.webp"},
+            {"id": "well-douche-barrel", "name": "Barrel Buitendouche Red Cedar", "description": "Luxe barrel buitendouche, Knotty Red Cedar", "price": 3354, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/156/_thumbs/medium_555_1_barrel_buitendouche_ticra_red_cedar.webp"},
+            {"id": "well-douche-sunlight", "name": "Sunlight Buitendouche", "description": "Knotty Red Cedar buitendouche, compact design", "price": 695, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/141/_thumbs/medium_478_2_buitendouche_red_cedar_sunlightshower_ticra_outdoor_dundalk.webp"},
+        ],
     },
     "glamping": {
         "sanitair": [
@@ -799,6 +809,15 @@ UPGRADE_OPTIONS = {
             {"id": "verl-basis", "name": "Basis", "description": "Enkele lamp, stopcontact", "price": 0},
             {"id": "verl-sfeer", "name": "Sfeerverlichting", "description": "LED strips, lantaarns, dimbaar", "price": 800},
             {"id": "verl-smart", "name": "Smart Lighting", "description": "App-gestuurd, kleurwisseling, timer", "price": 2500},
+        ],
+        "wellness": [
+            {"id": "well-geen", "name": "Geen Wellness", "description": "Geen wellness voorzieningen", "price": 0, "supplier": ""},
+            {"id": "well-hottub-basis", "name": "TICRA Hottub Houtgestookt", "description": "Thermowood hottub met interne kachel, tot 6 personen", "price": 2995, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/133/_thumbs/medium_409_1_ticra_outdoor_hottub_hout_interne_kachel_welltub_160.webp"},
+            {"id": "well-hottub-premium", "name": "Skargards Rojal Hottub", "description": "Zweedse hottub met geintegreerde kachel, tot 10 personen", "price": 4880, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/126/_thumbs/medium_327_1_ticra_outdoor_hot_tub_flevoland_skargards_rojal_190_dualburn_1.webp"},
+            {"id": "well-hottub-elektrisch", "name": "Nordic Hottub Classic", "description": "Elektrische hottub, Red Cedar, massagejets, tot 6 personen", "price": 7795, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/95/_thumbs/medium_204_1_ticra_nordic_hot_tub_classic_series.webp"},
+            {"id": "well-sauna-barrel", "name": "Barrel Sauna Thermowood", "description": "Barrel sauna, max. 6 personen, houtkachel", "price": 5495, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/97/_thumbs/medium_25-4-buitensauna-barrel-thermowood-ticra-outdoor.webp"},
+            {"id": "well-sauna-modern", "name": "Pure Cube Buitensauna", "description": "Moderne buitensauna, Red Cedar, panoramisch uitzicht, max. 6 pers.", "price": 8995, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/112/_thumbs/medium_124-2-pure-cube-red-cedar-knotty-buitensauna-panoramisch-uitzicht-tuinsauna-1.webp"},
+            {"id": "well-douche", "name": "Sunlight Buitendouche", "description": "Knotty Red Cedar buitendouche, ideaal bij hottub/sauna", "price": 695, "supplier": "Ticra Outdoor", "image": "https://www.ticraoutdoor.com/nl/assets/galleries/141/_thumbs/medium_478_2_buitendouche_red_cedar_sunlightshower_ticra_outdoor_dundalk.webp"},
         ],
     },
 }
