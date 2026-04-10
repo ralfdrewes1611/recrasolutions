@@ -5,6 +5,7 @@ import { FlowSelector } from './FlowSelector';
 import { FecWizard } from './FecWizard';
 import { ChaletWizard } from './ChaletWizard';
 import { PlatformDashboard } from './PlatformDashboard';
+import SupplierProfile from './SupplierProfile';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -53,6 +54,7 @@ function App() {
   const [projects, setProjects] = useState([]);
   const [userTier, setUserTier] = useState('free'); // free | pro | enterprise
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [supplierProfileId, setSupplierProfileId] = useState(null);
   const [project, setProject] = useState({
     id: null, name: 'Nieuw Project', project_type: 'camping', project_flow: 'recreatie',
     address: '', lat: 52.0, lng: 5.0, floor_plan_base64: null, scale_meters_per_pixel: 0.1,
@@ -567,6 +569,10 @@ function App() {
                   selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct}
                   showRealProducts={showRealProducts} setShowRealProducts={setShowRealProducts}
                   handlePointerDragStart={handlePointerDragStart} fetchProducts={fetchProducts}
+                  onSupplierClick={(supplierName) => {
+                    const mapping = { 'Ticra Outdoor': 'ticra-outdoor', 'Kunert Group': 'kunert-group', 'Arcabo': 'arcabo', 'Campsolutions': 'campsolutions', 'BBS Systeembouw': 'bbs-systeembouw' };
+                    setSupplierProfileId(mapping[supplierName] || null);
+                  }}
                 />
               )}
               {currentStep === 4 && <Step4Energy project={project} setProject={setProject} powerCalculation={powerCalculation} />}
@@ -898,6 +904,9 @@ function App() {
           </div>
         )}
       </div>
+      {supplierProfileId && (
+        <SupplierProfile partnerId={supplierProfileId} onClose={() => setSupplierProfileId(null)} />
+      )}
     </TooltipProvider>
   );
 }

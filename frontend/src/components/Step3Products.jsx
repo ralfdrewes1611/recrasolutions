@@ -31,7 +31,7 @@ export { categoryIcons, categoryColors, categoryLabels };
 export function Step3Products({
   products, selectedCategory, setSelectedCategory, selectedProduct,
   setSelectedProduct, showRealProducts, setShowRealProducts,
-  handlePointerDragStart, fetchProducts,
+  handlePointerDragStart, fetchProducts, onSupplierClick,
 }) {
   const categories = [...new Set(products.map(p => p.category))];
   const filteredProducts = selectedCategory === 'all'
@@ -85,6 +85,20 @@ export function Step3Products({
                 </div>
               )}
               <div className="p-3">
+                {/* Category label */}
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: `${color}15`, color }}>{categoryLabels[product.category] || product.category}</span>
+                  {product.supplier && onSupplierClick && (
+                    <button
+                      className="text-[10px] font-semibold text-[#244628] bg-[#244628]/10 px-2 py-0.5 rounded-full hover:bg-[#244628]/20 transition flex items-center gap-1"
+                      onClick={(e) => { e.stopPropagation(); onSupplierClick(product.supplier); }}
+                      data-testid={`supplier-link-${product.id}`}
+                    >
+                      {product.supplier}
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-start gap-3">
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-[#70C26C]/40 select-none"

@@ -23,6 +23,7 @@ from fec_engine import fec_router
 from chalet_engine import chalet_router
 from supabase_module import supabase_router
 from location_engine import location_router
+from partner_profiles import partner_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -1366,6 +1367,7 @@ app.include_router(fec_router, prefix="/api")
 app.include_router(chalet_router, prefix="/api")
 app.include_router(supabase_router, prefix="/api")
 app.include_router(location_router, prefix="/api")
+app.include_router(partner_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

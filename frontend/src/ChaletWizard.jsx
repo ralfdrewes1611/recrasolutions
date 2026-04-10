@@ -8,6 +8,7 @@ import {
   Tent, Factory, Sparkles, Package, Award,
 } from 'lucide-react';
 import { Slider } from './components/ui/slider';
+import SupplierProfile from './SupplierProfile';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -44,6 +45,10 @@ export function ChaletWizard({ onBack }) {
   const [categorie, setCategorie] = useState('alles');
   const [supplierId, setSupplierId] = useState('alles');
   const [viewMode, setViewMode] = useState('configurator'); // 'configurator' or 'inspiratie'
+  const [supplierProfileId, setSupplierProfileId] = useState(null);
+
+  const SUPPLIER_MAP = { 'Kunert Group': 'kunert-group', 'Arcabo': 'arcabo', 'BBS Systeembouw': 'bbs-systeembouw', 'Campsolutions': 'campsolutions', 'Ticra Outdoor': 'ticra-outdoor' };
+  const openSupplierProfile = (name) => setSupplierProfileId(SUPPLIER_MAP[name] || null);
 
   // Fetch suppliers once
   useEffect(() => {
@@ -111,6 +116,7 @@ export function ChaletWizard({ onBack }) {
   const glampingCount = models.filter(m => m.categorie === 'glamping').length;
 
   return (
+    <>
     <div className="h-screen w-full flex flex-col overflow-hidden bg-[#FDF9ED]" data-testid="chalet-wizard">
       {/* Header */}
       <header className="h-14 bg-[#244628] flex items-center justify-between px-6 flex-shrink-0">
@@ -283,9 +289,13 @@ export function ChaletWizard({ onBack }) {
                         <DakIcon dakVorm={m.dak_vorm} size={13} className={isActive ? 'text-white/50' : 'text-[#ccc]'} />
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${isActive ? 'bg-white/20 text-white/80' : 'bg-[#FDF9ED] text-[#777]'}`}>
+                        <button
+                          className={`text-[10px] px-1.5 py-0.5 rounded hover:underline ${isActive ? 'bg-white/20 text-white/80' : 'bg-[#FDF9ED] text-[#777]'}`}
+                          onClick={(e) => { e.stopPropagation(); openSupplierProfile(m.supplier_name); }}
+                          data-testid={`model-supplier-${m.id}`}
+                        >
                           {m.supplier_name}
-                        </span>
+                        </button>
                         <span className={`text-[10px] ${isActive ? 'text-white/60' : 'text-[#aaa]'}`}>{m.oppervlakte_m2} m²</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -344,7 +354,7 @@ export function ChaletWizard({ onBack }) {
                     selectedStijl={selectedStijl} setSelectedStijl={setSelectedStijl} availableStijlen={availableStijlen} />
                 )}
                 {activeTab === 'specificatie' && <SpecificatieTab model={selectedModel} />}
-                {activeTab === 'samenstellen' && <SamenstellenTab model={selectedModel} selections={upgradeSelections} onSelect={setUpgradeSelections} />}
+                {activeTab === 'samenstellen' && <SamenstellenTab model={selectedModel} selections={upgradeSelections} onSelect={setUpgradeSelections} onSupplierClick={openSupplierProfile} />}
               </>
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -414,7 +424,10 @@ export function ChaletWizard({ onBack }) {
                   </div>
                   <div className="flex items-center gap-2.5 text-sm">
                     <Factory size={14} className="text-[#70C26C]" />
-                    <span className="text-[#333]">{selectedModel.supplier_name}</span>
+                    <button onClick={() => openSupplierProfile(selectedModel.supplier_name)} className="text-[#244628] font-medium hover:underline flex items-center gap-1" data-testid="supplier-profile-link">
+                      {selectedModel.supplier_name}
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+                    </button>
                   </div>
                   <div className="flex items-center gap-2.5 text-sm">
                     <Eye size={14} className="text-[#70C26C]" />
@@ -440,6 +453,10 @@ export function ChaletWizard({ onBack }) {
       </div>
       )}
     </div>
+    {supplierProfileId && (
+      <SupplierProfile partnerId={supplierProfileId} onClose={() => setSupplierProfileId(null)} />
+    )}
+    </>
   );
 }
 
@@ -829,7 +846,7 @@ function SpecificatieTab({ model }) {
   );
 }
 
-function SamenstellenTab({ model, selections, onSelect }) {
+function SamenstellenTab({ model, selections, onSelect, onSupplierClick }) {
   const [options, setOptions] = useState({});
 
   useEffect(() => {
@@ -881,7 +898,10 @@ function SamenstellenTab({ model, selections, onSelect }) {
                       <div className="text-xs font-semibold">{opt.name}</div>
                       <div className={`text-[10px] mt-0.5 ${isActive ? 'text-white/70' : 'text-[#999]'}`}>{opt.description}</div>
                       {opt.supplier && opt.supplier !== '' && (
-                        <div className={`text-[10px] mt-0.5 italic ${isActive ? 'text-white/50' : 'text-[#bbb]'}`}>{opt.supplier}</div>
+                        <button className={`text-[10px] mt-0.5 italic hover:underline ${isActive ? 'text-white/50' : 'text-[#bbb]'}`}
+                          onClick={(e) => { e.stopPropagation(); if (onSupplierClick) onSupplierClick(opt.supplier); }}>
+                          {opt.supplier}
+                        </button>
                       )}
                       {opt.price > 0 && (
                         <div className={`text-xs font-bold mt-1 ${isActive ? 'text-[#70C26C]' : 'text-[#70C26C]'}`}>
