@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bath, Download, Truck, Lock } from 'lucide-react';
+import { Bath, Download, Truck, Lock, Map } from 'lucide-react';
 import { Button } from './ui/button';
 import { AIQuoteText } from '../AIQuoteText';
 
@@ -15,6 +15,7 @@ export { SANITAIR_EXTRAS };
 export function Step5Quote({
   project, products, quickQuote, sanitairConfigs, setSanitairConfigs,
   matchedSuppliers, exportPDF, loading, userTier = 'free', onUpgrade, energyInvestment = 0,
+  onRoadmap,
 }) {
   const getProductById = (pid) => products.find(p => p.id === pid);
 
@@ -188,6 +189,18 @@ export function Step5Quote({
         >
           <Download size={18} className="mr-2" />
           Offerte downloaden (PDF)
+        </Button>
+      )}
+
+      {onRoadmap && (
+        <Button
+          onClick={onRoadmap}
+          variant="outline"
+          className="w-full border-[#244628] text-[#244628] hover:bg-[#244628] hover:text-white font-medium h-10 mt-2"
+          data-testid="roadmap-button"
+        >
+          <Map size={16} className="mr-2" />
+          Idee naar Realisatie — Roadmap bekijken
         </Button>
       )}
     </div>

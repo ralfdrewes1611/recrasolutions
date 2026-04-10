@@ -5,7 +5,7 @@ import {
   ArrowLeft, Layers, Square, CornerDownRight, GitMerge, Columns2,
   Minus, Triangle, TrendingUp, Home, Hexagon, ChevronLeft, ChevronRight,
   Bed, Bath, Users, Ruler, Building2, Check, Eye, Settings, FileText,
-  Tent, Factory, Sparkles, Package, Award,
+  Tent, Factory, Sparkles, Package, Award, Map,
 } from 'lucide-react';
 import { Slider } from './components/ui/slider';
 import SupplierProfile from './SupplierProfile';
@@ -27,7 +27,7 @@ const FALLBACK_IMAGES = [
   'https://ucarecdn.com/76932055-baf1-402d-bedb-68e5b903160e/-/format/auto/-/resize/800x500/',
 ];
 
-export function ChaletWizard({ onBack }) {
+export function ChaletWizard({ onBack, onRoadmap }) {
   const [models, setModels] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [selectedModel, setSelectedModel] = useState(null);
@@ -413,6 +413,12 @@ export function ChaletWizard({ onBack }) {
               <p className="text-[10px] text-[#aaa] leading-relaxed">
                 Prijzen zijn indicatief en onder voorbehoud. Transport en fundering niet inbegrepen.
               </p>
+
+              {onRoadmap && (
+                <button onClick={onRoadmap} className="w-full flex items-center justify-center gap-2 text-xs font-medium text-[#244628] border border-[#244628] rounded-xl py-2.5 hover:bg-[#244628] hover:text-white transition-all" data-testid="chalet-roadmap-btn">
+                  <Map size={14} /> Idee naar Realisatie
+                </button>
+              )}
 
               {/* GESELECTEERD */}
               <div className="border-t border-[#e5e2d9] pt-4">

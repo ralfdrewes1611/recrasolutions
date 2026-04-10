@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tent, Home, Gamepad2, ArrowRight, BarChart3 } from 'lucide-react';
+import { Tent, Home, Gamepad2, ArrowRight, BarChart3, Map } from 'lucide-react';
 
 const flows = [
   {
@@ -34,6 +34,14 @@ const flows = [
     color: '#8B6914',
     bgColor: '#8B691410',
   },
+  {
+    id: 'roadmap',
+    label: 'Idee naar Realisatie',
+    description: 'Stapsgewijs van ontwerp naar vergunning, bouw en exploitatie',
+    icon: Map,
+    color: '#8b5cf6',
+    bgColor: '#8b5cf610',
+  },
 ];
 
 export function FlowSelector({ onSelect }) {
@@ -58,7 +66,7 @@ export function FlowSelector({ onSelect }) {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {flows.map((flow) => {
               const Icon = flow.icon;
               return (

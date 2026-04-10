@@ -396,3 +396,51 @@ async def get_partner_profile(partner_id: str):
     if not profile:
         return {"error": "Partner niet gevonden"}
     return profile
+
+
+@partner_router.get("/profiles/{partner_id}/dynamic-top3")
+async def get_dynamic_top3(partner_id: str):
+    """
+    Dynamische Top 3 producten op basis van daadwerkelijke configuratie-data.
+    Falls back naar statische top 3 als er onvoldoende data is.
+    """
+    from supabase_module import get_benchmark_data
+    profile = PARTNER_PROFILES.get(partner_id)
+    if not profile:
+        return {"error": "Partner niet gevonden"}
+
+    static_top3 = profile.get("top_producten", [])
+
+    try:
+        benchmark = await get_benchmark_data()
+        if not benchmark:
+            return {"source": "statisch", "top_producten": static_top3}
+
+        supplier_name = profile["name"]
+        product_counts = {}
+
+        for entry in benchmark:
+            products = entry.get("products_selected", [])
+            for prod in products:
+                if prod.get("supplier_name") == supplier_name or prod.get("supplier") == supplier_name:
+                    name = prod.get("name", prod.get("product_name", ""))
+                    if name:
+                        product_counts[name] = product_counts.get(name, 0) + 1
+
+        if len(product_counts) < 3:
+            return {"source": "statisch", "top_producten": static_top3}
+
+        sorted_products = sorted(product_counts.items(), key=lambda x: -x[1])
+        dynamic_top3 = []
+        for name, count in sorted_products[:3]:
+            existing = next((p for p in static_top3 if p["naam"] == name), None)
+            if existing:
+                dynamic_top3.append({**existing, "configuraties": count, "bron": "dynamisch"})
+            else:
+                dynamic_top3.append({"naam": name, "configuraties": count, "bron": "dynamisch"})
+
+        return {"source": "dynamisch", "top_producten": dynamic_top3}
+
+    except Exception:
+        return {"source": "statisch", "top_producten": static_top3}
+

@@ -16,17 +16,19 @@ function trackClick(partnerId, partnerName, interactionType) {
 export default function SupplierProfile({ partnerId, onClose }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dynamicTop3, setDynamicTop3] = useState(null);
 
   useEffect(() => {
     if (!partnerId) return;
     setLoading(true);
-    axios.get(`${API}/partners/profiles/${partnerId}`)
-      .then(res => {
-        setProfile(res.data);
-        trackClick(partnerId, res.data.name, 'profile_view');
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      axios.get(`${API}/partners/profiles/${partnerId}`),
+      axios.get(`${API}/partners/profiles/${partnerId}/dynamic-top3`).catch(() => ({ data: null })),
+    ]).then(([profileRes, top3Res]) => {
+      setProfile(profileRes.data);
+      setDynamicTop3(top3Res.data);
+      trackClick(partnerId, profileRes.data.name, 'profile_view');
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [partnerId]);
 
   if (!partnerId) return null;
@@ -159,22 +161,35 @@ export default function SupplierProfile({ partnerId, onClose }) {
                   <h3 className="text-sm font-bold text-[#333] flex items-center gap-1.5 mb-3">
                     <Trophy size={14} className="text-[#d97706]" />
                     Top 3 Meest Gekozen via Configuratie
+                    {dynamicTop3?.source === 'dynamisch' && (
+                      <span className="text-[9px] bg-[#10b981]/15 text-[#10b981] px-1.5 py-0.5 rounded-full font-medium ml-1">Live Data</span>
+                    )}
                   </h3>
                   <div className="space-y-2">
-                    {profile.top_producten.map((prod, i) => (
-                      <div key={prod.id} className="flex items-center gap-3 bg-white border border-[#e5e2d9] rounded-xl p-3" data-testid={`top-product-${i}`}>
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[#f0ede6]">
-                          <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
-                          <div className="absolute top-0 left-0 w-5 h-5 bg-[#d97706] text-white text-[10px] font-bold flex items-center justify-center rounded-br-lg">
-                            {i + 1}
+                    {(dynamicTop3?.top_producten || profile.top_producten).map((prod, i) => (
+                      <div key={prod.id || prod.naam || i} className="flex items-center gap-3 bg-white border border-[#e5e2d9] rounded-xl p-3" data-testid={`top-product-${i}`}>
+                        {prod.image && (
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[#f0ede6]">
+                            <img src={prod.image} alt={prod.name || prod.naam} className="w-full h-full object-cover" />
+                            <div className="absolute top-0 left-0 w-5 h-5 bg-[#d97706] text-white text-[10px] font-bold flex items-center justify-center rounded-br-lg">
+                              {i + 1}
+                            </div>
                           </div>
-                        </div>
+                        )}
+                        {!prod.image && (
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[#f0ede6] flex items-center justify-center">
+                            <Package size={20} className="text-[#ccc]" />
+                            <div className="absolute top-0 left-0 w-5 h-5 bg-[#d97706] text-white text-[10px] font-bold flex items-center justify-center rounded-br-lg">
+                              {i + 1}
+                            </div>
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-bold text-[#333]">{prod.name}</div>
-                          <div className="text-[10px] text-[#999] mt-0.5">{prod.reden}</div>
+                          <div className="text-xs font-bold text-[#333]">{prod.name || prod.naam}</div>
+                          {prod.reden && <div className="text-[10px] text-[#999] mt-0.5">{prod.reden}</div>}
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-bold text-[#70C26C]">€ {prod.prijs.toLocaleString('nl-NL')}</span>
-                            <span className="text-[10px] text-[#777] bg-[#FDF9ED] px-1.5 py-0.5 rounded">{prod.configuraties.toLocaleString('nl-NL')}x gekozen</span>
+                            {prod.prijs && <span className="text-xs font-bold text-[#70C26C]">€ {prod.prijs.toLocaleString('nl-NL')}</span>}
+                            <span className="text-[10px] text-[#777] bg-[#FDF9ED] px-1.5 py-0.5 rounded">{(prod.configuraties || 0).toLocaleString('nl-NL')}x gekozen</span>
                           </div>
                         </div>
                       </div>

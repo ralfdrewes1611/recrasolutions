@@ -361,6 +361,16 @@ async def get_benchmark_trends(flow_type: str = None):
         return {"total_sessions": 0, "top_models": [], "top_suppliers": [], "avg_investment": 0, "error": str(e)}
 
 
+async def get_benchmark_data():
+    """Haal ruwe benchmark entries op voor dynamische top 3 berekening."""
+    sb = get_supabase()
+    try:
+        result = sb.table("configurator_snapshots").select("*").limit(500).execute()
+        return result.data or []
+    except Exception:
+        return []
+
+
 # --- Lead Overview ---
 
 @supabase_router.get("/leads")

@@ -632,6 +632,206 @@ async def calculate_revenue(data: dict):
     return report
 
 
+@fec_router.post("/pdf")
+async def generate_fec_pdf(data: dict):
+    """Genereer FEC Business Case PDF als HTML."""
+    from datetime import datetime
+    products_selected = data.get("products", [])
+    operating_hours = data.get("operating_hours", 10)
+    operating_days = data.get("operating_days", 30)
+    project = data.get("project", {})
+
+    mapped = []
+    for sel in products_selected:
+        pid = sel.get("product_id", "")
+        idx = pid.replace("fec-", "") if pid.startswith("fec-") else None
+        if idx is not None and idx.isdigit() and int(idx) < len(FEC_PRODUCTS):
+            mapped.append({
+                "id": pid,
+                "product": FEC_PRODUCTS[int(idx)],
+                "quantity": sel.get("quantity", 1),
+            })
+
+    report = calculate_fec_revenue(mapped, operating_hours, operating_days)
+    suggestions = generate_fec_recommendations(project, mapped)
+
+    products_html = ""
+    for p in report.all_products:
+        products_html += f"""
+        <tr>
+            <td>{p.product_name}</td>
+            <td>{p.category.title()}</td>
+            <td>{p.footprint_m2:.0f} m²</td>
+            <td class="price">€ {p.investment:,.0f}</td>
+            <td class="price">€ {p.lease_monthly:,.0f}</td>
+            <td class="price revenue">€ {p.monthly_revenue:,.0f}</td>
+            <td>{p.roi_months} mnd</td>
+        </tr>"""
+
+    suggestions_html = ""
+    for s in suggestions:
+        icon = "⚠️" if s["type"] == "warning" else "💡" if s["type"] == "suggestion" else "⚡"
+        suggestions_html += f"""
+        <div class="suggestion {s['type']}">
+            <span class="icon">{icon}</span>
+            <div>
+                <strong>{s['title']}</strong>
+                <p>{s['description']}</p>
+            </div>
+        </div>"""
+
+    annual_revenue = report.total_monthly_revenue * 12
+    annual_lease = report.total_lease_monthly * 12
+    annual_profit = annual_revenue - annual_lease
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; max-width: 900px; margin: 0 auto; }}
+            .header {{ text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #f59e0b; }}
+            .logo {{ font-size: 28px; font-weight: bold; color: #244628; }}
+            .subtitle {{ color: #f59e0b; font-size: 14px; margin-top: 4px; }}
+            .badge {{ display: inline-block; background: #f59e0b; color: white; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }}
+            h1 {{ color: #244628; font-size: 22px; }}
+            h2 {{ color: #333; margin-top: 30px; font-size: 16px; border-bottom: 1px solid #e5e2d9; padding-bottom: 8px; }}
+            .metrics {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }}
+            .metric {{ background: #fafaf7; border: 1px solid #e5e2d9; border-radius: 12px; padding: 16px; text-align: center; }}
+            .metric .label {{ font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }}
+            .metric .value {{ font-size: 22px; font-weight: bold; margin-top: 4px; }}
+            .metric .value.green {{ color: #10b981; }}
+            .metric .value.orange {{ color: #f59e0b; }}
+            .metric .value.blue {{ color: #244628; }}
+            table {{ width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }}
+            th {{ background: #244628; color: white; padding: 10px 8px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }}
+            td {{ padding: 10px 8px; border-bottom: 1px solid #e5e2d9; }}
+            .price {{ font-family: 'Courier New', monospace; }}
+            .revenue {{ color: #10b981; font-weight: bold; }}
+            .summary {{ background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px; margin: 24px 0; }}
+            .summary h3 {{ color: #10b981; margin: 0 0 12px; font-size: 15px; }}
+            .summary-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }}
+            .summary-row {{ display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #dcfce7; }}
+            .summary-row.total {{ font-weight: bold; font-size: 15px; border-bottom: none; padding-top: 10px; }}
+            .suggestion {{ display: flex; gap: 10px; padding: 10px; background: white; border: 1px solid #e5e2d9; border-radius: 8px; margin: 6px 0; }}
+            .suggestion.warning {{ border-color: #fbbf24; background: #fffbeb; }}
+            .suggestion .icon {{ font-size: 18px; flex-shrink: 0; }}
+            .suggestion strong {{ font-size: 12px; display: block; }}
+            .suggestion p {{ font-size: 11px; color: #777; margin: 4px 0 0; }}
+            .footer {{ margin-top: 40px; text-align: center; color: #999; font-size: 11px; padding-top: 20px; border-top: 1px solid #e5e2d9; }}
+            .lease-box {{ background: #244628; color: white; border-radius: 12px; padding: 20px; margin: 24px 0; }}
+            .lease-box h3 {{ color: #70C26C; margin: 0 0 12px; }}
+            .lease-row {{ display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }}
+            .lease-row .label {{ color: rgba(255,255,255,0.7); }}
+            .lease-row .value {{ font-weight: bold; }}
+            @media print {{ body {{ padding: 20px; }} .metrics {{ grid-template-columns: repeat(4, 1fr); }} }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="logo">RECRA Solutions</div>
+            <div class="subtitle">FEC & Experience — Revenue Engine</div>
+            <div class="badge">Business Case Export</div>
+        </div>
+
+        <h1>FEC Business Case</h1>
+        <p><strong>Oppervlakte:</strong> {project.get('total_area_m2', 500)} m² | <strong>Plafondhoogte:</strong> {project.get('ceiling_height_m', 5)}m | <strong>Doelgroep:</strong> {project.get('target_audience', 'families').title()}</p>
+        <p><strong>Operatie:</strong> {operating_hours} uur/dag, {operating_days} dagen/maand | <strong>Datum:</strong> {datetime.now().strftime('%d-%m-%Y')}</p>
+
+        <div class="metrics">
+            <div class="metric">
+                <div class="label">Totale Investering</div>
+                <div class="value orange">€ {report.total_investment:,.0f}</div>
+            </div>
+            <div class="metric">
+                <div class="label">Omzet / Maand</div>
+                <div class="value green">€ {report.total_monthly_revenue:,.0f}</div>
+            </div>
+            <div class="metric">
+                <div class="label">Break-even</div>
+                <div class="value blue">{report.break_even_months} mnd</div>
+            </div>
+            <div class="metric">
+                <div class="label">€ / m² / maand</div>
+                <div class="value orange">€ {report.revenue_per_m2_month:,.0f}</div>
+            </div>
+        </div>
+
+        <h2>Attractie Overzicht</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Attractie</th>
+                    <th>Categorie</th>
+                    <th>Footprint</th>
+                    <th>Investering</th>
+                    <th>Lease/mnd</th>
+                    <th>Omzet/mnd</th>
+                    <th>ROI</th>
+                </tr>
+            </thead>
+            <tbody>
+                {products_html}
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <h3>Jaarlijkse Projectie</h3>
+            <div class="summary-row">
+                <span>Jaaromzet (bruto)</span>
+                <span class="price">€ {annual_revenue:,.0f}</span>
+            </div>
+            <div class="summary-row">
+                <span>Jaarlijkse lease kosten</span>
+                <span class="price">€ {annual_lease:,.0f}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Netto resultaat / jaar</span>
+                <span class="price" style="color: #10b981;">€ {annual_profit:,.0f}</span>
+            </div>
+        </div>
+
+        <div class="lease-box">
+            <h3>Operational Lease Optie</h3>
+            <div class="lease-row">
+                <span class="label">Lease per maand</span>
+                <span class="value" style="color: #f59e0b;">€ {report.total_lease_monthly:,.0f}</span>
+            </div>
+            <div class="lease-row">
+                <span class="label">Looptijd</span>
+                <span class="value">60 maanden</span>
+            </div>
+            <div class="lease-row">
+                <span class="label">Netto winst/mnd (omzet - lease)</span>
+                <span class="value" style="color: #70C26C;">€ {(report.total_monthly_revenue - report.total_lease_monthly):,.0f}</span>
+            </div>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 10px;">Inclusief SLA onderhoudscontract. Prijzen excl. BTW.</p>
+        </div>
+
+        {f'<h2>AI Advies</h2>{suggestions_html}' if suggestions_html else ''}
+
+        <div class="footer">
+            <p><strong>RECRA Solutions</strong> — FEC & Experience Revenue Engine</p>
+            <p>Deze business case is gegenereerd op {datetime.now().strftime('%d-%m-%Y om %H:%M')} en is geldig tot 30 dagen na dagtekening.</p>
+            <p>Powered by Pleisureworld x RECRA Solutions</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    return {
+        "html": html,
+        "project_name": project.get("name", "FEC Business Case"),
+        "summary": {
+            "total_investment": report.total_investment,
+            "total_monthly_revenue": report.total_monthly_revenue,
+            "total_lease_monthly": report.total_lease_monthly,
+            "break_even_months": report.break_even_months,
+        },
+    }
+
+
 @fec_router.get("/top5")
 async def get_top5_revenue_drivers():
     """Return the top 5 revenue drivers sorted by ROI."""

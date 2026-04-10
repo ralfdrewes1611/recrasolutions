@@ -6,6 +6,7 @@ import { FecWizard } from './FecWizard';
 import { ChaletWizard } from './ChaletWizard';
 import { PlatformDashboard } from './PlatformDashboard';
 import SupplierProfile from './SupplierProfile';
+import { RoadmapView } from './RoadmapView';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -440,7 +441,7 @@ function App() {
   if (activeFlow === 'chalet') {
     return (
       <>
-        <ChaletWizard onBack={() => setActiveFlow(null)} />
+        <ChaletWizard onBack={() => setActiveFlow(null)} onRoadmap={() => setActiveFlow('roadmap-chalet')} />
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </>
     );
@@ -455,6 +456,28 @@ function App() {
       </>
     );
   }
+
+  // Roadmap view — Idee naar Realisatie
+  if (activeFlow === 'roadmap') {
+    return (
+      <>
+        <RoadmapView flowType="recreatie" onBack={() => setActiveFlow(null)} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
+  // Roadmap for specific flows
+  if (activeFlow?.startsWith('roadmap-')) {
+    const flow = activeFlow.replace('roadmap-', '');
+    return (
+      <>
+        <RoadmapView flowType={flow} onBack={() => setActiveFlow(null)} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
 
   return (
     <TooltipProvider>
@@ -583,6 +606,7 @@ function App() {
                   matchedSuppliers={matchedSuppliers} exportPDF={exportPDF} loading={loading}
                   userTier={userTier} onUpgrade={() => setShowUpgradeModal(true)}
                   energyInvestment={energyInvestment}
+                  onRoadmap={() => setActiveFlow('roadmap-recreatie')}
                 />
               )}
             </div>

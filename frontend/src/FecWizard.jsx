@@ -5,7 +5,7 @@ import {
   Building2, Gamepad2, Users, DollarSign, TrendingUp, ChevronRight, ChevronLeft,
   Plus, Minus, Sparkles, AlertTriangle, Zap, Trophy, ArrowRight,
   LayoutGrid, Coffee, Car, Sword, Baby, Ticket, Route, X, Download, Lock,
-  Check, Package,
+  Check, Package, Map,
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
@@ -44,6 +44,8 @@ export function FecWizard({ onBack, userTier }) {
   const [step, setStep] = useState(1);
   const [fecProducts, setFecProducts] = useState([]);
   const [top5, setTop5] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showRoadmap, setShowRoadmap] = useState(false);
   const [project, setProject] = useState({
     total_area_m2: 500,
     ceiling_height_m: 5.0,
@@ -202,6 +204,49 @@ export function FecWizard({ onBack, userTier }) {
 
   const filteredProducts = selectedCategory === 'all' ? fecProducts : fecProducts.filter(p => p.category === selectedCategory);
 
+  const exportFecPDF = async () => {
+    if (selectedProducts.length === 0) { toast.error('Selecteer eerst attracties'); return; }
+    try {
+      setLoading(true);
+      const res = await axios.post(`${API}/fec/pdf`, {
+        products: selectedProducts.map(sp => ({ product_id: sp.product_id, quantity: sp.quantity })),
+        operating_hours: project.operating_hours,
+        operating_days: project.operating_days,
+        project: {
+          total_area_m2: project.total_area_m2,
+          ceiling_height_m: project.ceiling_height_m,
+          target_audience: project.target_audience,
+          zones: project.zones,
+        },
+      });
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(res.data.html);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
+      toast.success('Business Case PDF gegenereerd');
+    } catch {
+      toast.error('Kon PDF niet genereren');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showRoadmap) {
+    const { RoadmapView } = require('./RoadmapView');
+    return (
+      <RoadmapView
+        flowType="fec"
+        onBack={() => setShowRoadmap(false)}
+        projectSummary={revenueReport ? {
+          name: 'FEC Business Case',
+          details: `${project.total_area_m2}m² · ${selectedProducts.length} attracties · ${project.target_audience}`,
+          investment: revenueReport.total_investment,
+        } : null}
+      />
+    );
+  }
+
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-[#FDF9ED]">
       {/* Header */}
@@ -213,6 +258,18 @@ export function FecWizard({ onBack, userTier }) {
           <span className="text-white/40">|</span>
           <span className="text-[#f59e0b] text-sm font-medium">FEC & Experience</span>
           <span className="bg-[#f59e0b]/20 text-[#f59e0b] text-xs px-2 py-0.5 rounded-full font-medium">Revenue Engine</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowRoadmap(true)}
+            className="text-white/60 hover:text-white text-xs flex items-center gap-1 px-3 py-1.5 rounded-full hover:bg-white/10 transition-all"
+            data-testid="fec-roadmap-btn">
+            <Map size={14} /> Roadmap
+          </button>
+          <button onClick={exportFecPDF} disabled={selectedProducts.length === 0 || loading}
+            className="text-white/90 hover:text-white text-xs flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#f59e0b] hover:bg-[#e68a00] disabled:opacity-40 transition-all font-medium"
+            data-testid="fec-pdf-btn">
+            <Download size={14} /> {loading ? 'Genereren...' : 'Business Case PDF'}
+          </button>
         </div>
       </header>
 
@@ -555,11 +612,20 @@ export function FecWizard({ onBack, userTier }) {
 
                     {/* Cross-sell */}
                     <div className="p-3 rounded-xl bg-[#244628] text-white">
-                      <div className="text-xs font-medium text-white/80 mb-2">Omzet verhogen?</div>
-                      <button onClick={onBack} className="flex items-center gap-2 text-[#70C26C] text-xs hover:underline" data-testid="fec-crosssell-recreatie">
+                      <div className="text-xs font-medium text-white/80 mb-2">Volgende stappen</div>
+                      <button onClick={exportFecPDF} disabled={loading}
+                        className="flex items-center gap-2 text-[#f59e0b] text-xs hover:underline mb-1 w-full" data-testid="fec-export-pdf-step4">
+                        <Download size={12} /> Download Business Case PDF
+                      </button>
+                      <button onClick={() => setShowRoadmap(true)}
+                        className="flex items-center gap-2 text-[#70C26C] text-xs hover:underline mb-1 w-full" data-testid="fec-roadmap-step4">
+                        <Map size={12} /> Bekijk Roadmap: Idee naar Realisatie
+                      </button>
+                      <div className="h-px bg-white/10 my-2" />
+                      <button onClick={onBack} className="flex items-center gap-2 text-white/50 text-xs hover:underline" data-testid="fec-crosssell-recreatie">
                         <ArrowRight size={12} /> Bekijk Recreatie Infra voor buitenuitbreiding
                       </button>
-                      <button onClick={onBack} className="flex items-center gap-2 text-[#70C26C] text-xs hover:underline mt-1" data-testid="fec-crosssell-chalet">
+                      <button onClick={onBack} className="flex items-center gap-2 text-white/50 text-xs hover:underline mt-1" data-testid="fec-crosssell-chalet">
                         <ArrowRight size={12} /> Overweeg Chalet & Stay voor verblijfsomzet
                       </button>
                     </div>
