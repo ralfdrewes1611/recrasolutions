@@ -10,105 +10,69 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 
 ## Code Structuur
 ### Backend
-- `/app/backend/server.py` — Hoofd FastAPI app, Recreatie flow, verbeterde PDF export
-- `/app/backend/chalet_engine.py` — Chalet & Stay configurator
-- `/app/backend/fec_engine.py` — FEC Revenue Engine + PDF Export
-- `/app/backend/location_engine.py` — Locatie-intelligentie (provincies, grondprijzen)
-- `/app/backend/partner_profiles.py` — Verrijkte leveranciersprofielen + Dynamic Top 3
-- `/app/backend/roadmap_engine.py` — "Idee naar Realisatie" fasen-overzicht
-- `/app/backend/whitelabel_engine.py` — White-label configuratie (RECRA + Pleisureworld)
-- `/app/backend/subsidy_engine.py` — Financiering & Subsidie Check (scoring + AI)
-- `/app/backend/crm_engine.py` — CRM leads, follow-up mails, scenario generator
-- `/app/backend/supabase_module.py` — Supabase tracking, benchmarks, leads
+- `server.py` — Hoofd FastAPI app, Recreatie flow, verbeterde PDF export
+- `chalet_engine.py` — Chalet & Stay configurator
+- `fec_engine.py` — FEC Revenue Engine + PDF Export
+- `location_engine.py` — Locatie-intelligentie
+- `partner_profiles.py` — Verrijkte leveranciersprofielen + Dynamic Top 3
+- `roadmap_engine.py` — "Idee naar Realisatie" fasen-overzicht
+- `whitelabel_engine.py` — White-label configuratie
+- `subsidy_engine.py` — Financiering & Subsidie Check
+- `crm_engine.py` — CRM leads, follow-up mails, scenario generator
+- `supplier_module.py` — Leveranciers CRUD + flow toewijzing + stats
+- `supabase_module.py` — Supabase tracking, benchmarks
 
 ### Frontend
-- `/app/frontend/src/App.js` — Main router, modals, flow state
-- `/app/frontend/src/FlowSelector.jsx` — 5 flow kaarten
-- `/app/frontend/src/ChaletWizard.jsx` — Chalet & Stay wizard + Subsidie
-- `/app/frontend/src/FecWizard.jsx` — FEC Revenue Engine + PDF + Subsidie
-- `/app/frontend/src/RoadmapView.jsx` — Roadmap: Idee naar Realisatie
-- `/app/frontend/src/SubsidyModule.jsx` — Subsidie Check + CRM contactformulier + follow-up
-- `/app/frontend/src/ScenarioCompare.jsx` — 3 offerte-scenario's vergelijker
-- `/app/frontend/src/SupplierProfile.jsx` — Leveranciersprofiel modal
-- `/app/frontend/src/components/Step5Quote.jsx` — Offerte + Roadmap + Scenario's
+- `App.js` — Main router, modals, flow state
+- `FlowSelector.jsx` — 6 flow kaarten (incl. admin)
+- `ChaletWizard.jsx` — Chalet & Stay wizard + Subsidie
+- `FecWizard.jsx` — FEC Revenue Engine + PDF + Subsidie
+- `RoadmapView.jsx` — Roadmap: Idee naar Realisatie
+- `SubsidyModule.jsx` — Subsidie Check + CRM + follow-up
+- `ScenarioCompare.jsx` — 3 offerte-scenario's vergelijker
+- `SupplierProfile.jsx` — Leveranciersprofiel modal
+- `SupplierAdmin.jsx` — Leveranciersbeheer dashboard
 
-## Wat is gebouwd (voltooid)
+## Voltooid
 
 ### Basis Platform
-- [x] 3 configuratie-flows: Recreatie, Chalet, FEC
-- [x] 2D Site Planner met drag-and-drop
-- [x] Product database (49 producten, 5 leveranciers)
-- [x] Real product photos (gecrawled)
-- [x] AI-powered terreinanalyse (GPT-5.2)
-- [x] Paywall tiers: Free, Pro, Enterprise
-- [x] Platform Dashboard
-
-### P0 — Core Features
-- [x] Locatie-intelligentie (12 provincies)
-- [x] 14 Ticra Outdoor wellness producten
-- [x] Klikbare leveranciers + click-tracking
+- [x] 3 configuratie-flows + 2D Site Planner + Product database
+- [x] AI offerte tekst (GPT-5.2) + Paywall tiers + Platform Dashboard
+- [x] Locatie-intelligentie + Wellness producten + Click-tracking
 
 ### P1 — Leveranciers & Dynamiek
-- [x] Verrijkte profielen alle 5 leveranciers
-- [x] Dynamische Top 3 endpoint
-- [x] White-label modules (RECRA + Pleisureworld)
-- [x] "Idee naar Realisatie" Roadmap mode
+- [x] Verrijkte profielen (5 leveranciers) + Dynamic Top 3
+- [x] White-label (RECRA + Pleisureworld) + Roadmap mode
 
 ### P2 — Business Case & PDF
-- [x] FEC PDF Export met Business Case
-- [x] Recreatie PDF Export verbeterd (metrics, categorieën, lease, branding)
-- [x] Roadmap geïntegreerd in alle flows
+- [x] FEC PDF + Recreatie PDF (verbeterd) + Roadmap integratie
 
-### Financiering & Subsidie Check
-- [x] 5-staps intake formulier
-- [x] Rules-based scoring engine (0-10)
-- [x] AI-powered subsidie analyse (GPT-5.2)
-- [x] AI subsidie-aanvraag document generator
-- [x] Rechter sidebar in alle 3 configurators
+### Subsidie & CRM Engine
+- [x] 5-staps intake + scoring (0-10) + AI analyse + document generator
+- [x] CRM lead management + lead scoring (0-100)
+- [x] Follow-up mail generator + 3 offerte-scenario's (AI)
 
-### CRM & Conversie Engine (13 april 2026)
-- [x] CRM lead management (opslaan na subsidie check)
-- [x] Lead scoring (0-100): email+telefoon+bedrijf+project+subsidie+kans+investering
-- [x] Follow-up mail generator (professionele HTML template met RECRA branding)
-- [x] 3 automatische offerte-scenario's (Budget/Standaard/Premium) via GPT-5.2
-- [x] ScenarioCompare component in Recreatie Step5
-- [x] Contactformulier in SubsidyModule (naam, email, telefoon, bedrijf)
-- [x] Follow-up mail preview na lead opslag
-
-## API Endpoints
-### Core
-- `GET /api/products`, `POST /api/quote/pdf`, `POST /api/chalet/calculate`
-- `GET /api/fec/products`, `POST /api/fec/pdf`
-
-### Platform
-- `GET /api/location/provinces`, `GET /api/location/evaluate`
-- `GET /api/partners/profiles/{id}`, `GET /api/partners/profiles/{id}/dynamic-top3`
-- `POST /api/supabase/partners/track`
-- `GET /api/roadmap/phases/{flow_type}`
-- `GET /api/whitelabel/config`, `GET /api/whitelabel/configs`
-
-### Subsidie & CRM
-- `POST /api/subsidy/check` — Rules-based scoring
-- `POST /api/subsidy/ai-analyse` — AI subsidie analyse
-- `POST /api/subsidy/generate-document` — Subsidie-aanvraag generator
-- `POST /api/crm/leads` — Lead aanmaken + lead score
-- `GET /api/crm/leads` — Leads ophalen
-- `POST /api/crm/leads/{id}/follow-up` — Follow-up mail genereren
-- `POST /api/crm/follow-up/generate` — Follow-up mail (zonder lead)
-- `POST /api/crm/scenarios/generate` — 3 offerte-scenario's
+### Leveranciersbeheer (13 april 2026)
+- [x] Full CRUD dashboard (toevoegen, bewerken, verwijderen)
+- [x] Multi-flow toewijzing per leverancier (recreatie, chalet, fec)
+- [x] Categorie management (14 productcategorieën)
+- [x] Status systeem (Verified, Compatible, Basis)
+- [x] Filter op flow + zoekfunctie + stats dashboard
+- [x] Expandable detailweergave (contact, logistiek, categorieën)
+- [x] Backend migratie: bestaande leveranciers met flows bijgewerkt
 
 ## Prioritized Backlog
-
 ### P3
-- [ ] Partner portal / Supplier login
+- [ ] Partner portal / Supplier login (leveranciers zelf producten beheren)
 - [ ] Auth systeem via Supabase Auth
+- [ ] Real email sending (Resend/SendGrid)
+- [ ] CRM dashboard voor sales team
 - [ ] 3D Canvas / AR Preview
 - [ ] Benchmark Mode (publiek dashboard)
-- [ ] Real email sending (Resend/SendGrid integratie)
-- [ ] CRM dashboard voor sales team
 
 ## Test Iteraties
 - Iteratie 19-21: Core features ✅
-- Iteratie 22: P1/P2 (Roadmap, PDF, White-label, Dynamic Top 3) ✅ 100%
+- Iteratie 22: Roadmap, PDF, White-label, Dynamic Top 3 ✅ 100%
 - Iteratie 23: Subsidie Check Module ✅ 100%
 - Iteratie 24: CRM, Scenario's, Follow-up Mail, Verbeterde PDF ✅ 100%
+- Iteratie 25: Leveranciersbeheer Dashboard (CRUD + Flows) ✅ 100%
