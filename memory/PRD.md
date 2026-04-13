@@ -17,15 +17,17 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 - `/app/backend/partner_profiles.py` — Verrijkte leveranciersprofielen + Dynamic Top 3
 - `/app/backend/roadmap_engine.py` — "Idee naar Realisatie" fasen-overzicht
 - `/app/backend/whitelabel_engine.py` — White-label configuratie (RECRA + Pleisureworld)
+- `/app/backend/subsidy_engine.py` — Financiering & Subsidie Check (scoring + AI)
 - `/app/backend/supabase_module.py` — Supabase tracking, benchmarks, leads
 
 ### Frontend
 - `/app/frontend/src/App.js` — Main router, modals, flow state
 - `/app/frontend/src/FlowSelector.jsx` — 5 flow kaarten
-- `/app/frontend/src/ChaletWizard.jsx` — Chalet & Stay wizard
-- `/app/frontend/src/FecWizard.jsx` — FEC Revenue Engine + PDF export
+- `/app/frontend/src/ChaletWizard.jsx` — Chalet & Stay wizard + Subsidie
+- `/app/frontend/src/FecWizard.jsx` — FEC Revenue Engine + PDF + Subsidie
 - `/app/frontend/src/RoadmapView.jsx` — Roadmap: Idee naar Realisatie
-- `/app/frontend/src/SupplierProfile.jsx` — Leveranciersprofiel modal (dynamic top 3)
+- `/app/frontend/src/SubsidyModule.jsx` — Financiering & Subsidie Check module
+- `/app/frontend/src/SupplierProfile.jsx` — Leveranciersprofiel modal
 - `/app/frontend/src/components/Step3Products.jsx` — Product selectie (Recreatie)
 - `/app/frontend/src/components/Step5Quote.jsx` — Offerte + Roadmap knop
 
@@ -50,14 +52,24 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 
 ### P1 — Verrijkte Leveranciers & Dynamiek (10 april 2026)
 - [x] Verrijkte profielen voor alle 5 leveranciers (podcasts, quotes, events, USPs, top 3)
-- [x] Dynamische "Top 3 meest gekozen" endpoint (valt terug op statisch als er geen live data is)
-- [x] White-label modules: RECRA Solutions + Pleisureworld configuraties
+- [x] Dynamische "Top 3 meest gekozen" endpoint
+- [x] White-label modules: RECRA Solutions + Pleisureworld
 - [x] "Idee naar Realisatie" Roadmap mode (4 fasen per flow type)
 
 ### P2 — Business Case & Roadmap (10 april 2026)
-- [x] FEC PDF Export met volledige Business Case (investering, omzet, break-even, lease, AI advies)
-- [x] Roadmap geïntegreerd in Recreatie (Step5Quote), Chalet (pricing sidebar), FEC (header + step 4)
-- [x] FlowSelector uitgebreid naar 5 kaarten (incl. Roadmap)
+- [x] FEC PDF Export met volledige Business Case
+- [x] Roadmap geïntegreerd in Recreatie, Chalet en FEC
+- [x] FlowSelector uitgebreid naar 5 kaarten
+
+### Financiering & Subsidie Check Module (13 april 2026)
+- [x] 5-staps intake formulier (organisatie, project, financieel, impact, versterkers)
+- [x] Rules-based scoring engine (0-10) met sector fit, projecttype, impact, etc.
+- [x] Hard filter: investering < €10K → lage kans
+- [x] AI-powered subsidie analyse via GPT-5.2 (kans, toelichting, regelingen, verbeterpunten)
+- [x] AI subsidie-aanvraag document generator
+- [x] Rechter sidebar integratie in alle 3 configurators
+- [x] CTA knoppen: "Laat RECRA dit voor je regelen" + "Plan adviesgesprek"
+- [x] Print/PDF export van gegenereerd subsidie document
 
 ## API Endpoints
 - `GET /api/products` — Alle producten
@@ -72,9 +84,11 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 - `GET /api/whitelabel/config` — Actieve branding
 - `GET /api/whitelabel/configs` — Alle white-label configs
 - `POST /api/fec/pdf` — FEC Business Case PDF
+- `POST /api/subsidy/check` — Subsidie scoring (rules-based)
+- `POST /api/subsidy/ai-analyse` — AI subsidie analyse (GPT-5.2)
+- `POST /api/subsidy/generate-document` — AI subsidie-aanvraag generator
 - `POST /api/chalet/calculate` — Chalet prijsberekening
 - `GET /api/fec/products` — FEC attracties
-- `GET /api/fec/top5` — Top 5 revenue drivers
 
 ## Prioritized Backlog
 
@@ -82,10 +96,12 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 - [ ] Recreatie PDF export verbeteren (vergelijkbaar met FEC business case niveau)
 
 ### P3
+- [ ] CRM integratie (lead = warm na subsidie check)
+- [ ] Offerte automatisch 3 scenario's genereren
+- [ ] Follow-up mail na subsidie check
 - [ ] Partner portal / Supplier login
 - [ ] Auth systeem via Supabase Auth
 - [ ] 3D Canvas / AR Preview
-- [ ] CRM integratie
 - [ ] Benchmark Mode (publiek dashboard)
 
 ## Test Iteraties
@@ -93,3 +109,4 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 - Iteratie 20: Location Intelligence & Ticra Products ✅
 - Iteratie 21: Supplier Profiles & Click Tracking ✅
 - Iteratie 22: P1/P2 Features (Roadmap, PDF, White-label, Dynamic Top 3) ✅ 100%
+- Iteratie 23: Financiering & Subsidie Check Module ✅ 100%
