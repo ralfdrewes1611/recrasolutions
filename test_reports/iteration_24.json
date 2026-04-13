@@ -1,0 +1,63 @@
+{
+  "summary": "Iteration 24: CRM Lead Management, 3 Scenario Generator, Follow-up Email, Improved PDF - All 4 new features tested. Backend: 22/22 tests passed. Frontend: ScenarioCompare component working, SubsidyModule 5-step flow working, contact form present. All CRM APIs functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration24_crm_features.py",
+    "/app/test_reports/pytest/pytest_results_iter24.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_iteration24_crm_features.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": "No auth required",
+  "seed_data_creation": "None - CRM uses in-memory store with Supabase backup",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 24 tested 4 new CRM features. All backend APIs working: POST /api/crm/leads (lead creation with score 0-100), GET /api/crm/leads (list sorted by created_at desc), POST /api/crm/leads/{id}/follow-up (generates HTML email), POST /api/crm/follow-up/generate (email without saving lead), POST /api/crm/scenarios/generate (3 scenarios via AI or fallback). Frontend: ScenarioCompare in Step5Quote shows 'Genereer 3 scenario's' button and displays Budget/Standaard/Premium cards. SubsidyModule has contact form (naam, email, telefoon, bedrijf) at bottom of results view. Lead scoring: email(20)+telefoon(15)+bedrijf(10)+project(10)+subsidie_score(15)+hoog_kans(20)+high_inv(10)=100 max.",
+  "features_tested": {
+    "backend_apis": [
+      "POST /api/crm/leads - creates lead with lead_score calculation (0-100)",
+      "GET /api/crm/leads - returns list sorted by created_at desc",
+      "GET /api/crm/leads/{id} - returns specific lead",
+      "POST /api/crm/leads/{id}/follow-up - generates personalized follow-up email HTML",
+      "POST /api/crm/follow-up/generate - generates email from data without saving lead",
+      "POST /api/crm/scenarios/generate - returns 3 scenarios (Budget, Standaard, Premium)",
+      "Lead score calculation: email=20, telefoon=15, bedrijf=10, project=10, subsidie_score=15, hoog_kans=20, high_inv=10",
+      "Follow-up email contains RECRA branding, score, subsidie_range, and CTA"
+    ],
+    "frontend_ui": [
+      "Recreatie flow Step 5: ScenarioCompare component visible with 'Genereer 3 scenario's' button",
+      "Clicking generate button creates 3 scenario cards (Budget, Standaard, Premium)",
+      "Scenario cards show investering, lease_maand, terugverdientijd_maanden",
+      "Scenario cards expandable with producten and voordelen lists",
+      "SubsidyModule: 5-step intake form (Organisatie, Project, Financieel, Impact, Versterkers)",
+      "SubsidyModule results: shows score, kans label, subsidie_range, breakdown",
+      "SubsidyModule results: contact form with naam, email, telefoon, bedrijf inputs",
+      "SubsidyModule results: 'Laat RECRA dit voor je regelen' save button",
+      "Improved PDF endpoint returns HTML with RECRA + Pleisureworld branding"
+    ]
+  },
+  "api_test_results": {
+    "crm_leads_create": "PASS - Returns id, lead_score, status='nieuw'",
+    "crm_leads_list": "PASS - Returns array sorted by created_at desc",
+    "crm_leads_get": "PASS - Returns lead by ID",
+    "crm_follow_up_lead": "PASS - Returns email_html, subject, to, naam",
+    "crm_follow_up_generate": "PASS - Returns email_html, subject",
+    "crm_scenarios_generate": "PASS - Returns 3 scenarios with AI or fallback",
+    "lead_score_calculation": "PASS - All scoring rules verified",
+    "pdf_generation": "PASS - Returns HTML with branding"
+  }
+}

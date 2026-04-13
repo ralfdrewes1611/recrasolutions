@@ -27,6 +27,7 @@ from partner_profiles import partner_router
 from roadmap_engine import roadmap_router
 from whitelabel_engine import whitelabel_router
 from subsidy_engine import subsidy_router
+from crm_engine import crm_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -1220,129 +1221,204 @@ async def analyze_floorplan(image_base64: str, project_type: str = "camping"):
         logger.error(f"Floor plan analysis error: {e}")
         return {"error": str(e), "zones": [], "estimated_spots": 0}
 
-# PDF Generation endpoint
+# PDF Generation endpoint — Verbeterde Recreatie Business Case
 @api_router.post("/quote/pdf")
 async def generate_quote_pdf(project_id: str):
     project = await db.projects.find_one({"id": project_id}, {"_id": 0})
     if not project:
         raise HTTPException(status_code=404, detail="Project niet gevonden")
-    
-    # Calculate quote
+
     quote_response = await calculate_quote(project_id)
-    
-    # Generate simple HTML-based PDF content
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            body {{ font-family: Arial, sans-serif; padding: 40px; color: #333; }}
-            .header {{ text-align: center; margin-bottom: 40px; }}
-            .logo {{ font-size: 32px; font-weight: bold; color: #0ea5e9; }}
-            .subtitle {{ color: #10b981; margin-top: 5px; }}
-            h1 {{ color: #0ea5e9; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px; }}
-            h2 {{ color: #333; margin-top: 30px; }}
-            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-            th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }}
-            th {{ background-color: #0ea5e9; color: white; }}
-            .total-row {{ font-weight: bold; background-color: #f0f9ff; }}
-            .summary {{ background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-top: 30px; }}
-            .summary h3 {{ color: #10b981; margin-top: 0; }}
-            .price {{ font-family: monospace; font-size: 1.1em; }}
-            .footer {{ margin-top: 50px; text-align: center; color: #666; font-size: 12px; }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <div class="logo">RECRA Solutions</div>
-            <div class="subtitle">Configurator & Offerte Platform</div>
-        </div>
-        
-        <h1>Offerte: {project.get('name', 'Project')}</h1>
-        <p><strong>Type:</strong> {project.get('project_type', 'Camping').replace('_', ' ').title()}</p>
-        <p><strong>Aantal standplaatsen:</strong> {project.get('num_spots', 0)}</p>
-        <p><strong>Datum:</strong> {datetime.now().strftime('%d-%m-%Y')}</p>
-        
-        <h2>Productoverzicht</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Categorie</th>
-                    <th>Aantal</th>
-                    <th>Stukprijs</th>
-                    <th>Totaal</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
-    
+    all_products = await db.products.find({}, {"_id": 0}).to_list(100)
+
+    # Categorize products
+    cat_totals = {}
     for item in quote_response.items:
-        html_content += f"""
-                <tr>
-                    <td>{item['product_name']}</td>
-                    <td>{item['category'].title()}</td>
-                    <td>{item['quantity']}</td>
-                    <td class="price">€ {item['unit_price']:,.2f}</td>
-                    <td class="price">€ {item['total_price']:,.2f}</td>
-                </tr>
-        """
-    
-    html_content += f"""
-            </tbody>
-        </table>
-        
-        <div class="summary">
-            <h3>Kostenoverzicht</h3>
-            <table>
-                <tr>
-                    <td><strong>Aankoopkosten</strong></td>
-                    <td class="price" style="text-align: right;">€ {quote_response.capex_total:,.2f}</td>
-                </tr>
-                <tr>
-                    <td><strong>Installatiekosten</strong></td>
-                    <td class="price" style="text-align: right;">€ {quote_response.installation_total:,.2f}</td>
-                </tr>
-                <tr>
-                    <td><strong>Reiskosten leveranciers</strong></td>
-                    <td class="price" style="text-align: right;">€ {quote_response.travel_total:,.2f}</td>
-                </tr>
-                <tr class="total-row">
-                    <td><strong>Totaal investering</strong></td>
-                    <td class="price" style="text-align: right;">€ {quote_response.project_total:,.2f}</td>
-                </tr>
-            </table>
-            
-            <h3 style="margin-top: 20px;">Operational Lease</h3>
-            <p style="font-size: 12px; color: #666;">Uitgaande van 60 maanden incl. SLA onderhoudscontract</p>
-            <table>
-                <tr>
-                    <td>Lease per maand</td>
-                    <td class="price" style="text-align: right;">€ {quote_response.opex_monthly:,.2f}</td>
-                </tr>
-                <tr>
-                    <td>Lease per jaar</td>
-                    <td class="price" style="text-align: right;">€ {quote_response.opex_yearly:,.2f}</td>
-                </tr>
-                <tr>
-                    <td>Onderhoud per jaar</td>
-                    <td class="price" style="text-align: right;">€ {quote_response.maintenance_yearly:,.2f}</td>
-                </tr>
-            </table>
+        cat = item.get("category", "overig").title()
+        if cat not in cat_totals:
+            cat_totals[cat] = {"count": 0, "total": 0, "lease": 0}
+        cat_totals[cat]["count"] += item.get("quantity", 1)
+        cat_totals[cat]["total"] += item.get("total_price", 0)
+        cat_totals[cat]["lease"] += item.get("lease_monthly", 0) * item.get("quantity", 1)
+
+    products_html = ""
+    for item in quote_response.items:
+        products_html += f"""
+        <tr>
+            <td>{item['product_name']}</td>
+            <td>{item['category'].title()}</td>
+            <td class="center">{item['quantity']}</td>
+            <td class="price">€ {item['unit_price']:,.0f}</td>
+            <td class="price">€ {item.get('lease_monthly', 0):,.0f}</td>
+            <td class="price bold">€ {item['total_price']:,.0f}</td>
+        </tr>"""
+
+    cat_html = ""
+    for cat, data in cat_totals.items():
+        cat_html += f"""
+        <div class="cat-card">
+            <div class="cat-label">{cat}</div>
+            <div class="cat-value">€ {data['total']:,.0f}</div>
+            <div class="cat-sub">{data['count']} producten · € {data['lease']:,.0f}/mnd</div>
+        </div>"""
+
+    project_name = project.get('name', 'Project')
+    project_type = project.get('project_type', 'camping').replace('_', ' ').title()
+    num_spots = project.get('num_spots', 0)
+    annual_lease = quote_response.opex_yearly
+    total_inv = quote_response.project_total
+
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; max-width: 900px; margin: 0 auto; }}
+        .header {{ text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #70C26C; }}
+        .logo {{ font-size: 28px; font-weight: bold; color: #244628; letter-spacing: 3px; }}
+        .subtitle {{ color: #70C26C; font-size: 13px; margin-top: 4px; }}
+        .badge {{ display: inline-block; background: #70C26C; color: white; padding: 3px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 8px; }}
+        h1 {{ color: #244628; font-size: 22px; margin-bottom: 8px; }}
+        h2 {{ color: #333; margin-top: 30px; font-size: 15px; border-bottom: 1px solid #e5e2d9; padding-bottom: 8px; }}
+        .meta {{ color: #777; font-size: 13px; line-height: 1.6; }}
+        .metrics {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }}
+        .metric {{ background: #fafaf7; border: 1px solid #e5e2d9; border-radius: 12px; padding: 16px; text-align: center; }}
+        .metric .label {{ font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }}
+        .metric .value {{ font-size: 22px; font-weight: bold; margin-top: 4px; }}
+        .metric .value.green {{ color: #10b981; }}
+        .metric .value.amber {{ color: #f59e0b; }}
+        .metric .value.dark {{ color: #244628; }}
+        .cats {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }}
+        .cat-card {{ background: white; border: 1px solid #e5e2d9; border-radius: 10px; padding: 12px; }}
+        .cat-label {{ font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }}
+        .cat-value {{ font-size: 16px; font-weight: bold; color: #244628; margin-top: 4px; }}
+        .cat-sub {{ font-size: 10px; color: #999; margin-top: 2px; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }}
+        th {{ background: #244628; color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }}
+        td {{ padding: 10px 8px; border-bottom: 1px solid #e5e2d9; }}
+        .center {{ text-align: center; }}
+        .price {{ font-family: 'Courier New', monospace; text-align: right; }}
+        .bold {{ font-weight: bold; }}
+        .summary {{ background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; padding: 20px; margin: 24px 0; }}
+        .summary h3 {{ color: #10b981; margin: 0 0 12px; font-size: 14px; }}
+        .summary-row {{ display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #dcfce7; font-size: 13px; }}
+        .summary-row.total {{ font-weight: bold; font-size: 15px; border-bottom: none; padding-top: 10px; }}
+        .lease-box {{ background: #244628; color: white; border-radius: 12px; padding: 20px; margin: 24px 0; }}
+        .lease-box h3 {{ color: #70C26C; margin: 0 0 12px; font-size: 14px; }}
+        .lease-row {{ display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px; }}
+        .lease-row .label {{ color: rgba(255,255,255,0.7); }}
+        .lease-row .value {{ font-weight: bold; }}
+        .supplier-section {{ margin-top: 24px; }}
+        .supplier-tag {{ display: inline-block; background: #70C26C15; color: #244628; font-size: 10px; padding: 4px 10px; border-radius: 12px; margin: 3px; border: 1px solid #70C26C30; }}
+        .footer {{ margin-top: 40px; text-align: center; color: #999; font-size: 10px; padding-top: 20px; border-top: 1px solid #e5e2d9; }}
+        @media print {{ body {{ padding: 20px; }} }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">RECRA</div>
+        <div class="subtitle">S O L U T I O N S</div>
+        <div class="badge">Recreatie Infra — Offerte & Business Case</div>
+    </div>
+
+    <h1>{project_name}</h1>
+    <div class="meta">
+        <strong>Type:</strong> {project_type} · <strong>Standplaatsen:</strong> {num_spots} ·
+        <strong>Datum:</strong> {datetime.now().strftime('%d-%m-%Y')} ·
+        <strong>Geldig tot:</strong> {(datetime.now().replace(day=datetime.now().day)).strftime('%d-%m-%Y')} + 30 dagen
+    </div>
+
+    <div class="metrics">
+        <div class="metric">
+            <div class="label">Totale Investering</div>
+            <div class="value dark">€ {total_inv:,.0f}</div>
         </div>
-        
-        <div class="footer">
-            <p>RECRA Solutions - Uw partner voor recreatieparken</p>
-            <p>Deze offerte is geldig tot 30 dagen na dagtekening</p>
+        <div class="metric">
+            <div class="label">Lease / Maand</div>
+            <div class="value green">€ {quote_response.opex_monthly:,.0f}</div>
         </div>
-    </body>
-    </html>
-    """
-    
+        <div class="metric">
+            <div class="label">Lease / Jaar</div>
+            <div class="value amber">€ {annual_lease:,.0f}</div>
+        </div>
+        <div class="metric">
+            <div class="label">Producten</div>
+            <div class="value dark">{len(quote_response.items)}</div>
+        </div>
+    </div>
+
+    <h2>Investeringsoverzicht per categorie</h2>
+    <div class="cats">{cat_html}</div>
+
+    <h2>Productoverzicht</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Categorie</th>
+                <th>Aantal</th>
+                <th>Stukprijs</th>
+                <th>Lease/mnd</th>
+                <th>Totaal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {products_html}
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <h3>Kostenoverzicht</h3>
+        <div class="summary-row">
+            <span>Aankoopkosten</span>
+            <span class="price">€ {quote_response.capex_total:,.0f}</span>
+        </div>
+        <div class="summary-row">
+            <span>Installatiekosten</span>
+            <span class="price">€ {quote_response.installation_total:,.0f}</span>
+        </div>
+        <div class="summary-row">
+            <span>Reiskosten leveranciers</span>
+            <span class="price">€ {quote_response.travel_total:,.0f}</span>
+        </div>
+        <div class="summary-row total">
+            <span>Totaal investering</span>
+            <span class="price" style="color:#244628;">€ {total_inv:,.0f}</span>
+        </div>
+    </div>
+
+    <div class="lease-box">
+        <h3>Operational Lease Optie</h3>
+        <div class="lease-row">
+            <span class="label">Lease per maand</span>
+            <span class="value" style="color:#f59e0b;">€ {quote_response.opex_monthly:,.0f}</span>
+        </div>
+        <div class="lease-row">
+            <span class="label">Lease per jaar</span>
+            <span class="value">€ {annual_lease:,.0f}</span>
+        </div>
+        <div class="lease-row">
+            <span class="label">Onderhoud per jaar</span>
+            <span class="value">€ {quote_response.maintenance_yearly:,.0f}</span>
+        </div>
+        <div class="lease-row">
+            <span class="label">Looptijd</span>
+            <span class="value">60 maanden</span>
+        </div>
+        <p style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:10px;">Inclusief SLA onderhoudscontract. Prijzen excl. BTW.</p>
+    </div>
+
+    <div class="footer">
+        <p><strong>RECRA Solutions</strong> — Recreation Project Configurator & Partner Matching Platform</p>
+        <p>info@recrasolutions.com · +31 634200253 · www.recrasolutions.com</p>
+        <p>Powered by Pleisureworld x RECRA Solutions</p>
+    </div>
+</body>
+</html>"""
+
     return {
         "html": html_content,
-        "project_name": project.get('name', 'Project'),
+        "project_name": project_name,
         "quote": quote_response.model_dump()
     }
 
@@ -1374,6 +1450,7 @@ app.include_router(partner_router, prefix="/api")
 app.include_router(roadmap_router, prefix="/api")
 app.include_router(whitelabel_router, prefix="/api")
 app.include_router(subsidy_router, prefix="/api")
+app.include_router(crm_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

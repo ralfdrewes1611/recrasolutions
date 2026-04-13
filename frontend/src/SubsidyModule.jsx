@@ -5,6 +5,7 @@ import {
   X, ChevronRight, ChevronLeft, Sparkles, Loader2, FileText,
   TrendingUp, Shield, Zap, Users, Leaf, Handshake,
   Download, Phone, CheckCircle2, AlertTriangle, ArrowRight,
+  Mail, Building, User,
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -84,6 +85,10 @@ export function SubsidyModule({ onClose, projectContext }) {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [docLoading, setDocLoading] = useState(false);
+  const [contact, setContact] = useState({ naam: '', email: '', telefoon: '', bedrijf: '' });
+  const [leadSaved, setLeadSaved] = useState(false);
+  const [followUpHtml, setFollowUpHtml] = useState(null);
+  const [savingLead, setSavingLead] = useState(false);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -137,6 +142,41 @@ export function SubsidyModule({ onClose, projectContext }) {
       toast.error('Document generatie mislukt');
     } finally {
       setDocLoading(false);
+    }
+  };
+
+  const saveLead = async () => {
+    if (!contact.naam || !contact.email) { toast.error('Vul naam en e-mail in'); return; }
+    setSavingLead(true);
+    try {
+      await axios.post(`${API}/crm/leads`, {
+        ...contact,
+        flow_type: form.sector?.toLowerCase() || 'recreatie',
+        bron: 'subsidie_check',
+        project_beschrijving: form.projectomschrijving,
+        subsidie_score: result?.score,
+        subsidie_kans: result?.kans,
+        subsidie_range: result?.subsidie_range,
+        investering: form.investering,
+      });
+      setLeadSaved(true);
+      toast.success('Gegevens opgeslagen — wij nemen contact op');
+
+      // Generate follow-up email
+      const fRes = await axios.post(`${API}/crm/follow-up/generate`, {
+        naam: contact.naam,
+        email: contact.email,
+        subsidie_score: result?.score,
+        subsidie_kans: result?.kans,
+        subsidie_range: result?.subsidie_range,
+        project_beschrijving: form.projectomschrijving,
+        investering: form.investering,
+      });
+      setFollowUpHtml(fRes.data.email_html);
+    } catch {
+      toast.error('Opslaan mislukt');
+    } finally {
+      setSavingLead(false);
     }
   };
 
@@ -284,22 +324,79 @@ export function SubsidyModule({ onClose, projectContext }) {
             </div>
           )}
 
-          {/* CTA */}
-          <div className="bg-[#244628] rounded-xl p-4 space-y-2.5" data-testid="subsidy-cta">
-            <div className="text-xs text-white/70 mb-1">Volgende stap?</div>
-            <a href="mailto:info@recrasolutions.com?subject=Subsidie%20adviesgesprek"
-              className="w-full flex items-center justify-center gap-2 text-xs font-bold bg-[#70C26C] text-white rounded-lg py-2.5 hover:bg-[#5fb35b] transition-all"
-              data-testid="cta-recra-regelen"
-            >
-              <Handshake size={14} /> Laat RECRA dit voor je regelen
-            </a>
-            <a href="mailto:info@recrasolutions.com?subject=Plan%20adviesgesprek"
-              className="w-full flex items-center justify-center gap-2 text-xs font-medium text-white/80 border border-white/20 rounded-lg py-2.5 hover:bg-white/10 transition-all"
-              data-testid="cta-plan-gesprek"
-            >
-              <Phone size={14} /> Plan adviesgesprek
-            </a>
-          </div>
+          {/* Contact form / CRM Lead */}
+          {!leadSaved ? (
+            <div className="bg-[#244628] rounded-xl p-4 space-y-3" data-testid="subsidy-cta">
+              <div className="text-xs text-white font-medium">Laat uw gegevens achter</div>
+              <div className="text-[10px] text-white/50">Wij nemen binnen 24 uur contact op met een persoonlijk advies.</div>
+              <input
+                value={contact.naam} onChange={e => setContact(c => ({ ...c, naam: e.target.value }))}
+                placeholder="Naam *" data-testid="contact-naam"
+                className="w-full text-xs px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-[#70C26C]"
+              />
+              <input
+                value={contact.email} onChange={e => setContact(c => ({ ...c, email: e.target.value }))}
+                placeholder="E-mail *" type="email" data-testid="contact-email"
+                className="w-full text-xs px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-[#70C26C]"
+              />
+              <div className="flex gap-2">
+                <input
+                  value={contact.telefoon} onChange={e => setContact(c => ({ ...c, telefoon: e.target.value }))}
+                  placeholder="Telefoon" data-testid="contact-telefoon"
+                  className="flex-1 text-xs px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-[#70C26C]"
+                />
+                <input
+                  value={contact.bedrijf} onChange={e => setContact(c => ({ ...c, bedrijf: e.target.value }))}
+                  placeholder="Bedrijf" data-testid="contact-bedrijf"
+                  className="flex-1 text-xs px-3 py-2 rounded-lg bg-white/10 border border-white/15 text-white placeholder-white/30 focus:outline-none focus:border-[#70C26C]"
+                />
+              </div>
+              <button
+                onClick={saveLead} disabled={savingLead || !contact.naam || !contact.email}
+                className="w-full flex items-center justify-center gap-2 text-xs font-bold bg-[#70C26C] text-white rounded-lg py-2.5 hover:bg-[#5fb35b] transition-all disabled:opacity-40"
+                data-testid="save-lead-btn"
+              >
+                {savingLead ? <><Loader2 size={14} className="animate-spin" /> Opslaan...</> : <><Handshake size={14} /> Laat RECRA dit voor je regelen</>}
+              </button>
+              <a href="mailto:info@recrasolutions.com?subject=Plan%20adviesgesprek"
+                className="w-full flex items-center justify-center gap-2 text-xs font-medium text-white/60 border border-white/15 rounded-lg py-2 hover:bg-white/10 transition-all"
+                data-testid="cta-plan-gesprek"
+              >
+                <Phone size={12} /> Of bel direct: +31 634200253
+              </a>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="bg-[#f0fdf4] border border-[#86efac] rounded-xl p-4 text-center" data-testid="lead-saved">
+                <CheckCircle2 size={24} className="text-[#10b981] mx-auto mb-2" />
+                <div className="text-sm font-bold text-[#244628]">Bedankt, {contact.naam}!</div>
+                <div className="text-xs text-[#555] mt-1">Wij nemen zo snel mogelijk contact met u op.</div>
+              </div>
+
+              {followUpHtml && (
+                <div className="bg-white border border-[#e5e2d9] rounded-xl p-3" data-testid="follow-up-preview">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-[10px] text-[#999] uppercase tracking-wider flex items-center gap-1"><Mail size={10} /> Follow-up mail preview</div>
+                    <button
+                      onClick={() => {
+                        const w = window.open('', '_blank');
+                        w.document.write(followUpHtml);
+                        w.document.close();
+                      }}
+                      className="text-[10px] text-[#70C26C] hover:underline"
+                      data-testid="view-followup"
+                    >
+                      Bekijk volledig
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-[#555]">
+                    Aan: {contact.email}<br />
+                    Onderwerp: Uw subsidie-check resultaat — {result?.kans} kans
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Reset */}
           <button

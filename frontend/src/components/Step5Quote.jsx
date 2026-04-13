@@ -2,6 +2,7 @@ import React from 'react';
 import { Bath, Download, Truck, Lock, Map } from 'lucide-react';
 import { Button } from './ui/button';
 import { AIQuoteText } from '../AIQuoteText';
+import { ScenarioCompare } from '../ScenarioCompare';
 
 const SANITAIR_EXTRAS = {
   extra_douches: { label: 'Extra douches', price: 2500, lease: 60 },
@@ -203,6 +204,15 @@ export function Step5Quote({
           Idee naar Realisatie — Roadmap bekijken
         </Button>
       )}
+
+      {/* 3 Offerte Scenario's */}
+      <div className="mt-4" data-testid="scenario-section">
+        <ScenarioCompare
+          flowType="recreatie"
+          projectDescription={project?.name || 'Recreatiepark'}
+          investmentRange={quickQuote ? (quickQuote.capex_total > 100000 ? '> €100K' : quickQuote.capex_total > 25000 ? '€25K - €100K' : '€10K - €25K') : '€25K - €100K'}
+        />
+      </div>
     </div>
   );
 }
