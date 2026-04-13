@@ -12,6 +12,7 @@ import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { ScrollArea } from './components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
+import { SubsidyModule } from './SubsidyModule';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -46,6 +47,7 @@ export function FecWizard({ onBack, userTier }) {
   const [top5, setTop5] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showRoadmap, setShowRoadmap] = useState(false);
+  const [showSubsidy, setShowSubsidy] = useState(false);
   const [project, setProject] = useState({
     total_area_m2: 500,
     ceiling_height_m: 5.0,
@@ -260,6 +262,11 @@ export function FecWizard({ onBack, userTier }) {
           <span className="bg-[#f59e0b]/20 text-[#f59e0b] text-xs px-2 py-0.5 rounded-full font-medium">Revenue Engine</span>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowSubsidy(!showSubsidy)}
+            className={`text-xs flex items-center gap-1 px-3 py-1.5 rounded-full transition-all ${showSubsidy ? 'bg-[#f59e0b] text-white font-bold' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+            data-testid="fec-subsidy-btn">
+            <TrendingUp size={14} /> Subsidie Check
+          </button>
           <button onClick={() => setShowRoadmap(true)}
             className="text-white/60 hover:text-white text-xs flex items-center gap-1 px-3 py-1.5 rounded-full hover:bg-white/10 transition-all"
             data-testid="fec-roadmap-btn">
@@ -829,6 +836,20 @@ export function FecWizard({ onBack, userTier }) {
           </ScrollArea>
         </div>
       </div>
+
+      {/* Subsidie Panel */}
+      {showSubsidy && (
+        <div className="w-80 flex-shrink-0 border-l border-[#e5e2d9] bg-[#FFFEF8]" data-testid="fec-subsidy-panel">
+          <SubsidyModule
+            onClose={() => setShowSubsidy(false)}
+            projectContext={{
+              sector: 'Recreatie',
+              projectomschrijving: `FEC ${project.total_area_m2}m² — ${selectedProducts.length} attracties`,
+              investering: revenueReport ? (revenueReport.total_investment > 100000 ? '> €100K' : revenueReport.total_investment > 25000 ? '€25K - €100K' : '€10K - €25K') : '',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

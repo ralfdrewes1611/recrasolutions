@@ -7,6 +7,7 @@ import { ChaletWizard } from './ChaletWizard';
 import { PlatformDashboard } from './PlatformDashboard';
 import SupplierProfile from './SupplierProfile';
 import { RoadmapView } from './RoadmapView';
+import { SubsidyModule } from './SubsidyModule';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -18,6 +19,7 @@ import {
   Plus, Trash2, MapPin, FolderOpen, Save, Settings,
   HelpCircle, Phone, Mail, PenTool, MousePointer, Eye, EyeOff,
   BatteryCharging, Square, Check, X, Loader2, Zap, AlertTriangle, Download, RotateCw, Lock, Crown,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { ScrollArea } from './components/ui/scroll-area';
@@ -83,6 +85,7 @@ function App() {
   const [movingItem, setMovingItem] = useState(null);
   const [viewMode, setViewMode] = useState('2d');
   const [matchedSuppliers, setMatchedSuppliers] = useState([]);
+  const [showSubsidy, setShowSubsidy] = useState(false);
 
   const canvasRef = useRef(null);
 
@@ -539,6 +542,14 @@ function App() {
               <Save size={18} className="mr-2" /> Opslaan
             </Button>
             <Button className="bg-[#70C26C] hover:bg-[#5fb35b] text-white font-medium">Contact</Button>
+            <Button
+              variant="ghost"
+              className={`text-white/90 hover:text-white hover:bg-white/10 ${showSubsidy ? 'bg-white/10 text-white' : ''}`}
+              onClick={() => setShowSubsidy(!showSubsidy)}
+              data-testid="subsidy-toggle-btn"
+            >
+              <TrendingUp size={18} className="mr-2" /> Subsidie Check
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-white/90 hover:text-white hover:bg-white/10"><HelpCircle size={20} /></Button>
@@ -873,6 +884,19 @@ function App() {
               </TabsContent>
             </Tabs>
           </div>
+
+          {/* Subsidie Module — Right Sticky Panel */}
+          {showSubsidy && (
+            <div className="w-80 flex-shrink-0 border-l border-[#e5e2d9] bg-[#FFFEF8] flex flex-col" data-testid="subsidy-sidebar">
+              <SubsidyModule
+                onClose={() => setShowSubsidy(false)}
+                projectContext={{
+                  sector: 'Recreatie',
+                  projectomschrijving: project.name || '',
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />

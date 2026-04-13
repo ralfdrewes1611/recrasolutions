@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Slider } from './components/ui/slider';
 import SupplierProfile from './SupplierProfile';
+import { SubsidyModule } from './SubsidyModule';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -36,6 +37,7 @@ export function ChaletWizard({ onBack, onRoadmap }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [upgradeSelections, setUpgradeSelections] = useState({});
   const [upgradePricing, setUpgradePricing] = useState(null);
+  const [showSubsidy, setShowSubsidy] = useState(false);
 
   // Filters
   const [bestemming, setBestemming] = useState('recreatie');
@@ -129,6 +131,11 @@ export function ChaletWizard({ onBack, onRoadmap }) {
           <span className="text-[#70C26C] text-sm font-semibold">Chalet & Stay Configurator</span>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowSubsidy(!showSubsidy)}
+            className={`text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${showSubsidy ? 'bg-[#f59e0b] text-white font-bold' : 'text-white/70 hover:text-white'}`}
+            data-testid="chalet-subsidy-btn">
+            <TrendingUp size={13} /> Subsidie Check
+          </button>
           <button onClick={() => setViewMode('configurator')}
             className={`text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all ${viewMode === 'configurator' ? 'bg-[#70C26C] text-[#244628] font-bold' : 'text-white/70 hover:text-white'}`}
             data-testid="mode-configurator">
@@ -461,6 +468,17 @@ export function ChaletWizard({ onBack, onRoadmap }) {
     </div>
     {supplierProfileId && (
       <SupplierProfile partnerId={supplierProfileId} onClose={() => setSupplierProfileId(null)} />
+    )}
+    {showSubsidy && (
+      <div className="fixed right-0 top-14 bottom-0 w-80 bg-[#FFFEF8] border-l border-[#e5e2d9] z-40 shadow-xl" data-testid="chalet-subsidy-panel">
+        <SubsidyModule
+          onClose={() => setShowSubsidy(false)}
+          projectContext={{
+            sector: 'Recreatie',
+            projectomschrijving: selectedModel ? `${selectedModel.name} (${selectedModel.supplier_name})` : '',
+          }}
+        />
+      </div>
     )}
     </>
   );
