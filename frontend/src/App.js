@@ -9,6 +9,7 @@ import SupplierProfile from './SupplierProfile';
 import { RoadmapView } from './RoadmapView';
 import { SubsidyModule } from './SubsidyModule';
 import { SupplierAdmin } from './SupplierAdmin';
+import { LoginScreen } from './LoginScreen';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -52,6 +53,8 @@ const TIER_LABELS = { free: 'Free', pro: 'Pro', enterprise: 'Enterprise' };
 const TIER_COLORS = { free: '#777777', pro: '#70C26C', enterprise: '#244628' };
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [authChecking, setAuthChecking] = useState(true);
   const [activeFlow, setActiveFlow] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [products, setProducts] = useState([]);
@@ -89,6 +92,31 @@ function App() {
   const [showSubsidy, setShowSubsidy] = useState(false);
 
   const canvasRef = useRef(null);
+
+  // Auth check bij opstarten
+  useEffect(() => {
+    const token = localStorage.getItem('recra_token');
+    if (token) {
+      axios.get(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      }).then(res => {
+        setUser(res.data);
+      }).catch(() => {
+        localStorage.removeItem('recra_token');
+        localStorage.removeItem('recra_user');
+      }).finally(() => setAuthChecking(false));
+    } else {
+      setAuthChecking(false);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    axios.post(`${API}/auth/logout`, {}, { withCredentials: true }).catch(() => {});
+    localStorage.removeItem('recra_token');
+    localStorage.removeItem('recra_user');
+    setUser(null);
+  };
 
   // Fetch products filtered by active flow
   const fetchProducts = useCallback(async () => {
@@ -422,6 +450,23 @@ function App() {
     setCurrentStep(1); setShowProjectList(false);
   };
 
+  // Auth gate — voordat iets anders wordt gerenderd
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-[#244628] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl font-bold text-white tracking-[6px]">RECRA</div>
+          <div className="text-[#70C26C] text-xs tracking-[4px] mt-1">SOLUTIONS</div>
+          <div className="w-8 h-8 border-2 border-[#70C26C]/30 border-t-[#70C26C] rounded-full animate-spin mx-auto mt-6" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen onLogin={(userData) => setUser(userData)} />;
+  }
+
   if (!activeFlow) {
     return (
       <FlowSelector onSelect={(flow) => {
@@ -573,6 +618,11 @@ function App() {
                 <DropdownMenuItem className="text-[#333333]"><HelpCircle size={16} className="mr-2" />Handleiding</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="ghost" size="sm" onClick={handleLogout}
+              className="text-white/50 hover:text-white hover:bg-white/10 text-xs ml-1"
+              data-testid="logout-btn">
+              Uitloggen
+            </Button>
           </div>
         </header>
 
