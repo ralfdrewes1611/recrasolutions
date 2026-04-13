@@ -10,7 +10,7 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 
 ## Code Structuur
 ### Backend
-- `/app/backend/server.py` — Hoofd FastAPI app, Recreatie flow
+- `/app/backend/server.py` — Hoofd FastAPI app, Recreatie flow, verbeterde PDF export
 - `/app/backend/chalet_engine.py` — Chalet & Stay configurator
 - `/app/backend/fec_engine.py` — FEC Revenue Engine + PDF Export
 - `/app/backend/location_engine.py` — Locatie-intelligentie (provincies, grondprijzen)
@@ -18,6 +18,7 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 - `/app/backend/roadmap_engine.py` — "Idee naar Realisatie" fasen-overzicht
 - `/app/backend/whitelabel_engine.py` — White-label configuratie (RECRA + Pleisureworld)
 - `/app/backend/subsidy_engine.py` — Financiering & Subsidie Check (scoring + AI)
+- `/app/backend/crm_engine.py` — CRM leads, follow-up mails, scenario generator
 - `/app/backend/supabase_module.py` — Supabase tracking, benchmarks, leads
 
 ### Frontend
@@ -26,87 +27,88 @@ SaaS platform voor RECRA Solutions met 3 configuratie-flows (Recreatie Infra, Ch
 - `/app/frontend/src/ChaletWizard.jsx` — Chalet & Stay wizard + Subsidie
 - `/app/frontend/src/FecWizard.jsx` — FEC Revenue Engine + PDF + Subsidie
 - `/app/frontend/src/RoadmapView.jsx` — Roadmap: Idee naar Realisatie
-- `/app/frontend/src/SubsidyModule.jsx` — Financiering & Subsidie Check module
+- `/app/frontend/src/SubsidyModule.jsx` — Subsidie Check + CRM contactformulier + follow-up
+- `/app/frontend/src/ScenarioCompare.jsx` — 3 offerte-scenario's vergelijker
 - `/app/frontend/src/SupplierProfile.jsx` — Leveranciersprofiel modal
-- `/app/frontend/src/components/Step3Products.jsx` — Product selectie (Recreatie)
-- `/app/frontend/src/components/Step5Quote.jsx` — Offerte + Roadmap knop
+- `/app/frontend/src/components/Step5Quote.jsx` — Offerte + Roadmap + Scenario's
 
 ## Wat is gebouwd (voltooid)
 
 ### Basis Platform
 - [x] 3 configuratie-flows: Recreatie, Chalet, FEC
 - [x] 2D Site Planner met drag-and-drop
-- [x] Product database met echte leveranciersproducten (49 producten)
-- [x] 5 leveranciers: Kunert, Arcabo, BBS, Campsolutions, Ticra Outdoor
-- [x] Real product photos (gecrawled van leverancierssites)
-- [x] AI-powered terreinanalyse en offerte tekst (GPT-5.2)
+- [x] Product database (49 producten, 5 leveranciers)
+- [x] Real product photos (gecrawled)
+- [x] AI-powered terreinanalyse (GPT-5.2)
 - [x] Paywall tiers: Free, Pro, Enterprise
-- [x] Platform Dashboard met trends en benchmarks
-- [x] Supabase tracking voor analytics en leads
+- [x] Platform Dashboard
 
 ### P0 — Core Features
-- [x] Locatie-intelligentie (12 provincies, grondprijzen, regelgeving)
-- [x] 14 Ticra Outdoor wellness producten (hottubs, saunas, douches)
-- [x] Klikbare leveranciersnamen → SupplierProfile modal
-- [x] Click-tracking via Supabase
+- [x] Locatie-intelligentie (12 provincies)
+- [x] 14 Ticra Outdoor wellness producten
+- [x] Klikbare leveranciers + click-tracking
 
-### P1 — Verrijkte Leveranciers & Dynamiek (10 april 2026)
-- [x] Verrijkte profielen voor alle 5 leveranciers (podcasts, quotes, events, USPs, top 3)
-- [x] Dynamische "Top 3 meest gekozen" endpoint
-- [x] White-label modules: RECRA Solutions + Pleisureworld
-- [x] "Idee naar Realisatie" Roadmap mode (4 fasen per flow type)
+### P1 — Leveranciers & Dynamiek
+- [x] Verrijkte profielen alle 5 leveranciers
+- [x] Dynamische Top 3 endpoint
+- [x] White-label modules (RECRA + Pleisureworld)
+- [x] "Idee naar Realisatie" Roadmap mode
 
-### P2 — Business Case & Roadmap (10 april 2026)
-- [x] FEC PDF Export met volledige Business Case
-- [x] Roadmap geïntegreerd in Recreatie, Chalet en FEC
-- [x] FlowSelector uitgebreid naar 5 kaarten
+### P2 — Business Case & PDF
+- [x] FEC PDF Export met Business Case
+- [x] Recreatie PDF Export verbeterd (metrics, categorieën, lease, branding)
+- [x] Roadmap geïntegreerd in alle flows
 
-### Financiering & Subsidie Check Module (13 april 2026)
-- [x] 5-staps intake formulier (organisatie, project, financieel, impact, versterkers)
-- [x] Rules-based scoring engine (0-10) met sector fit, projecttype, impact, etc.
-- [x] Hard filter: investering < €10K → lage kans
-- [x] AI-powered subsidie analyse via GPT-5.2 (kans, toelichting, regelingen, verbeterpunten)
+### Financiering & Subsidie Check
+- [x] 5-staps intake formulier
+- [x] Rules-based scoring engine (0-10)
+- [x] AI-powered subsidie analyse (GPT-5.2)
 - [x] AI subsidie-aanvraag document generator
-- [x] Rechter sidebar integratie in alle 3 configurators
-- [x] CTA knoppen: "Laat RECRA dit voor je regelen" + "Plan adviesgesprek"
-- [x] Print/PDF export van gegenereerd subsidie document
+- [x] Rechter sidebar in alle 3 configurators
+
+### CRM & Conversie Engine (13 april 2026)
+- [x] CRM lead management (opslaan na subsidie check)
+- [x] Lead scoring (0-100): email+telefoon+bedrijf+project+subsidie+kans+investering
+- [x] Follow-up mail generator (professionele HTML template met RECRA branding)
+- [x] 3 automatische offerte-scenario's (Budget/Standaard/Premium) via GPT-5.2
+- [x] ScenarioCompare component in Recreatie Step5
+- [x] Contactformulier in SubsidyModule (naam, email, telefoon, bedrijf)
+- [x] Follow-up mail preview na lead opslag
 
 ## API Endpoints
-- `GET /api/products` — Alle producten
-- `GET /api/location/provinces` — Provincies
-- `GET /api/location/evaluate` — Locatie evaluatie
-- `GET /api/partners/profiles` — Alle leveranciers
-- `GET /api/partners/profiles/{id}` — Leveranciersprofiel
-- `GET /api/partners/profiles/{id}/dynamic-top3` — Dynamische top 3
-- `POST /api/supabase/partners/track` — Click tracking
-- `GET /api/roadmap/phases/{flow_type}` — Roadmap fasen
-- `GET /api/roadmap/summary` — Roadmap overzicht
-- `GET /api/whitelabel/config` — Actieve branding
-- `GET /api/whitelabel/configs` — Alle white-label configs
-- `POST /api/fec/pdf` — FEC Business Case PDF
-- `POST /api/subsidy/check` — Subsidie scoring (rules-based)
-- `POST /api/subsidy/ai-analyse` — AI subsidie analyse (GPT-5.2)
-- `POST /api/subsidy/generate-document` — AI subsidie-aanvraag generator
-- `POST /api/chalet/calculate` — Chalet prijsberekening
-- `GET /api/fec/products` — FEC attracties
+### Core
+- `GET /api/products`, `POST /api/quote/pdf`, `POST /api/chalet/calculate`
+- `GET /api/fec/products`, `POST /api/fec/pdf`
+
+### Platform
+- `GET /api/location/provinces`, `GET /api/location/evaluate`
+- `GET /api/partners/profiles/{id}`, `GET /api/partners/profiles/{id}/dynamic-top3`
+- `POST /api/supabase/partners/track`
+- `GET /api/roadmap/phases/{flow_type}`
+- `GET /api/whitelabel/config`, `GET /api/whitelabel/configs`
+
+### Subsidie & CRM
+- `POST /api/subsidy/check` — Rules-based scoring
+- `POST /api/subsidy/ai-analyse` — AI subsidie analyse
+- `POST /api/subsidy/generate-document` — Subsidie-aanvraag generator
+- `POST /api/crm/leads` — Lead aanmaken + lead score
+- `GET /api/crm/leads` — Leads ophalen
+- `POST /api/crm/leads/{id}/follow-up` — Follow-up mail genereren
+- `POST /api/crm/follow-up/generate` — Follow-up mail (zonder lead)
+- `POST /api/crm/scenarios/generate` — 3 offerte-scenario's
 
 ## Prioritized Backlog
 
-### P2 (Resterend)
-- [ ] Recreatie PDF export verbeteren (vergelijkbaar met FEC business case niveau)
-
 ### P3
-- [ ] CRM integratie (lead = warm na subsidie check)
-- [ ] Offerte automatisch 3 scenario's genereren
-- [ ] Follow-up mail na subsidie check
 - [ ] Partner portal / Supplier login
 - [ ] Auth systeem via Supabase Auth
 - [ ] 3D Canvas / AR Preview
 - [ ] Benchmark Mode (publiek dashboard)
+- [ ] Real email sending (Resend/SendGrid integratie)
+- [ ] CRM dashboard voor sales team
 
 ## Test Iteraties
-- Iteratie 19: Real Product Photos & Pricing ✅
-- Iteratie 20: Location Intelligence & Ticra Products ✅
-- Iteratie 21: Supplier Profiles & Click Tracking ✅
-- Iteratie 22: P1/P2 Features (Roadmap, PDF, White-label, Dynamic Top 3) ✅ 100%
-- Iteratie 23: Financiering & Subsidie Check Module ✅ 100%
+- Iteratie 19-21: Core features ✅
+- Iteratie 22: P1/P2 (Roadmap, PDF, White-label, Dynamic Top 3) ✅ 100%
+- Iteratie 23: Subsidie Check Module ✅ 100%
+- Iteratie 24: CRM, Scenario's, Follow-up Mail, Verbeterde PDF ✅ 100%
