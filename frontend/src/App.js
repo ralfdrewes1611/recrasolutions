@@ -8,6 +8,7 @@ import { PlatformDashboard } from './PlatformDashboard';
 import SupplierProfile from './SupplierProfile';
 import { RoadmapView } from './RoadmapView';
 import { SubsidyModule } from './SubsidyModule';
+import { SupplierAdmin } from './SupplierAdmin';
 import { SupplierPanel } from './SupplierPanel';
 import { Step1ProjectDetails } from './components/Step1ProjectDetails';
 import { Step2Terrain } from './components/Step2Terrain';
@@ -480,6 +481,17 @@ function App() {
       </>
     );
   }
+
+  // Supplier Admin
+  if (activeFlow === 'admin-suppliers') {
+    return (
+      <>
+        <SupplierAdmin onBack={() => setActiveFlow(null)} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
 
 
   return (

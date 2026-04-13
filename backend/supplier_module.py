@@ -38,6 +38,7 @@ class SupplierBase(BaseModel):
     lat: float = 52.0
     lng: float = 5.0
     categories: List[str] = []  # slagboom, camera, sanitair, wifi, etc.
+    flows: List[str] = []  # recreatie, chalet, fec — welke configurators
     price_per_km: float = 0.45
     start_fee: float = 75.0
     hourly_rate_travel: float = 65.0
@@ -45,6 +46,7 @@ class SupplierBase(BaseModel):
     verified_status: str = "basic"  # verified | compatible | basic
     contact_email: str = ""
     contact_phone: str = ""
+    website: str = ""
     notes: str = ""
 
 
@@ -63,6 +65,7 @@ class SupplierUpdate(BaseModel):
     lat: Optional[float] = None
     lng: Optional[float] = None
     categories: Optional[List[str]] = None
+    flows: Optional[List[str]] = None
     price_per_km: Optional[float] = None
     start_fee: Optional[float] = None
     hourly_rate_travel: Optional[float] = None
@@ -70,6 +73,7 @@ class SupplierUpdate(BaseModel):
     verified_status: Optional[str] = None
     contact_email: Optional[str] = None
     contact_phone: Optional[str] = None
+    website: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -124,15 +128,46 @@ def calculate_travel_cost(supplier: dict, project_lat: float, project_lng: float
 # ─── SUPPLIER CRUD ──────────────────────────────────────────────
 
 @supplier_router.get("")
-async def list_suppliers(category: Optional[str] = None):
+async def list_suppliers(category: Optional[str] = None, flow: Optional[str] = None):
     db = get_db()
     query = {}
     if category:
         query["categories"] = category
+    if flow:
+        query["flows"] = flow
     suppliers = []
     async for doc in db.suppliers.find(query, {"_id": 0}):
         suppliers.append(doc)
     return suppliers
+
+
+@supplier_router.get("/stats")
+async def supplier_stats():
+    """Overzicht statistieken van leveranciers."""
+    db = get_db()
+    suppliers = []
+    async for doc in db.suppliers.find({}, {"_id": 0}):
+        suppliers.append(doc)
+
+    flow_counts = {"recreatie": 0, "chalet": 0, "fec": 0}
+    status_counts = {"verified": 0, "compatible": 0, "basic": 0}
+    all_categories = set()
+
+    for s in suppliers:
+        for f in s.get("flows", []):
+            if f in flow_counts:
+                flow_counts[f] += 1
+        status = s.get("verified_status", "basic")
+        status_counts[status] = status_counts.get(status, 0) + 1
+        for c in s.get("categories", []):
+            all_categories.add(c)
+
+    return {
+        "total": len(suppliers),
+        "per_flow": flow_counts,
+        "per_status": status_counts,
+        "categories": sorted(all_categories),
+    }
 
 
 @supplier_router.post("")
@@ -253,12 +288,14 @@ SEED_SUPPLIERS = [
         "lat": 51.4775,
         "lng": 5.6611,
         "categories": ["slagboom"],
+        "flows": ["recreatie"],
         "price_per_km": 0.42,
         "start_fee": 85,
         "hourly_rate_travel": 65,
         "avg_speed_kmh": 80,
         "verified_status": "verified",
         "contact_email": "info@nice-benelux.nl",
+        "website": "https://www.nice-benelux.nl",
     },
     {
         "name": "Ubiquiti / UI.com Distributeur NL",
@@ -266,12 +303,14 @@ SEED_SUPPLIERS = [
         "lat": 52.3676,
         "lng": 4.9041,
         "categories": ["camera", "wifi", "toegangscontrole"],
+        "flows": ["recreatie", "fec"],
         "price_per_km": 0.45,
         "start_fee": 75,
         "hourly_rate_travel": 70,
         "avg_speed_kmh": 80,
         "verified_status": "verified",
         "contact_email": "info@ui-distributeur.nl",
+        "website": "https://www.ui.com",
     },
     {
         "name": "Sanitec Recreatie",
@@ -279,12 +318,14 @@ SEED_SUPPLIERS = [
         "lat": 52.2112,
         "lng": 5.9699,
         "categories": ["sanitair"],
+        "flows": ["recreatie"],
         "price_per_km": 0.50,
         "start_fee": 100,
         "hourly_rate_travel": 72,
         "avg_speed_kmh": 70,
         "verified_status": "compatible",
         "contact_email": "info@sanitec-recreatie.nl",
+        "website": "https://www.sanitec-recreatie.nl",
     },
     {
         "name": "Adyen Payments",
@@ -292,12 +333,14 @@ SEED_SUPPLIERS = [
         "lat": 52.3546,
         "lng": 4.8622,
         "categories": ["betaalsysteem", "douchelezer"],
+        "flows": ["recreatie", "fec"],
         "price_per_km": 0.40,
         "start_fee": 50,
         "hourly_rate_travel": 80,
         "avg_speed_kmh": 80,
         "verified_status": "verified",
         "contact_email": "support@adyen.com",
+        "website": "https://www.adyen.com",
     },
     {
         "name": "Van Loon Verlichting",
@@ -305,12 +348,14 @@ SEED_SUPPLIERS = [
         "lat": 51.4416,
         "lng": 5.4697,
         "categories": ["verlichting"],
+        "flows": ["recreatie", "chalet", "fec"],
         "price_per_km": 0.48,
         "start_fee": 65,
         "hourly_rate_travel": 60,
         "avg_speed_kmh": 80,
         "verified_status": "basic",
         "contact_email": "info@vanloonverlichting.nl",
+        "website": "https://www.vanloonverlichting.nl",
     },
 ]
 
@@ -327,4 +372,17 @@ async def seed_suppliers(db_override=None):
             await db_ref.suppliers.insert_one(doc)
         logger.info(f"Seeded {len(SEED_SUPPLIERS)} suppliers")
     else:
-        logger.info(f"Database has {count} suppliers")
+        # Migrate: add flows + website to existing suppliers missing them
+        flow_map = {s["name"]: s for s in SEED_SUPPLIERS}
+        async for doc in db_ref.suppliers.find({}):
+            if not doc.get("flows"):
+                seed = flow_map.get(doc["name"], {})
+                updates = {}
+                if seed.get("flows"):
+                    updates["flows"] = seed["flows"]
+                if seed.get("website"):
+                    updates["website"] = seed["website"]
+                if not updates:
+                    updates = {"flows": ["recreatie"], "website": ""}
+                await db_ref.suppliers.update_one({"id": doc["id"]}, {"$set": updates})
+        logger.info(f"Database has {count} suppliers (migrated flows)")
