@@ -101,7 +101,6 @@ function App() {
     if (token) {
       axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
       }).then(res => {
         setUser(res.data);
       }).catch(() => {
@@ -114,7 +113,7 @@ function App() {
   }, []);
 
   const handleLogout = () => {
-    axios.post(`${API}/auth/logout`, {}, { withCredentials: true }).catch(() => {});
+    axios.post(`${API}/auth/logout`, {}).catch(() => {});
     localStorage.removeItem('recra_token');
     localStorage.removeItem('recra_user');
     setUser(null);

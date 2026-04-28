@@ -17,7 +17,7 @@ export function LoginScreen({ onLogin }) {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.post(`${API}/auth/login`, { username, password }, { withCredentials: true });
+      const res = await axios.post(`${API}/auth/login`, { username, password });
       localStorage.setItem('recra_token', res.data.token);
       localStorage.setItem('recra_user', JSON.stringify(res.data));
       onLogin(res.data);
