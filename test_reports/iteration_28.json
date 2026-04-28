@@ -1,0 +1,45 @@
+{
+  "summary": "Frontend-only testing for iteration 28: premium FlowSelector redesign + new full-page EijsinkPartnerPage + back-navigation to Horeca wizard. All 10 targeted checks passed end-to-end in a single Playwright run against the public URL.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/flow_selector.png",
+    "/app/test_reports/eijsink_page.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "App.js exceeds 1000 lines — consider splitting the Recreatie wizard + canvas logic into its own module for maintainability (non-blocking).",
+    "EijsinkPartnerPage.jsx posts a /platform/partners/track call on mount with a silent .catch — if the backend endpoint is missing/changes, there is no telemetry of failures. Optional improvement: log errors in dev mode."
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "not_tested (scope: frontend only)",
+    "frontend": "100% (10/10 targeted checks)"
+  },
+  "test_credentials": "AdminRECRA / Welkom123$ (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "FlowSelector now renders the 7-tile premium grid with Unsplash hero images (lazy-loaded), numbered 01-07 badges, 'Kies je sector' h1, '01 · Start' eyebrow, cream bg #FDF9ED. Horeca tile description uses 'POS-kassa\\'s' (no Eijsink string anywhere in FlowSelector DOM). Clicking the 'Eijsink' supplier name (data-testid=horeca-supplier-Eijsink) in Horeca step 2 opens full page <EijsinkPartnerPage> (data-testid=eijsink-partner-page) — NOT a modal. Back button (data-testid=eijsink-back-btn) correctly returns to the Horeca wizard (activeFlow='horeca'), not FlowSelector. EijsinkPartnerPage shows all expected sections: hero, h1='Eijsink', Pleisureworld badge, 4 stats cards, Over deze partner + USPs, 6 Eijsink products (3 kassa + 3 bestelzuil) grouped by category, trendwatcher quote, Leisure Talk podcast, events, bottom Terug button. No console errors observed. Backend /api/partners/profiles/eijsink and /api/horeca/products responded successfully (evidenced by rendered data: 6 products + full profile).",
+  "detailed_results": {
+    "TEST_1_flow_selector_rendered": "PASS",
+    "TEST_2_all_7_tiles_present": "PASS (recreatie, chalet, fec, horeca, dashboard, roadmap, admin-suppliers)",
+    "TEST_3_headline_kies_je_sector": "PASS",
+    "TEST_3b_eyebrow_01_start": "PASS",
+    "TEST_4_eijsink_absent_from_flowselector": "PASS",
+    "TEST_5_horeca_description_pos_kassas": "PASS ('Bar, POS-kassa\\'s, bestelzuilen, vending, pub games & terras')",
+    "TEST_6_numbered_badges": "PASS (7/7 numbered badges 01-07 present)",
+    "TEST_7_unsplash_hero_images": "PASS (7/7 Unsplash hero images loaded)",
+    "TEST_8_cream_bg_FDF9ED": "PASS (computed bg rgb(253,249,237))",
+    "TEST_9_eijsink_click_opens_full_page": "PASS (eijsink-partner-page rendered, NOT modal; all 6 sections present, 6 products shown)",
+    "TEST_10_back_btn_returns_to_horeca_wizard": "PASS (FlowSelector NOT re-rendered after Terug click; horeca wizard restored)"
+  },
+  "rca of the issue": "n/a — no bugs found"
+}

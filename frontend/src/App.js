@@ -4,6 +4,7 @@ import { Toaster, toast } from 'sonner';
 import { FlowSelector } from './FlowSelector';
 import { FecWizard } from './FecWizard';
 import HorecaWizard from './HorecaWizard';
+import EijsinkPartnerPage from './EijsinkPartnerPage';
 import { ChaletWizard } from './ChaletWizard';
 import { PlatformDashboard } from './PlatformDashboard';
 import SupplierProfile from './SupplierProfile';
@@ -491,7 +492,20 @@ function App() {
   if (activeFlow === 'horeca') {
     return (
       <>
-        <HorecaWizard onBack={() => setActiveFlow(null)} />
+        <HorecaWizard
+          onBack={() => setActiveFlow(null)}
+          onOpenEijsinkPage={() => setActiveFlow('partner-eijsink')}
+        />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
+  // Eijsink Partner Page — full page (not modal)
+  if (activeFlow === 'partner-eijsink') {
+    return (
+      <>
+        <EijsinkPartnerPage onBack={() => setActiveFlow('horeca')} />
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </>
     );

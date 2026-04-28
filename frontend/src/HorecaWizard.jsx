@@ -35,7 +35,7 @@ const SUPPLIER_PROFILE_MAP = {
   'Eijsink': 'eijsink',
 };
 
-export default function HorecaWizard({ onBack }) {
+export default function HorecaWizard({ onBack, onOpenEijsinkPage }) {
   const [step, setStep] = useState(1);
   const [products, setProducts] = useState([]);
   const [top5, setTop5] = useState([]);
@@ -313,8 +313,11 @@ export default function HorecaWizard({ onBack }) {
                     <h3 className="font-bold text-sm text-[#244628] mb-1 line-clamp-2">{p.name}</h3>
                     <p className="text-xs text-[#777] mb-3 line-clamp-3">{p.description}</p>
                     <div className="flex items-center gap-2 mb-3">
-                      <button onClick={() => hasProfile && setProfilePartnerId(hasProfile)} data-testid={`horeca-supplier-${p.supplier}`}
-                        className={`text-xs ${hasProfile ? 'text-[#244628] font-semibold underline cursor-pointer hover:text-[#70C26C]' : 'text-[#777]'}`}>
+                      <button onClick={() => {
+                        if (p.supplier === 'Eijsink' && onOpenEijsinkPage) onOpenEijsinkPage();
+                        else if (hasProfile) setProfilePartnerId(hasProfile);
+                      }} data-testid={`horeca-supplier-${p.supplier}`}
+                        className={`text-xs ${(p.supplier === 'Eijsink' || hasProfile) ? 'text-[#244628] font-semibold underline cursor-pointer hover:text-[#70C26C]' : 'text-[#777]'}`}>
                         {p.supplier}
                       </button>
                     </div>
