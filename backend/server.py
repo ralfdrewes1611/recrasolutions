@@ -20,6 +20,7 @@ load_dotenv(ROOT_DIR / '.env')
 from ai_services import ai_router
 from supplier_module import supplier_router, seed_suppliers, calculate_travel_cost
 from fec_engine import fec_router
+from horeca_engine import horeca_router
 from chalet_engine import chalet_router
 from supabase_module import supabase_router
 from location_engine import location_router
@@ -1444,6 +1445,7 @@ app.include_router(api_router)
 app.include_router(ai_router)
 app.include_router(supplier_router)
 app.include_router(fec_router, prefix="/api")
+app.include_router(horeca_router, prefix="/api")
 app.include_router(chalet_router, prefix="/api")
 app.include_router(supabase_router, prefix="/api")
 app.include_router(location_router, prefix="/api")

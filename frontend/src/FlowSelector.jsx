@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tent, Home, Gamepad2, ArrowRight, BarChart3, Map, Settings } from 'lucide-react';
+import { Tent, Home, Gamepad2, ArrowRight, BarChart3, Map, Settings, Beer } from 'lucide-react';
 
 const flows = [
   {
@@ -25,6 +25,14 @@ const flows = [
     icon: Gamepad2,
     color: '#f59e0b',
     bgColor: '#f59e0b10',
+  },
+  {
+    id: 'horeca',
+    label: 'Horeca & Bar',
+    description: 'Bar, kassa\'s (Eijsink), bestelzuilen, vending, pub games & terras',
+    icon: Beer,
+    color: '#b45309',
+    bgColor: '#b4530910',
   },
   {
     id: 'dashboard',

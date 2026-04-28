@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Toaster, toast } from 'sonner';
 import { FlowSelector } from './FlowSelector';
 import { FecWizard } from './FecWizard';
+import HorecaWizard from './HorecaWizard';
 import { ChaletWizard } from './ChaletWizard';
 import { PlatformDashboard } from './PlatformDashboard';
 import SupplierProfile from './SupplierProfile';
@@ -481,6 +482,16 @@ function App() {
     return (
       <>
         <FecWizard onBack={() => setActiveFlow(null)} userTier={userTier} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
+  // Horeca & Bar — bar / kassa / bestelzuilen / pub games configurator
+  if (activeFlow === 'horeca') {
+    return (
+      <>
+        <HorecaWizard onBack={() => setActiveFlow(null)} />
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </>
     );

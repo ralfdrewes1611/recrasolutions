@@ -1,0 +1,61 @@
+{
+  "summary": "Iteration 27 — Horeca flow E2E test (backend + frontend). All 14 backend tests passed and all frontend critical paths (FlowSelector tile, 3-step wizard, Eijsink supplier modal, lease formula, Step 3 business case) verified.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration27_horeca.py",
+    "/app/test_reports/pytest/pytest_results_iter27.xml"
+  ],
+  "tests_executed": {
+    "backend": [
+      "GET /api/horeca/products returns 32 products (PASS)",
+      "Eijsink POS Touchkassa lease = 83.22 — formula (3300+500)*0.0219 verified (PASS)",
+      "Lease formula validated for all 32 products (PASS)",
+      "No raw multiplier/margin keys exposed in /horeca/products (PASS)",
+      "GET /api/horeca/suppliers returns 7 expected suppliers (PASS)",
+      "GET /api/horeca/zone-types returns 7 expected zone types (PASS)",
+      "GET /api/horeca/top5 returns 5 products sorted by revenue_per_m2 desc with lease_monthly field (PASS)",
+      "POST /api/horeca/calculate-revenue with products: full report shape, lease sum invariant (PASS)",
+      "POST /api/horeca/calculate-revenue with empty products: zeroed report, no crash (PASS)",
+      "GET /api/partners/profiles/eijsink: name, tagline, 3 top_producten, 6 usps, podcast Leisure Talk #21 with Jesse, trendwatcher_quote, stats, deelname (PASS)",
+      "POST /api/auth/login AdminRECRA / Welkom123$ (PASS)"
+    ],
+    "frontend": [
+      "FlowSelector shows 7 user-facing flow tiles + 1 grid container (8 data-testid='flow-*' total). flow-horeca tile present (PASS)",
+      "Click flow-horeca routes to HorecaWizard. horeca-wizard + horeca-step-1 visible (PASS)",
+      "horeca-next-step1 advances to step 2 (horeca-step-2 rendered) (PASS)",
+      "Step 2: 32 horeca-add-* buttons present; 'Vanaf ... per maand' visible; no '0.0219'/'2.19%'/'2,19%' leak in DOM (PASS)",
+      "Click product Toevoegen: header updates to 'Vanaf €X per maand' (no raw multiplier shown) (PASS)",
+      "Click [data-testid='horeca-supplier-Eijsink'] opens SupplierProfile modal with: 'Jesse' mention, 'Leisure Talk #21' podcast, 'POS-systemen' tagline, stats 350+/35+/8.000+/4.7/5, podcast Beluister button, Richard Otten trendwatcher quote, top 3 products, USPs (PASS)",
+      "horeca-calc-revenue invokes /api/horeca/calculate-revenue and renders horeca-step-3 with lease 'Vanaf € 394 per maand', netto winst, jaarlijkse winst, Top performers (Heineken/Eijsink Bestelzuil/Eijsink POS), Aanbevelingen (Pub Games + Terras), and Alle producten table with per-row lease/mnd values (PASS)",
+      "Step 3: no '0.0219'/'2.19%'/'2,19%' leak in DOM (PASS)"
+    ]
+  },
+  "action_items": [],
+  "critical_code_review_comments": [
+    "horeca_engine.py is 800+ lines and embeds the full product catalogue inline; consider splitting HORECA_PRODUCTS / HORECA_SUPPLIERS into a JSON or seed file to keep engine logic <500 lines and ease future product additions.",
+    "calculate-revenue endpoint accepts a raw dict (no Pydantic model). Adding a request schema (HorecaCalculateRequest) would give 422 on malformed input instead of silently mapping to empty.",
+    "calc_lease_monthly() is duplicated conceptually with the FEC/Chalet flows. Consider extracting to a shared lease_utils module to guarantee a single source of truth for the deterministic formula across all flows.",
+    "Modal close: Escape key did not close SupplierProfile during automated test (overlay intercepted pointer events). Verify that the modal supports ESC-to-close for keyboard accessibility (a11y nice-to-have, not blocking)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration27_horeca.py (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14)",
+    "frontend": "100% of critical paths"
+  },
+  "test_credentials": "AdminRECRA / Welkom123$ (from /app/memory/test_credentials.md) — login working.",
+  "seed_data_creation": "None. Used in-memory HORECA_PRODUCTS list shipped in horeca_engine.py.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Horeca flow is fully working. Backend tests live at /app/backend/tests/test_iteration27_horeca.py (re-runnable). Lease formula (investment + max(investment*0.10, 500)) * 0.0219 verified end-to-end. Eijsink demo to Jesse should work — modal renders podcast, trendwatcher quote, stats, top products, USPs. No frontend leak of raw multiplier or margin in any of the 3 steps. ESC-key on SupplierProfile overlay does not close it; if main agent wants keyboard a11y, add ESC handler — not blocking.",
+  "rca of the issue": "No bugs found."
+}
