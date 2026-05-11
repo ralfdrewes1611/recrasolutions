@@ -296,13 +296,16 @@ export function ChaletWizard({ onBack, onRoadmap }) {
                         <DakIcon dakVorm={m.dak_vorm} size={13} className={isActive ? 'text-white/50' : 'text-[#ccc]'} />
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <button
-                          className={`text-[10px] px-1.5 py-0.5 rounded hover:underline ${isActive ? 'bg-white/20 text-white/80' : 'bg-[#FDF9ED] text-[#777]'}`}
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          className={`text-[10px] px-1.5 py-0.5 rounded hover:underline cursor-pointer ${isActive ? 'bg-white/20 text-white/80' : 'bg-[#FDF9ED] text-[#777]'}`}
                           onClick={(e) => { e.stopPropagation(); openSupplierProfile(m.supplier_name); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); openSupplierProfile(m.supplier_name); } }}
                           data-testid={`model-supplier-${m.id}`}
                         >
                           {m.supplier_name}
-                        </button>
+                        </span>
                         <span className={`text-[10px] ${isActive ? 'text-white/60' : 'text-[#aaa]'}`}>{m.oppervlakte_m2} m²</span>
                       </div>
                       <div className="flex items-center justify-between mt-1">
