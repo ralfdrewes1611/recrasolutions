@@ -759,9 +759,12 @@ UPGRADE_OPTIONS = {
             {"id": "bad-wellness", "name": "Wellness Badkamer", "description": "Vrijstaand bad, regendouche, sauna", "price": 7500},
         ],
         "terras": [
-            {"id": "terras-geen", "name": "Geen Terras", "description": "Alleen deur naar buiten", "price": 0},
-            {"id": "terras-klein", "name": "Klein Terras 6m²", "description": "Overdekt terras, tuinmeubilair", "price": 3200},
-            {"id": "terras-groot", "name": "Groot Terras 15m²", "description": "Wraparound terras, loungeset, buitenkeuken", "price": 8000},
+            {"id": "terras-geen", "name": "Geen Terras", "description": "Alleen deur naar buiten", "price": 0, "supplier": ""},
+            {"id": "terras-madino-bistro", "name": "Madino Bistro Set (4p)", "description": "Bistro tafel + 4 stoelen, weerbestendig aluminium, ideaal voor klein terras", "price": 1450, "supplier": "Madino", "image": "https://images.unsplash.com/photo-1604014237800-1c9102c219da?w=800&h=600&fit=crop"},
+            {"id": "terras-madino-lounge", "name": "Madino Premium Lounge Set", "description": "Modulaire lounge-bank (6p), salontafel, weerbestendige kussens, Knotty wood frame", "price": 3950, "supplier": "Madino", "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&h=600&fit=crop"},
+            {"id": "terras-madino-dining", "name": "Madino Dining Set (8p)", "description": "Eettafel 220cm + 8 designstoelen, teak met RVS, voor groot terras of veranda", "price": 4750, "supplier": "Madino", "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop"},
+            {"id": "terras-madino-loungebed", "name": "Madino Daybed XL", "description": "Loungebed met overkapping, 2-persoons, draaibaar, ideaal voor luxe chalet", "price": 2750, "supplier": "Madino", "image": "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&h=600&fit=crop"},
+            {"id": "terras-madino-firepit", "name": "Madino Firepit Lounge Set", "description": "Lounge rond firepit, 6 personen, gas firepit incl. lavasteen, robuust aluminium", "price": 5450, "supplier": "Madino", "image": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&h=600&fit=crop"},
         ],
         "interieur": [
             {"id": "int-basis", "name": "Basis Interieur", "description": "Functioneel meubilair, eenvoudige afwerking", "price": 0},
@@ -853,8 +856,8 @@ INSPIRATIE_PAKKETTEN = [
         "flow_type": "chalet",
         "categorie": "chalet",
         "models": [
-            {"model_id": "arcabo-zadel-18", "quantity": 5, "upgrades": {"keuken": "keuken-luxe", "badkamer": "bad-wellness", "terras": "terras-groot", "interieur": "int-luxe", "klimaat": "klim-wp", "duurzaamheid": "duur-solar"}},
-            {"model_id": "arcabo-charleston", "quantity": 2, "upgrades": {"keuken": "keuken-luxe", "badkamer": "bad-wellness", "terras": "terras-groot", "interieur": "int-luxe", "klimaat": "klim-wp", "duurzaamheid": "duur-solar"}},
+            {"model_id": "arcabo-zadel-18", "quantity": 5, "upgrades": {"keuken": "keuken-luxe", "badkamer": "bad-wellness", "terras": "terras-madino-dining", "interieur": "int-luxe", "klimaat": "klim-wp", "duurzaamheid": "duur-solar"}},
+            {"model_id": "arcabo-charleston", "quantity": 2, "upgrades": {"keuken": "keuken-luxe", "badkamer": "bad-wellness", "terras": "terras-madino-dining", "interieur": "int-luxe", "klimaat": "klim-wp", "duurzaamheid": "duur-solar"}},
         ],
         "total_units": 7,
         "estimated_investment": 1120000,
@@ -870,8 +873,8 @@ INSPIRATIE_PAKKETTEN = [
         "flow_type": "chalet",
         "categorie": "chalet",
         "models": [
-            {"model_id": "bbs-compact", "quantity": 3, "upgrades": {"keuken": "keuken-compleet", "badkamer": "bad-basis", "terras": "terras-klein", "interieur": "int-comfort", "klimaat": "klim-cv", "duurzaamheid": "duur-geen"}},
-            {"model_id": "kunert-haven", "quantity": 4, "upgrades": {"keuken": "keuken-compleet", "badkamer": "bad-basis", "terras": "terras-klein", "interieur": "int-comfort", "klimaat": "klim-cv", "duurzaamheid": "duur-geen"}},
+            {"model_id": "bbs-compact", "quantity": 3, "upgrades": {"keuken": "keuken-compleet", "badkamer": "bad-basis", "terras": "terras-madino-bistro", "interieur": "int-comfort", "klimaat": "klim-cv", "duurzaamheid": "duur-geen"}},
+            {"model_id": "kunert-haven", "quantity": 4, "upgrades": {"keuken": "keuken-compleet", "badkamer": "bad-basis", "terras": "terras-madino-bistro", "interieur": "int-comfort", "klimaat": "klim-cv", "duurzaamheid": "duur-geen"}},
         ],
         "total_units": 7,
         "estimated_investment": 480000,

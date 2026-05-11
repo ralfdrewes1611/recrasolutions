@@ -442,43 +442,190 @@ PARTNER_PROFILES = {
             "Ondersteuning bij vergunningsaanvraag",
         ],
     },
+    "madino": {
+        "id": "madino",
+        "name": "Madino",
+        "tagline": "Premium terras- en buitenmeubilair voor recreatie en hospitality",
+        "description": "Madino is dé specialist in premium terras- en buitenmeubilair voor de recreatie- en hospitality-sector. Van lounge-sets en dining-sets tot daybeds en firepit-loungers — elk product wordt ontworpen voor het Nederlandse buitenklimaat, met weerbestendige materialen (teak, RVS, gepoedercoat aluminium) en duurzame kussens. Voor parkeigenaren leveren we maatwerk per chalet of glamping-unit: van bistro-set bij een budget-chalet tot een complete firepit-lounge bij premium accommodatie. Inclusief installatie, opslag in winter en SLA-onderhoud.",
+        "website": "https://www.madino.nl",
+        "logo": "",
+        "hero_image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&h=600&fit=crop",
+        "categorieen": ["terras-meubilair", "lounge", "dining", "firepit", "daybeds"],
+        "pleisureworld_partner": True,
+        "pleisureworld_badge": "Preferred Partner",
+        "pleisureworld_sinds": "2026",
+        "blog_url": "https://www.pleisureworld.nl/blog/madino-terras-meubilair-recreatie",
+        "blog_titel": "Het terras maakt het verschil: zo verhoog je je reviewscore met premium buitenmeubilair",
+        "podcast": {
+            "titel": "Leisure Talk #23 — Het terras als verdienmodel",
+            "beschrijving": "Madino in gesprek met Richard Otten over hoe parkeigenaren hun chalets en glamping-units onderscheiden met premium terras-meubilair. Over weerbestendigheid, kussenkwaliteit, winteropslag en de impact op gastreviews.",
+            "url": "https://www.pleisureworld.nl/podcast/leisure-talk-23",
+            "duur": "33 min",
+            "gast": "Madino Team",
+        },
+        "trendwatcher_quote": {
+            "tekst": "Een chalet zonder een mooi terras is een gemiste kans. Gasten brengen 60% van hun verblijftijd buiten door — dat is waar de Instagram-foto's worden gemaakt en waar de review wordt geschreven. Madino snapt dat: hun firepit lounges zijn dé reden waarom parken in hun pakkettenniveau een stap omhoog kunnen.",
+            "auteur": "Richard Otten",
+            "functie": "Trendwatcher Recreatie & Hospitality",
+        },
+        "stats": {
+            "parken_actief": "75+",
+            "jaren_ervaring": "12+",
+            "producten_geinstalleerd": "1.800+",
+            "klanttevredenheid": "4.7/5",
+        },
+        "deelname": [
+            {"event": "Vakantiebeurs Utrecht 2026", "type": "Exposant"},
+            {"event": "Recron Jaarcongres 2025", "type": "Partner"},
+            {"event": "Glamping Show 2025", "type": "Exposant"},
+            {"event": "Pleisureworld Summit 2026", "type": "Preferred Partner"},
+        ],
+        "top_producten": [
+            {
+                "id": "terras-madino-lounge",
+                "name": "Madino Premium Lounge Set",
+                "prijs": 3950,
+                "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&h=600&fit=crop",
+                "reden": "Meest gekozen — perfecte balans voor mid-range chalets",
+                "configuraties": 287,
+            },
+            {
+                "id": "terras-madino-firepit",
+                "name": "Madino Firepit Lounge Set",
+                "prijs": 5450,
+                "image": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&h=600&fit=crop",
+                "reden": "Premium favoriet — verlengt het terras-seizoen tot november",
+                "configuraties": 134,
+            },
+            {
+                "id": "terras-madino-dining",
+                "name": "Madino Dining Set (8p)",
+                "prijs": 4750,
+                "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop",
+                "reden": "Top voor familie-chalets — 8 personen, robuust teak",
+                "configuraties": 198,
+            },
+        ],
+        "usps": [
+            "Weerbestendig — ontworpen voor Nederlands klimaat",
+            "Maatwerk per chalet of glamping-unit mogelijk",
+            "Inclusief professionele installatie",
+            "Winter-opslag service (optioneel)",
+            "5 jaar garantie op frames",
+            "Duurzame kussens met afneembare hoezen",
+        ],
+    },
 }
 
 
+# ==================== MONGODB INTEGRATION ====================
+
+import os
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
+from typing import Optional, List, Dict, Any
+
+_db = None
+_seeded = False
+
+
+def _get_db():
+    global _db
+    if _db is None:
+        _db = AsyncIOMotorClient(os.environ['MONGO_URL'])[os.environ['DB_NAME']]
+    return _db
+
+
+async def _ensure_seeded():
+    """Seed PARTNER_PROFILES dict into MongoDB if collection is empty (idempotent)."""
+    global _seeded
+    if _seeded:
+        return
+    db = _get_db()
+    count = await db.partner_profiles.count_documents({})
+    if count == 0:
+        for pid, profile in PARTNER_PROFILES.items():
+            doc = {**profile, "id": pid}
+            await db.partner_profiles.insert_one(doc)
+    else:
+        # Make sure seeded-but-new profiles (e.g., Madino added later) are inserted
+        existing_ids = set()
+        async for d in db.partner_profiles.find({}, {"id": 1}):
+            existing_ids.add(d.get("id"))
+        for pid, profile in PARTNER_PROFILES.items():
+            if pid not in existing_ids:
+                doc = {**profile, "id": pid}
+                await db.partner_profiles.insert_one(doc)
+    _seeded = True
+
+
+def _clean(doc: dict) -> dict:
+    """Strip MongoDB _id from response."""
+    if not doc:
+        return doc
+    d = dict(doc)
+    d.pop("_id", None)
+    return d
+
+
+class PartnerProfileUpsert(BaseModel):
+    id: Optional[str] = None
+    name: str
+    tagline: str = ""
+    description: str = ""
+    website: str = ""
+    logo: str = ""
+    hero_image: str = ""
+    categorieen: List[str] = []
+    pleisureworld_partner: bool = False
+    pleisureworld_badge: str = ""
+    pleisureworld_sinds: str = ""
+    blog_url: str = ""
+    blog_titel: str = ""
+    podcast: Dict[str, Any] = {}
+    trendwatcher_quote: Dict[str, Any] = {}
+    stats: Dict[str, Any] = {}
+    deelname: List[Dict[str, Any]] = []
+    top_producten: List[Dict[str, Any]] = []
+    usps: List[str] = []
+
+
+# ==================== PUBLIC PARTNER ROUTES ====================
+
 @partner_router.get("/profiles")
 async def get_all_profiles():
-    """Alle leveranciersprofielen (summary)."""
-    return [
-        {
-            "id": p["id"],
-            "name": p["name"],
-            "tagline": p["tagline"],
-            "hero_image": p["hero_image"],
-            "categorieen": p["categorieen"],
-            "pleisureworld_partner": p["pleisureworld_partner"],
-            "pleisureworld_badge": p["pleisureworld_badge"],
-        }
-        for p in PARTNER_PROFILES.values()
-    ]
+    """Alle leveranciersprofielen (summary). Reads from MongoDB."""
+    await _ensure_seeded()
+    db = _get_db()
+    out = []
+    async for p in db.partner_profiles.find({}, {"_id": 0, "id": 1, "name": 1, "tagline": 1, "hero_image": 1, "categorieen": 1, "pleisureworld_partner": 1, "pleisureworld_badge": 1}):
+        out.append(p)
+    return out
 
 
 @partner_router.get("/profiles/{partner_id}")
 async def get_partner_profile(partner_id: str):
-    """Gedetailleerd leveranciersprofiel."""
-    profile = PARTNER_PROFILES.get(partner_id)
+    """Gedetailleerd leveranciersprofiel — leest uit MongoDB met fallback naar seed-dict."""
+    await _ensure_seeded()
+    db = _get_db()
+    profile = await db.partner_profiles.find_one({"id": partner_id}, {"_id": 0})
+    if not profile:
+        # Fallback to in-memory seed (in case DB ever cleared)
+        profile = PARTNER_PROFILES.get(partner_id)
     if not profile:
         return {"error": "Partner niet gevonden"}
-    return profile
+    return _clean(profile)
 
 
 @partner_router.get("/profiles/{partner_id}/dynamic-top3")
 async def get_dynamic_top3(partner_id: str):
-    """
-    Dynamische Top 3 producten op basis van daadwerkelijke configuratie-data.
-    Falls back naar statische top 3 als er onvoldoende data is.
-    """
+    """Dynamische top 3 op basis van benchmark-data; fallback naar statische top 3."""
     from supabase_module import get_benchmark_data
-    profile = PARTNER_PROFILES.get(partner_id)
+    await _ensure_seeded()
+    db = _get_db()
+    profile = await db.partner_profiles.find_one({"id": partner_id}, {"_id": 0})
+    if not profile:
+        profile = PARTNER_PROFILES.get(partner_id)
     if not profile:
         return {"error": "Partner niet gevonden"}
 
@@ -491,10 +638,8 @@ async def get_dynamic_top3(partner_id: str):
 
         supplier_name = profile["name"]
         product_counts = {}
-
         for entry in benchmark:
-            products = entry.get("products_selected", [])
-            for prod in products:
+            for prod in entry.get("products_selected", []):
                 if prod.get("supplier_name") == supplier_name or prod.get("supplier") == supplier_name:
                     name = prod.get("name", prod.get("product_name", ""))
                     if name:
@@ -506,14 +651,68 @@ async def get_dynamic_top3(partner_id: str):
         sorted_products = sorted(product_counts.items(), key=lambda x: -x[1])
         dynamic_top3 = []
         for name, count in sorted_products[:3]:
-            existing = next((p for p in static_top3 if p["naam"] == name), None)
+            existing = next((p for p in static_top3 if p.get("name") == name or p.get("naam") == name), None)
             if existing:
                 dynamic_top3.append({**existing, "configuraties": count, "bron": "dynamisch"})
             else:
-                dynamic_top3.append({"naam": name, "configuraties": count, "bron": "dynamisch"})
-
+                dynamic_top3.append({"name": name, "configuraties": count, "bron": "dynamisch"})
         return {"source": "dynamisch", "top_producten": dynamic_top3}
-
     except Exception:
         return {"source": "statisch", "top_producten": static_top3}
+
+
+# ==================== ADMIN CRUD ====================
+
+@partner_router.get("/admin/profiles")
+async def admin_list_profiles():
+    """Volledige profielen (alle velden) voor admin scherm."""
+    await _ensure_seeded()
+    db = _get_db()
+    out = []
+    async for p in db.partner_profiles.find({}, {"_id": 0}):
+        out.append(p)
+    return out
+
+
+@partner_router.post("/admin/profiles")
+async def admin_create_profile(payload: PartnerProfileUpsert):
+    """Nieuwe partner aanmaken."""
+    await _ensure_seeded()
+    db = _get_db()
+    data = payload.model_dump()
+    if not data.get("id"):
+        # Slug-ify name as id
+        import re
+        slug = re.sub(r"[^a-z0-9]+", "-", data["name"].lower()).strip("-")
+        data["id"] = slug or f"partner-{int(__import__('time').time())}"
+    # Ensure unique
+    existing = await db.partner_profiles.find_one({"id": data["id"]}, {"_id": 0})
+    if existing:
+        return {"error": "Partner met deze id bestaat al", "id": data["id"]}
+    await db.partner_profiles.insert_one(data)
+    return {"success": True, "id": data["id"], "profile": _clean(data)}
+
+
+@partner_router.put("/admin/profiles/{partner_id}")
+async def admin_update_profile(partner_id: str, payload: PartnerProfileUpsert):
+    """Partner bijwerken."""
+    await _ensure_seeded()
+    db = _get_db()
+    data = payload.model_dump()
+    data["id"] = partner_id
+    res = await db.partner_profiles.update_one({"id": partner_id}, {"$set": data}, upsert=False)
+    if res.matched_count == 0:
+        return {"error": "Partner niet gevonden"}
+    return {"success": True, "id": partner_id, "profile": data}
+
+
+@partner_router.delete("/admin/profiles/{partner_id}")
+async def admin_delete_profile(partner_id: str):
+    """Partner verwijderen."""
+    await _ensure_seeded()
+    db = _get_db()
+    res = await db.partner_profiles.delete_one({"id": partner_id})
+    if res.deleted_count == 0:
+        return {"error": "Partner niet gevonden"}
+    return {"success": True, "id": partner_id}
 

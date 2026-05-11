@@ -49,7 +49,7 @@ export function ChaletWizard({ onBack, onRoadmap }) {
   const [viewMode, setViewMode] = useState('configurator'); // 'configurator' or 'inspiratie'
   const [supplierProfileId, setSupplierProfileId] = useState(null);
 
-  const SUPPLIER_MAP = { 'Kunert Group': 'kunert-group', 'Arcabo': 'arcabo', 'BBS Systeembouw': 'bbs-systeembouw', 'Campsolutions': 'campsolutions', 'Ticra Outdoor': 'ticra-outdoor' };
+  const SUPPLIER_MAP = { 'Kunert Group': 'kunert-group', 'Arcabo': 'arcabo', 'BBS Systeembouw': 'bbs-systeembouw', 'Campsolutions': 'campsolutions', 'Ticra Outdoor': 'ticra-outdoor', 'Madino': 'madino' };
   const openSupplierProfile = (name) => setSupplierProfileId(SUPPLIER_MAP[name] || null);
 
   // Fetch suppliers once
@@ -882,7 +882,7 @@ function SamenstellenTab({ model, selections, onSelect, onSupplierClick }) {
   };
 
   const categoryLabels = {
-    keuken: 'Keuken', badkamer: 'Badkamer', terras: 'Terras', interieur: 'Interieur',
+    keuken: 'Keuken', badkamer: 'Badkamer', terras: 'Terras — Madino', interieur: 'Interieur',
     klimaat: 'Klimaat', duurzaamheid: 'Duurzaamheid', sanitair: 'Sanitair',
     inrichting: 'Inrichting', vlonder: 'Vlonder / Fundament', verlichting: 'Verlichting',
     wellness: 'Wellness — Ticra Outdoor',
@@ -899,13 +899,26 @@ function SamenstellenTab({ model, selections, onSelect, onSupplierClick }) {
       {Object.entries(options).map(([catKey, catOptions]) => {
         const selected = selections[catKey] || catOptions[0]?.id;
         const isWellness = catKey === 'wellness';
+        const isTerras = catKey === 'terras';
+        const hasImages = isWellness || isTerras;
+        const supplierTag = isWellness ? 'Ticra Outdoor' : (isTerras ? 'Madino' : null);
+        const tagColor = isWellness ? '#8B5E3C' : '#10b981';
         return (
           <div key={catKey} className="bg-white border border-[#e5e2d9] rounded-xl p-4" data-testid={`upgrade-${catKey}`}>
             <h3 className="text-sm font-bold text-[#333] mb-2 flex items-center gap-2">
               {categoryLabels[catKey] || catKey}
-              {isWellness && <span className="text-[10px] font-normal bg-[#8B5E3C]/10 text-[#8B5E3C] px-2 py-0.5 rounded-full">Ticra Outdoor</span>}
+              {supplierTag && (
+                <button
+                  onClick={() => onSupplierClick && onSupplierClick(supplierTag)}
+                  className="text-[10px] font-normal px-2 py-0.5 rounded-full hover:opacity-80 transition-opacity cursor-pointer"
+                  style={{ backgroundColor: `${tagColor}1A`, color: tagColor }}
+                  data-testid={`supplier-tag-${catKey}`}
+                >
+                  {supplierTag}
+                </button>
+              )}
             </h3>
-            <div className={`grid gap-2 ${isWellness ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            <div className={`grid gap-2 ${hasImages ? 'grid-cols-2' : 'grid-cols-3'}`}>
               {catOptions.map(opt => {
                 const isActive = selected === opt.id;
                 return (
@@ -913,7 +926,7 @@ function SamenstellenTab({ model, selections, onSelect, onSupplierClick }) {
                     className={`text-left rounded-lg border transition-all overflow-hidden ${isActive ? 'bg-[#244628] text-white border-[#244628] ring-1 ring-[#70C26C]' : 'bg-[#FDF9ED] text-[#555] border-[#e5e2d9] hover:border-[#70C26C]'}`}
                     data-testid={`opt-${opt.id}`}
                   >
-                    {isWellness && opt.image && (
+                    {hasImages && opt.image && (
                       <div className="w-full h-24 bg-[#f0ede6] overflow-hidden">
                         <img src={opt.image} alt={opt.name} className="w-full h-full object-cover" loading="lazy" />
                       </div>

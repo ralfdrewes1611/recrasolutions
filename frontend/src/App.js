@@ -5,6 +5,7 @@ import { FlowSelector } from './FlowSelector';
 import { FecWizard } from './FecWizard';
 import HorecaWizard from './HorecaWizard';
 import EijsinkPartnerPage from './EijsinkPartnerPage';
+import { PartnerProfileAdmin } from './PartnerProfileAdmin';
 import { ChaletWizard } from './ChaletWizard';
 import { PlatformDashboard } from './PlatformDashboard';
 import SupplierProfile from './SupplierProfile';
@@ -505,6 +506,20 @@ function App() {
     return (
       <>
         <EijsinkPartnerPage onBack={() => setActiveFlow('horeca')} />
+        <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
+      </>
+    );
+  }
+
+  // Partner Profielen Admin
+  if (activeFlow === 'admin-partners') {
+    return (
+      <>
+        <PartnerProfileAdmin
+          onBack={() => setActiveFlow(null)}
+          onPreview={(partnerId) => setSupplierProfileId(partnerId)}
+        />
+        <SupplierProfile partnerId={supplierProfileId} onClose={() => setSupplierProfileId(null)} />
         <Toaster theme="light" position="bottom-right" toastOptions={{ style: { background: '#fff', border: '1px solid #e5e2d9', color: '#333333' } }} />
       </>
     );

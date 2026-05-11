@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 29 — Madino partner + MongoDB-backed partner CRUD + admin UI tested end-to-end. Backend: 7/7 pytest cases pass. Frontend: admin grid, create/edit/delete, preview modal, chalet terras flow with Madino all work.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/partners/profiles/{id}", "issue": "Returns 200 with {error: 'Partner niet gevonden'} when missing. Standard REST expects 404. Same for admin update/delete and duplicate POST. Currently consumers must inspect body for 'error'."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ChaletWizard model picker", "issues": ["React hydration warning: <button data-testid=model-supplier-{id}> nested inside parent <button data-testid=model-{id}> at ChaletWizard.jsx:287/299. Browser logs runtime hydration error. Replace inner button with a <span role=button> + onClick + stopPropagation, or hoist supplier link outside the parent button."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration29_madino_partners.py",
+    "/app/test_reports/pytest/iter29_results.xml"
+  ],
+  "action_items": [
+    "Fix nested <button> hydration error in ChaletWizard.jsx (model supplier chip inside model selection button).",
+    "Consider returning 404 + non-2xx codes from partner endpoints for not-found / duplicate cases (currently always 200 with error body)."
+  ],
+  "critical_code_review_comments": [
+    "partner_profiles.py mixes seed data and MongoDB code in one 700+ line file — split PARTNER_PROFILES seed dict to a separate seed_partners.py module.",
+    "ChaletWizard.jsx has nested <button> producing hydration warning; affects accessibility (a11y) and React state.",
+    "Public GET /api/partners/profiles/{id} for unknown id returns 200 with {error: ...} — inconsistent with HTTP semantics and confuses frontend error handling.",
+    "_ensure_seeded uses module-global _seeded flag — fine for single worker but will re-seed once per worker on multi-worker uvicorn; idempotency guard inside is OK so this is safe but worth documenting."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration29_madino_partners.py (NEW)"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "AdminRECRA / Welkom123$",
+  "seed_data_creation": "Test created and deleted 'Test Demo' partner via UI; deleted both test-demo + test-partner-x via API after test run. Final partner count back to 7.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "All 7 partner_profiles (ticra-outdoor, kunert-group, arcabo, campsolutions, bbs-systeembouw, eijsink, madino) verified in MongoDB seed. Chalet terras now uses Madino (6 options incl 'terras-geen'). FlowSelector has 8 tiles incl flow-admin-partners. SupplierProfile modal opens correctly from PartnerProfileAdmin grid AND from chalet supplier-tag-terras / supplier-tag-wellness chips. Note: backend returns 200+error-body for not-found; tests assert that pattern.",
+  "verified_flows": [
+    "Login AdminRECRA",
+    "FlowSelector contains flow-admin-partners tile (8 tiles total)",
+    "PartnerProfileAdmin shows 7 cards with hero+badges+Bekijk/Bewerken/Delete",
+    "Create 'Test Demo' via partner-admin-new → cards=8",
+    "Edit shows prefilled name=Test Demo",
+    "Preview madino opens supplier-profile-modal (NOT full page)",
+    "Delete Test Demo with confirm dialog → cards back to 7",
+    "Chalet flow → samenstellen tab → upgrade-terras has 6 options [terras-geen, terras-madino-bistro, terras-madino-lounge, terras-madino-dining, terras-madino-loungebed, terras-madino-firepit]",
+    "supplier-tag-terras chip text='Madino', click opens modal containing 'Madino' + 'Leisure Talk #23' + 'Firepit'",
+    "supplier-tag-wellness chip text='Ticra Outdoor', click opens supplier-profile-modal"
+  ]
+}

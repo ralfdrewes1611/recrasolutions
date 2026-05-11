@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tent, Home, Gamepad2, ArrowRight, BarChart3, Map, Settings, Beer } from 'lucide-react';
+import { Tent, Home, Gamepad2, ArrowRight, BarChart3, Map, Settings, Beer, UserSquare2 } from 'lucide-react';
 
 const flows = [
   {
@@ -57,6 +57,14 @@ const flows = [
     icon: Settings,
     color: '#64748b',
     image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&h=800&fit=crop',
+  },
+  {
+    id: 'admin-partners',
+    label: 'Partner Profielen',
+    description: 'Rijke partner-pagina\'s beheren — Ticra, Eijsink, Madino, Arcabo en meer',
+    icon: UserSquare2,
+    color: '#c026d3',
+    image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1200&h=800&fit=crop',
   },
 ];
 
